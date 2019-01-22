@@ -20,7 +20,7 @@ module.exports = Contract;
 
 let declareFunctionsFromABI = function (abi, eos) {
 
-    let contractFunctions = abi.structs;
+    let contractFunctions = abi.actions;
 
     for (let i = 0; i < contractFunctions.length; i++) {
         let contractFunction = contractFunctions[i];
