@@ -1,3 +1,4 @@
+const contractFilesReader = require('./../helpers/contract-files-reader');
 const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
 
 class EOSDeployer {
@@ -6,7 +7,10 @@ class EOSDeployer {
         defineImmutableProperties(this, [
             {
                 name: '__deploy',
-                value: async function (wasm, abi, contractAccount) {
+                value: async function (wasmPath, abiPath, contractAccount) {
+                    let abi = contractFilesReader.readABIFromFile(abiPath);
+                    let wasm = contractFilesReader.readWASMFromFile(wasmPath);
+
                     await eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
                     await eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
 

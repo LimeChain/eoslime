@@ -11,6 +11,8 @@ const DEFAULT_NETWORK = require('./src/defaults/network-default');
 const DEFAULT_ACCOUNT = require('./src/defaults/account-default');
 
 const utils = require('./src/utils');
+const contractFilesReader = require('./src/helpers/contract-files-reader');
+
 
 var eoslime = (function () {
 
@@ -37,7 +39,8 @@ var eoslime = (function () {
             AccountDeployer: accountDeployer,
             Account: Account,
             AccountsLoader: accountsLoader,
-            Contract: function (abi, contractName, contractExecutorAccount) {
+            Contract: function (abiPath, contractName, contractExecutorAccount) {
+                let abi = contractFilesReader.readABIFromFile(abiPath);
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
             },
             utils: utils

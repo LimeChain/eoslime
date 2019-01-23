@@ -20,17 +20,19 @@ module.exports = Contract;
 
 let declareFunctionsFromABI = function (abi, eos) {
 
-    let contractFunctions = abi.actions;
+    let contractActions = abi.actions;
+    let contractStructs = Object.assign({}, ...abi.structs.map(struct => ({ [struct['name']]: struct })));
 
-    for (let i = 0; i < contractFunctions.length; i++) {
-        let contractFunction = contractFunctions[i];
+    for (let i = 0; i < contractActions.length; i++) {
+        let functionName = contractActions[i].name;
 
-        this[contractFunction.name] = async function (...params) {
+        this[functionName] = async function (...params) {
 
-            let functionParams = params.slice(0, contractFunction.fields.length);
+            let functionParamsCount = contractStructs[functionName].fields.length;
+            let functionParams = params.slice(0, functionParamsCount);
 
-            let optionalsPosition = contractFunction.fields.length;
-            let optionals = params[optionalsPosition] instanceof Object ? params[optionalsPosition] : null;
+            // Optionals starts from the last function parameter position
+            let optionals = params[functionParamsCount] instanceof Object ? params[functionParamsCount] : null;
 
             let authorizationAccount;
             if (optionals && optionals.from instanceof Account) {
@@ -39,24 +41,24 @@ let declareFunctionsFromABI = function (abi, eos) {
                 authorizationAccount = this.defaultExecutor;
             }
 
-            let formedParams = mapParamsToExpectedOnes(functionParams, contractFunction.fields);
-            return executeForAccount(eos, this.contractName, contractFunction.name, formedParams, authorizationAccount);
+            let structuredParams = structureParamsToExpectedLook(functionParams, contractStructs[functionName].fields);
+            return executeFunction(eos, this.contractName, functionName, structuredParams, authorizationAccount);
         }
     }
 }
 
-let mapParamsToExpectedOnes = function (plainParams, expectedParams) {
-    let formedParams = {};
+let structureParamsToExpectedLook = function (params, expectedParamsLook) {
+    let structuredParams = {};
 
-    for (let i = 0; i < expectedParams.length; i++) {
-        let expectedParam = expectedParams[i].name;
-        formedParams[expectedParam] = plainParams[i];
+    for (let i = 0; i < expectedParamsLook.length; i++) {
+        let expectedParam = expectedParamsLook[i].name;
+        structuredParams[expectedParam] = params[i];
     }
 
-    return formedParams;
+    return structuredParams;
 }
 
-let executeForAccount = function (eos, contractName, actionName, data, authorizationAccount) {
+let executeFunction = function (eos, contractName, actionName, data, authorizationAccount) {
     return eos.transaction(
         {
             actions: [

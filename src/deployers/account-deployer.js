@@ -9,8 +9,8 @@ class AccountDeployer extends EOSDeployer {
         defineImmutableProperties(this, [
             {
                 name: 'deploy',
-                value: async function (wasm, abi, contractAccount = defaultDeploymentAccount) {
-                    return this.__deploy(wasm, abi, contractAccount);
+                value: async function (wasmPath, abiPath, contractAccount = defaultDeploymentAccount) {
+                    return this.__deploy(wasmPath, abiPath, contractAccount);
                 }
             }
         ]);
