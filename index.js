@@ -39,7 +39,7 @@ var eoslime = (function () {
             AccountDeployer: accountDeployer,
             Account: Account,
             AccountsLoader: accountsLoader,
-            Contract: function (abiPath, contractName, contractExecutorAccount) {
+            Contract: function (abiPath, contractName, contractExecutorAccount = defaultAccount) {
                 let abi = contractFilesReader.readABIFromFile(abiPath);
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
             },
