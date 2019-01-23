@@ -87,6 +87,7 @@ let account = new eoslime.Account('eosio', 'publicKey', 'privateKey');
     }
 /*
 ```
+***Important! If eoslime function accepts account parameter, it should be an instance of `eoslime.Account`***
 
 #### Accounts Loader
 ---
@@ -117,7 +118,7 @@ let oneAccount = (await eoslime.AccountsLoader.load())[0];
 #### Deployers
 ---
 ##### Account Deployer
-Account Deployer is used when you already have  an account on which you want to deploy a contract or when you have an account with deployed contract and want to upgrade the contract code.
+Account Deployer is used when you already have an account on which you want to deploy a new contract or when you have an account with already deployed contract and you want to upgrade it.
 
 ```javascript
 const eoslime = require('eoslime').init();
@@ -134,8 +135,11 @@ If you don't provide `contractAccount` the [`defaultAccount`](#default-account) 
 The `deploy` function returns to you a ready to use [instance](#contract) of the deployed contract.
 
 ##### Clean Deployer
-Clean Deployer is used when you don't have a contract account. It creates for you a new contract account on which the contract code is deployed after that. The creator of the new contract account is the [`defaultAccount`](#default-account). In this way the Clean Deployer always deploy a contract code on a new account and for testing purposes it is convient because for example you have two tests and one contract account. The first test writes to the contract storage, but you need this storage to be clear for the second test due to some assertion or something like that.
+Clean Deployer is used when you don't have a contract account. It creates for you a new contract account on which the contract is deployed after that. The creator of the new contract account is the [`defaultAccount`](#default-account). 
+In this way the Clean Deployer always deploys a contract on a new account. 
 
+This brings convince in the following scenario for example:
+We have two tests and one contract account. The first test writes to the contract storage, but you need this storage to be clear for the second test due to some assertion or something like that.
 ```javascript
 const eoslime = require('eoslime').init();
 
@@ -164,14 +168,12 @@ let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_EXECUTOR);
 
 **If you don't provide [`CONTRACT_EXECUTOR`](#contract.defaultExecutor) the [`defaultAccount`](#default-account) is applied.**
 
-***Note! Contract methods are the same as in the C++ contract code.***
-
 `contract.contractName`
 For convience you have accsess to the contract name
 
 `contract.eosInstance`
 For convience you have accsess to the eos instance(eosjs). 
-This is useful when you want, for example, to read from a table
+This is useful when you want, for example, to read a table
 ```javascript
 let tableResults = await contract.eosInstance.getTableRows({
                 code: contract.contractName,
@@ -275,3 +277,4 @@ npm test
 
 * ***cli***
 * ***Built in mocha as testing framework***
+* ***Make it more configurable***
