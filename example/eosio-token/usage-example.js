@@ -24,6 +24,7 @@ const TOKEN_ABI_PATH = path.join(__dirname, './contract/eosio.token.abi');
 
 describe('EOSIO Token', function () {
 
+    // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
 
     let tokenContract;
@@ -33,7 +34,7 @@ describe('EOSIO Token', function () {
     const TOTAL_SUPPLY = '1000000000.0000 SYS';
     const HOLDER_SUPPLY = '100.0000 SYS';
 
-    beforeEach(async () => {
+    before(async () => {
         /* 
             Accounts loader generates random accounts for easier testing
             But you could use it also to create new accounts on each network
@@ -42,7 +43,9 @@ describe('EOSIO Token', function () {
         let accounts = await eoslime.AccountsLoader.load(2);
         tokensIssuer = accounts[0];
         tokensHolder = accounts[1];
+    });
 
+    beforeEach(async () => {
         /*
             CleanDeployer creates for you a new account behind the scene
             on which the contract code is deployed
