@@ -14,9 +14,10 @@ const utils = require('./src/utils');
 const contractFilesReader = require('./src/helpers/contract-files-reader');
 
 
-var eoslime = (function () {
+module.exports = (function () {
 
     let init = function (network, chainId, defaultAccount) {
+
         network = network || DEFAULT_NETWORK.network;
         chainId = chainId || DEFAULT_NETWORK.chainId;
         defaultAccount = defaultAccount || new Account(DEFAULT_ACCOUNT.name, DEFAULT_ACCOUNT.publicKey, DEFAULT_ACCOUNT.privateKey);
@@ -33,7 +34,6 @@ var eoslime = (function () {
         let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, accountsLoader);
         let accountDeployer = new AccountDeployer(eosInstance, contractFactory, defaultAccount);
 
-
         return {
             CleanDeployer: cleanDeployer,
             AccountDeployer: accountDeployer,
@@ -44,12 +44,11 @@ var eoslime = (function () {
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
             },
             utils: utils
-        }
+        };
     }
 
     return {
-        init: init
-    }
+        init: init,
+        Account: Account
+    };
 })();
-
-module.exports = eoslime;
