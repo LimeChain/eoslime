@@ -1,6 +1,5 @@
 const assert = require('assert');
 
-const fs = require('fs');
 const path = require('path');
 
 /*
@@ -20,9 +19,8 @@ const path = require('path');
 */
 const eoslime = require('./../../').init();
 
-
-const TOKEN_WASM = fs.readFileSync(path.join(__dirname, './contract/eosio.token.wasm'));
-const TOKEN_ABI = JSON.parse(fs.readFileSync(path.join(__dirname, './contract/eosio.token.abi')));
+const TOKEN_WASM_PATH = path.join(__dirname, './contract/eosio.token.wasm');
+const TOKEN_ABI_PATH = path.join(__dirname, './contract/eosio.token.abi');
 
 describe('EOSIO Token', function () {
 
@@ -56,7 +54,7 @@ describe('EOSIO Token', function () {
 
             You can access the contract account as -> tokenContract.defaultExecutor
         */
-        tokenContract = await eoslime.CleanDeployer.deploy(TOKEN_WASM, TOKEN_ABI);
+        tokenContract = await eoslime.CleanDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
     });
 
     it('Should create a new token', async () => {
@@ -64,10 +62,10 @@ describe('EOSIO Token', function () {
 
         /*
             You have access to the EOS(eosjs) instance as -> contract.eosInstance
-            This gives us flexibility
+            This gives us flexibility and convenience
 
                 For example when you want to read a table -> 
-                
+
                 await contract.eosInstance.getTableRows({
                     code: code,
                     scope: scope,
