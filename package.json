@@ -20,5 +20,13 @@
     "testing",
     "deployment",
     "contract"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LimeChain/eoslime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LimeChain/eoslime/issues"
+  },
+  "homepage": "https://github.com/LimeChain/eoslime#readme"
 }
