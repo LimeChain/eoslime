@@ -48,7 +48,7 @@ await tokenContract.issue(tokensHolder.name, '10 SYS', 'memo', { from: tokensIss
 * defaultAccount - It serves in three ways 
     * As a creator of another accounts ([Accounts Loader](#accounts-loader))
     * In **[`eoslime.AccountDeployer.deploy(wasmPath, abiPath, contractAccount)`](#account-deployer)** as default parameter for **`contractAccount`**
-    * In **[`eoslime.Contract(abiPath, contractName, contractExecutor)`](`#contract)** as default parameter for **`contractExecutor`**
+    * In **[`eoslime.Contract(abiPath, contractName, contractExecutor)`](#contract)** as default parameter for **`contractExecutor`**
 
 ---
 
