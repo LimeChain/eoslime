@@ -1,15 +1,24 @@
 {
   "name": "eoslime",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./example/eosio-token/usage-example.js"
   },
   "author": "Lyubomir Kiprov (Limechain)",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "eosjs": "16.0.9",
     "mocha": "^5.2.0"
-  }
+  },
+  "keywords": [
+    "lime",
+    "eos",
+    "eoslime",
+    "framework",
+    "testing",
+    "deployment",
+    "contract"
+  ]
 }

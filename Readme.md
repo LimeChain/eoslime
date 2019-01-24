@@ -7,7 +7,7 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 ---
 
 ```
-npm install --save eoslime
+npm install eoslime
 ```
 
 Simple start
@@ -298,7 +298,9 @@ describe('Test Contract', function () {
 ---
 
 You can check eosio.token example to get better idea of how to work with **`eoslime`**.   
-The example was made as tests so you can start them with:
+The example was made as tests so you should:
+* Run nodoes locally
+* Start example with:
 ```
 npm test
 ```
