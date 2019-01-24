@@ -13,26 +13,28 @@ const DEFAULT_ACCOUNT = require('./src/defaults/account-default');
 const utils = require('./src/utils');
 const contractFilesReader = require('./src/helpers/contract-files-reader');
 
-
 module.exports = (function () {
 
-    let init = function (network, chainId, defaultAccount) {
+    const defaultInitObject = {
+        network: DEFAULT_NETWORK.network,
+        chainId: DEFAULT_NETWORK.chainId,
+        defaultAccount: new Account(DEFAULT_ACCOUNT.name, DEFAULT_ACCOUNT.publicKey, DEFAULT_ACCOUNT.privateKey)
+    }
 
-        network = network || DEFAULT_NETWORK.network;
-        chainId = chainId || DEFAULT_NETWORK.chainId;
-        defaultAccount = defaultAccount || new Account(DEFAULT_ACCOUNT.name, DEFAULT_ACCOUNT.publicKey, DEFAULT_ACCOUNT.privateKey);
+    let init = function (initObject = defaultInitObject) {
+        initObject = Object.assign({}, defaultInitObject, initObject);
 
-        if (!(defaultAccount instanceof Account)) {
+        if (!(initObject.defaultAccount instanceof Account)) {
             throw new Error('Invalid account');
         }
 
-        let eosInstance = new EosInstance(network, chainId, defaultAccount.privateKey);
+        let eosInstance = new EosInstance(initObject.network, initObject.chainId, initObject.defaultAccount.privateKey);
 
         let contractFactory = new ContractFactory(eosInstance);
-        let accountsLoader = new AccountsLoader(eosInstance, defaultAccount);
+        let accountsLoader = new AccountsLoader(eosInstance, initObject.defaultAccount);
 
         let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, accountsLoader);
-        let accountDeployer = new AccountDeployer(eosInstance, contractFactory, defaultAccount);
+        let accountDeployer = new AccountDeployer(eosInstance, contractFactory, initObject.defaultAccount);
 
         return {
             CleanDeployer: cleanDeployer,
