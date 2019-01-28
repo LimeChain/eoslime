@@ -1,0 +1,14 @@
+{
+    "template": "compile [path]",
+    "description": "Compile contract/s",
+    "options": [
+        {
+            "name": "path",
+            "definition": {
+                "describe": "Path to the contract/s file/folder",
+                "type": "string",
+                "default": "./contracts/"
+            }
+        }
+    ]
+}

@@ -1,0 +1,34 @@
+{
+    "template": "deploy [path] [network] [account]",
+    "description": "Run deployment script",
+    "options": [
+        {
+            "name": "path",
+            "definition": {
+                "describe": "Path to the deployment file/folder",
+                "type": "string",
+                "default": "./deployment/"
+            }
+        },
+        {
+            "name": "network",
+            "definition": {
+                "describe": "The blockchain network you are going to deploy on",
+                "type": "string",
+                "default": "local",
+                "choices": [
+                    "local",
+                    "jungle",
+                    "main"
+                ]
+            }
+        },
+        {
+            "name": "account",
+            "definition": {
+                "describe": "Account the contract is going to be deployed on",
+                "type": "string"
+            }
+        }
+    ]
+}

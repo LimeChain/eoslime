@@ -1,0 +1,14 @@
+{
+    "template": "history [limit]",
+    "description": "Show the deployment history",
+    "options": [
+        {
+            "name": "limit",
+            "definition": {
+                "describe": "Show the last historical logs according to limit",
+                "type": "number",
+                "default": 1
+            }
+        }
+    ]
+}
