@@ -6,7 +6,7 @@ class Command {
 
     defineOptions(yargs, options) {
         for (const option of options) {
-            yargs.positional(option.name, option.definition);
+            yargs.options(option.name, option.definition);
         }
     }
 
