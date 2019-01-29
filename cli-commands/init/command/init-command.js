@@ -31,14 +31,7 @@ class InitCommand extends Command {
             createTestsDir();
             copyDefaultPackageJson();
 
-            for (let i = 0; i < initCommandDefinition.options.length; i++) {
-                let initOption = initCommandDefinition.options[i];
-
-                if (args.hasOwnProperty(initOption.name)) {
-                    initOption.execute(args[initOption.name]);
-                }
-            }
-
+            super.__execute(args, initCommandDefinition.options);
         } catch (error) {
             commandMessages.UnsuccessfulInstallation();
             throw new Error(error.message);
