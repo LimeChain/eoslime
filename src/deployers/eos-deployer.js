@@ -5,7 +5,7 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class EOSDeployer {
 
-    constructor(eos, contractFactory) {
+    constructor(eosInstance, contractFactory) {
         defineImmutableProperties(this, [
             {
                 name: '__deploy',
@@ -13,8 +13,8 @@ class EOSDeployer {
                     let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
                     let wasm = contractFilesReader.readWASMFromFile(path.resolve(wasmPath));
 
-                    await eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
-                    await eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
+                    await eosInstance.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
+                    await eosInstance.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
 
                     let contract = contractFactory.buildExisting(abi, contractAccount.name, contractAccount);
                     return contract;

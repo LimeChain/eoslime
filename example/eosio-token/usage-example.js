@@ -38,7 +38,7 @@ describe('EOSIO Token', function () {
             But you could use it also to create new accounts on each network
             For more details, visit the documentation
         */
-        let accounts = await eoslime.AccountsLoader.load(2);
+        let accounts = await eoslime.Account.createRandoms(2);
         tokensIssuer = accounts[0];
         tokensHolder = accounts[1];
     });

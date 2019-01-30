@@ -3,8 +3,8 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class AccountDeployer extends EOSDeployer {
 
-    constructor(eos, contractFactory, defaultDeploymentAccount) {
-        super(eos, contractFactory);
+    constructor(eosInstance, contractFactory, defaultDeploymentAccount) {
+        super(eosInstance, contractFactory);
 
         defineImmutableProperties(this, [
             {

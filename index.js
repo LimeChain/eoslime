@@ -1,7 +1,6 @@
 const path = require('path');
 
 const Account = require('./src/account/account');
-const AccountsLoader = require('./src/account/accounts-loader');
 const ContractFactory = require('./src/contract/contract-factory');
 
 const CleanDeployer = require('./src/deployers/clean-deployer');
@@ -18,7 +17,7 @@ module.exports = (function () {
 
     const defaultInitObject = {
         network: 'local',
-        defaultAccount: new Account(DEFAULT_ACCOUNT.name, DEFAULT_ACCOUNT.publicKey, DEFAULT_ACCOUNT.privateKey)
+        defaultAccount: new Account(DEFAULT_ACCOUNT.name, DEFAULT_ACCOUNT.privateKey)
     }
 
     let init = function (initObject = defaultInitObject) {
@@ -31,16 +30,14 @@ module.exports = (function () {
         let eosInstance = new EosInstance(initObject.network, initObject.defaultAccount.privateKey);
 
         let contractFactory = new ContractFactory(eosInstance);
-        let accountsLoader = new AccountsLoader(eosInstance, initObject.defaultAccount);
 
-        let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, accountsLoader);
+        let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, initObject.defaultAccount);
         let accountDeployer = new AccountDeployer(eosInstance, contractFactory, initObject.defaultAccount);
 
         return {
             CleanDeployer: cleanDeployer,
             AccountDeployer: accountDeployer,
             Account: Account,
-            AccountsLoader: accountsLoader,
             Contract: function (abiPath, contractName, contractExecutorAccount = initObject.defaultAccount) {
                 let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
