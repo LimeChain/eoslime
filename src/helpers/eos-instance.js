@@ -5,7 +5,7 @@ class EOSInstance {
     constructor(network, privateKey) {
         let currentNetwork = NETWORKS[network] || network;
 
-        if (!currentNetwork.hasOwnProperty('url') && !currentNetwork.hasOwnProperty('chainId')) {
+        if (!currentNetwork.hasOwnProperty('url') || !currentNetwork.hasOwnProperty('chainId')) {
             throw new Error('Invalid network. You can choose from [ local, jungle, bos, worbli, main ] or { url: "Your network", chainId: "Your chainId" }');
         }
 
