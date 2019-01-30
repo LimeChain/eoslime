@@ -1,4 +1,5 @@
 const Option = require('./../../option');
+const Networks = require('./../../../src/helpers/networks.json');
 
 class NetworkOption extends Option {
     constructor() {
@@ -11,13 +12,17 @@ class NetworkOption extends Option {
                 "choices": [
                     "local",
                     "jungle",
+                    "bos",
+                    "worbli",
                     "main"
                 ]
             }
         );
     }
 
-    execute(optionValue) { }
+    execute(optionValue) {
+        return Networks[optionValue];
+    }
 }
 
 module.exports = new NetworkOption();

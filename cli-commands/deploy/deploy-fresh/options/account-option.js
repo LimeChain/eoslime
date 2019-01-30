@@ -1,4 +1,5 @@
 const Option = require('./../../option');
+const Account = require('./../../../src/account/account');
 
 class ContractAccountOption extends Option {
     constructor() {
@@ -11,7 +12,12 @@ class ContractAccountOption extends Option {
         );
     }
 
-    execute(optionValue) { }
+    execute(optionValue) {
+        let parsedOptionValue = JSON.parse(optionValue);
+        optionValue = new Account(parsedOptionValue.name, parsedOptionValue.privateKey);
+
+        return optionValue;
+    }
 }
 
 module.exports = new ContractAccountOption();

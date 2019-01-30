@@ -10,12 +10,13 @@ class Command {
         }
     }
 
-    __execute(args, commandOptions) {
+    __execute(args, commandOptions, postExecuteCallback = function (option, executionResult) { }) {
         for (let i = 0; i < commandOptions.length; i++) {
             let option = commandOptions[i];
 
             if (args.hasOwnProperty(option.name)) {
-                option.execute(args[option.name]);
+                let executionResult = option.execute(args[option.name]);
+                postExecuteCallback(option, executionResult);
             }
         }
     }

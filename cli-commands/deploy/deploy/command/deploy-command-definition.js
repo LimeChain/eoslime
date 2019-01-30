@@ -1,5 +1,5 @@
 const pathOption = require('./../options/path-option');
-const networkOption = require('./../options/network-option');
+const networkOption = require('./../../global-options/network-option');
 const contractAccountOption = require('./../options/contract-account-option');
 
 module.exports = {

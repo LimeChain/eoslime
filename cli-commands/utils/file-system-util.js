@@ -22,5 +22,25 @@ module.exports = {
                 fs.copyFileSync(`${dirDestination}${filename}`, `${toDestination}${filename}`);
             });
         });
+    },
+    isDir: (path) => {
+        return fs.lstatSync(path).isDirectory();
+    },
+    isFile: (path) => {
+        return fs.lstatSync(path).isFile();
+    },
+    executeActionForEachFileInDir: (dirPath, actionCallback) => {
+        fs.readdir(dirPath, function (err, filenames) {
+            if (err) {
+                throw new Error(err.message);
+            }
+
+            filenames.forEach(function (filename) {
+                actionCallback(filename);
+            });
+        });
+    },
+    exists: (path) => {
+        return fs.existsSync(path);
     }
 }

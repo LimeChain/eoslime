@@ -26,6 +26,4 @@ let deploy = async function (network, contractAccount) {
     let tokenContract = await eoslime.AccountDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH, contractAccount);
 }
 
-module.exports = {
-    deploy
-}
+module.exports = deploy;
