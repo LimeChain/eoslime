@@ -1,7 +1,5 @@
 const assert = require('assert');
 
-const path = require('path');
-
 /*
     eoslime initialization requires :
         eos endpoint
@@ -19,8 +17,8 @@ const path = require('path');
 */
 const eoslime = require('./../../').init();
 
-const TOKEN_WASM_PATH = path.join(__dirname, './contract/eosio.token.wasm');
-const TOKEN_ABI_PATH = path.join(__dirname, './contract/eosio.token.abi');
+const TOKEN_WASM_PATH = './example/eosio-token/contract/eosio.token.wasm';
+const TOKEN_ABI_PATH = './example/eosio-token/contract/eosio.token.abi';
 
 describe('EOSIO Token', function () {
 
