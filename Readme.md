@@ -14,15 +14,12 @@ npm install eoslime
 
 ```javascript
 const eoslimeTool = require('eoslime');
-
-const network = 'http://127.0.0.1:8888';
-const chainId = 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f';
 const defaultAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
 
-const eoslime = eoslimeTool.init({ network: network, chaindId: chaindId, defaultAccount: defaultAccount });
+const eoslime = eoslimeTool.init({ network: 'local', defaultAccount: defaultAccount });
 
-const TOKEN_WASM_PATH = path.join(__dirname, './contract/eosio.token.wasm');
-const TOKEN_ABI_PATH = path.join(__dirname, './contract/eosio.token.abi');
+const TOKEN_WASM_PATH = './contract/eosio.token.wasm';
+const TOKEN_ABI_PATH = './contract/eosio.token.abi';
 
 // Generate and setup freshly new accounts for usage
 let accounnt = await eoslime.AccountsLoader.load(2);
@@ -42,12 +39,11 @@ await tokenContract.issue(tokensHolder.name, '10 SYS', 'memo', { from: tokensIss
 
 ***Simple tests***
 ```javascript
-const path = require('path');
 const assert = require('assert');
 const eoslime = require('eoslime').init();
 
-const TOKEN_WASM_PATH = path.join(__dirname, './contract/eosio.token.wasm');
-const TOKEN_ABI_PATH = path.join(__dirname, './contract/eosio.token.abi');
+const TOKEN_WASM_PATH = './contract/eosio.token.wasm';
+const TOKEN_ABI_PATH = './contract/eosio.token.abi';
 
 describe('EOSIO Token', function () {
     let tokenContract;
@@ -102,8 +98,12 @@ describe('EOSIO Token', function () {
 ## Eoslime initialization
 ---
 ***Parameters purpose***
-* network - endpoint for connecting
-* chainId - network chain id
+* network - network name. Supported names **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ]**. 
+For custom or another unsupported network, you could provide:
+```javascript
+{ network: { url: "Your network url", chainId: "Your network chainId" } }
+```
+
 * defaultAccount - It serves in three ways 
     * As a creator of another accounts ([Accounts Loader](#accounts-loader))
     * In **[`eoslime.AccountDeployer.deploy(wasmPath, abiPath, contractAccount)`](#account-deployer)** as default parameter for **`contractAccount`**
@@ -117,8 +117,7 @@ const eoslime = require('eoslime').init();
 ```
 
 ***Defaults***:
-* network - `http://127.0.0.1:8888`
-* chainId - `cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f`
+* network - `local`
 * defaultAccount 
 ```javascript
 Account {
@@ -131,17 +130,21 @@ Account {
     privateKey: '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
 }
 ```
-Initialization in another network:
+Initialization on supported network:
 ```javascript
 const eoslimeTool = require('eoslime');
-
-let jungleNet = 'https://jungle2.cryptolions.io';
-let jungleChainId = 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473';
 const jungleAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
 
-const eoslime = eoslimeTool.init({ network: jungleNet, chaindId: jungleChainId, defaultAccount: jungleAccount });
+const eoslime = eoslimeTool.init({ network: 'jungle', defaultAccount: jungleAccount });
 ```
 
+Initialization on unsupported network:
+```javascript
+const eoslimeTool = require('eoslime');
+const customNetworkAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
+
+const eoslime = eoslimeTool.init({ network: { url: 'Your network', chainId: 'Your chainId' }, defaultAccount: customNetworkAccount });
+```
 ## Account
 ---
 Account is some kind of container for all information an EOS account has. 
@@ -199,8 +202,8 @@ Account Deployer is used when you already have an account on which you want to d
 ```javascript
 const eoslime = require('eoslime').init();
 
-const WASM_PATH = path.join(__dirname, './contract/contract.wasm');
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const WASM_PATH = './contract/contract.wasm';
+const ABI_PATH = './contract/contract.abi';
 
 let contractAccount = (await eoslime.AccountsLoader.load())[0];
 
@@ -213,8 +216,8 @@ const eoslimeTool = require('eoslime');
 const defaultContractAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
 const eoslime = eoslimeTool.init({ defaultAccount: defaultContractAccount });
 
-const WASM_PATH = path.join(__dirname, './contract/contract.wasm');
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const WASM_PATH = './contract/contract.wasm';
+const ABI_PATH = './contract/contract.abi';
 
 let contract = await eoslime.AccountDeployer.deploy(WASM_PATH, ABI_PATH);
 ```
@@ -231,8 +234,8 @@ We have two tests and one contract account. The first test writes to the contrac
 ```javascript
 const eoslime = require('eoslime').init();
 
-const WASM_PATH = path.join(__dirname, './contract/contract.wasm');
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const WASM_PATH = './contract/contract.wasm';
+const ABI_PATH = './contract/contract.abi';
 
 let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
 ```
@@ -249,7 +252,7 @@ const eoslime = require('eoslime').init();
 
 const CONTRACT_NAME = 'mycontract';
 const CONTRACT_EXECUTOR = new eoslime.Account('myaccount', 'publicKey', 'privateKey');
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const ABI_PATH = './contract/contract.abi';
 
 let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_EXECUTOR);
 ```
@@ -261,7 +264,7 @@ If you want to call a contract method from another account(executor) you can do:
 const eoslime = require('eoslime').init();
 
 const CONTRACT_NAME = 'mycontract';
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const ABI_PATH = './contract/contract.abi';
 
 const EXECUTOR_1 = new eoslime.Account('myacc1', 'publicKey1', 'privateKey1');
 const EXECUTOR_2 = new eoslime.Account('myacc2', 'publicKey2', 'privateKey2');
@@ -313,8 +316,8 @@ On contract initialization you provide a contract executor. This is the account,
 const eoslime = require('eoslime').init();
 
 
-const WASM_PATH = path.join(__dirname, './contract/contract.wasm');
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const WASM_PATH = './contract/contract.wasm';
+const ABI_PATH = './contract/contract.abi';
 
 describe('Test Contract', function () {
     it('Should throw', async () => {
@@ -336,8 +339,8 @@ describe('Test Contract', function () {
 const eoslime = require('eoslime').init();
 
 
-const WASM_PATH = path.join(__dirname, './contract/contract.wasm');
-const ABI_PATH = path.join(__dirname, './contract/contract.abi');
+const WASM_PATH = './contract/contract.wasm';
+const ABI_PATH = './contract/contract.abi';
 
 describe('Test Contract', function () {
     it('Should throw', async () => {
