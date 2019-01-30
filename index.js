@@ -41,7 +41,7 @@ module.exports = (function () {
             AccountDeployer: accountDeployer,
             Account: Account,
             AccountsLoader: accountsLoader,
-            Contract: function (abiPath, contractName, contractExecutorAccount = defaultAccount) {
+            Contract: function (abiPath, contractName, contractExecutorAccount = initObject.defaultAccount) {
                 let abi = contractFilesReader.readABIFromFile(abiPath);
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
             },
