@@ -9,8 +9,9 @@
   "author": "Lyubomir Kiprov (Limechain)",
   "license": "MIT",
   "dependencies": {
+    "crypto-js": "3.1.9-1",
     "eosjs": "16.0.9",
-    "mocha": "^5.2.0"
+    "mocha": "5.2.0"
   },
   "keywords": [
     "lime",

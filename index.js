@@ -15,30 +15,24 @@ const contractFilesReader = require('./src/helpers/contract-files-reader');
 
 module.exports = (function () {
 
-    const defaultInitObject = {
-        network: 'local',
-        defaultAccount: new Account(DEFAULT_ACCOUNT.name, DEFAULT_ACCOUNT.privateKey)
-    }
+    let init = function (initAccount = DEFAULT_ACCOUNT) {
 
-    let init = function (initObject = defaultInitObject) {
-        initObject = Object.assign({}, defaultInitObject, initObject);
-
-        if (!(initObject.defaultAccount instanceof Account)) {
+        if (!(initAccount instanceof Account)) {
             throw new Error('Invalid account');
         }
 
-        let eosInstance = new EosInstance(initObject.network, initObject.defaultAccount.privateKey);
+        let eosInstance = new EosInstance(initAccount.network, initAccount.privateKey);
 
         let contractFactory = new ContractFactory(eosInstance);
 
-        let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, initObject.defaultAccount);
-        let accountDeployer = new AccountDeployer(eosInstance, contractFactory, initObject.defaultAccount);
+        let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, initAccount);
+        let accountDeployer = new AccountDeployer(eosInstance, contractFactory, initAccount);
 
         return {
             CleanDeployer: cleanDeployer,
             AccountDeployer: accountDeployer,
             Account: Account,
-            Contract: function (abiPath, contractName, contractExecutorAccount = initObject.defaultAccount) {
+            Contract: function (abiPath, contractName, contractExecutorAccount = initAccount) {
                 let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
             },

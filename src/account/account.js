@@ -1,11 +1,15 @@
 const eosECC = require('eosjs').modules.ecc;
+const cryptoJS = require('crypto-js');
 
 const Networks = require('./../helpers/networks.json');
 const EOSInstance = require('./../helpers/eos-instance');
 
+const createAccountNameFromPublicKey = require('./public-key-name-generator').createAccountNameFromPublicKey;
+
+
 class Account {
 
-    constructor(name, privateKey) {
+    constructor(name, privateKey, network = 'local') {
         this.name = name;
         this.permissions = {
             active: {
@@ -18,39 +22,69 @@ class Account {
             }
         };
 
+        this.privateKey = privateKey;
         this.publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
-        this.privateKey = privateKey
+
+        this.network = Networks[network] || network;
     }
 
-    static async createFromName(accountName, accountCreator = defaultAccountCreator, network = 'local') {
-        validateAccountCreator(accountCreator);
+    loadRam(ramLoad = defaultRAMLoad) {
+        validateAccount(ramPayer);
+        let eosInstance = new EOSInstance(this.network, ramLoad.ramPayer.privateKey);
+
+        await eosInstance.transaction(tr => {
+            tr.buyrambytes({
+                payer: ramPayer.name,
+                receiver: this.name,
+                bytes: ramLoad.bytes
+            });
+        });
+    }
+
+    loadBandwidth(bandwidthLoad = defaultBandwidthLoad) {
+        validateAccount(bandwidthLoad.payer);
+        let eosInstance = new EOSInstance(this.network, bandwidthLoad.payer.privateKey);
+
+        await eosInstance.transaction(tr => {
+            tr.delegatebw({
+                from: bandwidthLoad.payer.name,
+                receiver: this.name,
+                stake_cpu_quantity: `${payer.cpuQuantity} SYS`,
+                stake_net_quantity: `${payer.netQuantity} SYS`,
+                transfer: 0
+            });
+        });
+    }
+
+    static async createFromName(accountName, accountCreator = defaultAccount) {
+        validateAccount(accountCreator);
 
         let accountPrivateKey = await eosECC.randomKey();
-        let newAccount = new Account(accountName, accountPrivateKey);
+        let newAccount = new Account(accountName, accountPrivateKey, accountCreator.network);
 
-        await createAccountOnNetwork(newAccount, accountCreator, network);
+        await createAccountOnBlockchain(newAccount, accountCreator);
 
         return newAccount;
     }
 
-    static async createRandom(accountCreator = defaultAccountCreator, network = 'local') {
-        validateAccountCreator(accountCreator);
+    static async createRandom(accountCreator = defaultAccount) {
+        validateAccount(accountCreator);
 
-        let accountPrivateKey = await eosECC.randomKey();
-        let accountPublicKey = eosECC.PrivateKey.fromString(accountPrivateKey).toPublic().toString();
-        let accountName = createAccountNameFromPublicKey(accountPublicKey);
+        let privateKey = await eosECC.randomKey();
+        let publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
+        let name = createAccountNameFromPublicKey(publicKey);
 
-        let newAccount = new Account(accountName, accountPrivateKey);
-        await createAccountOnNetwork(newAccount, accountCreator, network);
+        let newAccount = new Account(name, privateKey, accountCreator.network);
+        await createAccountOnBlockchain(newAccount, accountCreator);
 
         return newAccount;
     }
 
-    static async createRandoms(accountsCount, accountCreator = defaultAccountCreator, network = 'local') {
+    static async createRandoms(accountsCount, accountCreator = defaultAccount) {
 
         let accounts = [];
         for (let i = 0; i < accountsCount; i++) {
-            let newAccount = await Account.createRandom(accountCreator, network);
+            let newAccount = await Account.createRandom(accountCreator);
 
             accounts.push(newAccount);
         }
@@ -58,26 +92,40 @@ class Account {
         return accounts;
     }
 
-    static createEncrypted(password) {
+    static async createEncrypted(password, accountCreator = defaultAccount) {
+        let newAccount = await Account.createRandom(accountCreator);
 
+        return {
+            accountName: newAccount.name,
+            network: accountCreator.network,
+            ciphertext: cryptoJS.AES.encrypt(newAccount.privateKey, password).toString()
+        };
     }
 
     static fromEncryptedJson(json, password) {
+        try {
+            let encryptedAccountJson = JSON.parse(JSON.stringify(json));
+            let privateKey = cryptoJS.AES.decrypt(encryptedAccountJson.ciphertext, password).toString(cryptoJS.enc.Utf8);
 
+            return new Account(encryptedAccountJson.accountName, privateKey, encryptedAccountJson.network);
+        } catch (error) {
+            throw new Error('Invalid json account or password');
+        }
     }
 }
 
 const defaultAccount = require('./../defaults/account-default');
-const defaultAccountCreator = new Account(defaultAccount.name, defaultAccount.privateKey);
+const defaultRAMLoad = require('./../defaults/ram-load');
+const defaultBandwidthLoad = require('./../defaults/bandwidth-load');
 
-let validateAccountCreator = function (accountCreator) {
-    if (!(accountCreator instanceof Account)) {
-        throw new Error('Account creator is not an instance of Account');
+let validateAccount = function (account) {
+    if (!(account instanceof Account)) {
+        throw new Error('Provided account is not an instance of Account');
     }
 }
 
-let createAccountOnNetwork = async function (accountToBeCreated, accountCreator, network) {
-    let eosInstance = new EOSInstance(Networks[network], accountCreator.privateKey);
+let createAccountOnBlockchain = async function (accountToBeCreated, accountCreator) {
+    let eosInstance = new EOSInstance(accountCreator.network, accountCreator.privateKey);
 
     await eosInstance.transaction(tr => {
         tr.newaccount({
@@ -86,49 +134,7 @@ let createAccountOnNetwork = async function (accountToBeCreated, accountCreator,
             owner: accountToBeCreated.publicKey,
             active: accountToBeCreated.publicKey
         });
-
-        tr.buyrambytes({
-            payer: accountCreator.name,
-            receiver: accountToBeCreated.name,
-            bytes: 8192
-        });
-
-        tr.delegatebw({
-            from: accountCreator.name,
-            receiver: accountToBeCreated.name,
-            stake_net_quantity: '10.0000 SYS',
-            stake_cpu_quantity: '10.0000 SYS',
-            transfer: 0
-        });
     });
-}
-
-let createAccountNameFromPublicKey = function (pubKey) {
-    let accountHashedName = eosECC.sha256(`${pubKey}${Date.now()}`);
-    let accountName = mapAccountName(`l${accountHashedName.substring(0, 11)}`);
-
-    return accountName;
-}
-
-const digitMapping = {
-    '0': '1',
-    '6': '2',
-    '7': '3',
-    '8': '4',
-    '9': '5',
-}
-
-let mapAccountName = function (accountName) {
-    let mappedName = '';
-    for (let i = 0; i < accountName.length; i++) {
-        if (digitMapping[accountName[i]]) {
-            mappedName += digitMapping[accountName[i]];
-        } else {
-            mappedName += accountName[i];
-        }
-    }
-
-    return mappedName;
 }
 
 module.exports = Account;

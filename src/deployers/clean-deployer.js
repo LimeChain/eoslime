@@ -11,7 +11,7 @@ class CleanDeployer extends EOSDeployer {
             {
                 name: 'deploy',
                 value: async function (wasmPath, abiPath) {
-                    let newContractAccount = await Account.createRandom(accountCreator, eosInstance.network.name);
+                    let newContractAccount = await Account.createRandom(accountCreator);
                     return this.__deploy(wasmPath, abiPath, newContractAccount);;
                 }
             }
