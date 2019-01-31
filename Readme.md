@@ -14,15 +14,16 @@ npm install eoslime
 
 ```javascript
 const eoslimeTool = require('eoslime');
-const defaultAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
+// Local account
+const defaultAccount = new eoslimeTool.Account('name', 'privateKey');
 
-const eoslime = eoslimeTool.init({ network: 'local', defaultAccount: defaultAccount });
+const eoslime = eoslimeTool.init(defaultAccount);
 
 const TOKEN_WASM_PATH = './contract/eosio.token.wasm';
 const TOKEN_ABI_PATH = './contract/eosio.token.abi';
 
 // Generate and setup freshly new accounts for usage
-let accounnt = await eoslime.AccountsLoader.load(2);
+let accounts = await eoslime.Account.createRandoms(2);
 let tokensIssuer = accounts[0];
 let tokensHolder = accounts[1];
 
@@ -54,7 +55,7 @@ describe('EOSIO Token', function () {
     const HOLDER_SUPPLY = '100.0000 SYS';
 
     before(async () => {
-        let accounts = await eoslime.AccountsLoader.load(2);
+        let accounts = await eoslime.utils.test.createTestingAccounts();
         tokensIssuer = accounts[0];
         tokensHolder = accounts[1];
     });
@@ -133,17 +134,17 @@ Account {
 Initialization on supported network:
 ```javascript
 const eoslimeTool = require('eoslime');
-const jungleAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
+const jungleAccount = new eoslimeTool.Account('name', 'privateKey', 'jungle');
 
-const eoslime = eoslimeTool.init({ network: 'jungle', defaultAccount: jungleAccount });
+const eoslime = eoslimeTool.init(jungleAccount);
 ```
 
 Initialization on unsupported network:
 ```javascript
 const eoslimeTool = require('eoslime');
-const customNetworkAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
+const customNetworkAccount = new eoslimeTool.Account('name', 'privateKey', { url: 'Your network', chainId: 'Your chainId' });
 
-const eoslime = eoslimeTool.init({ network: { url: 'Your network', chainId: 'Your chainId' }, defaultAccount: customNetworkAccount });
+const eoslime = eoslimeTool.init(customNetworkAccount);
 ```
 ## Account
 ---
@@ -200,12 +201,13 @@ Account Deployer is used when you already have an account on which you want to d
 
 ***Deploy contract on provided account:***
 ```javascript
+// Local network initialization with defaultAccount = eosio
 const eoslime = require('eoslime').init();
 
 const WASM_PATH = './contract/contract.wasm';
 const ABI_PATH = './contract/contract.abi';
 
-let contractAccount = (await eoslime.AccountsLoader.load())[0];
+let contractAccount = await eoslime.Account.createRandom();
 
 let contract = await eoslime.AccountDeployer.deploy(WASM_PATH, ABI_PATH, contractAccount);
 ```
@@ -213,8 +215,10 @@ let contract = await eoslime.AccountDeployer.deploy(WASM_PATH, ABI_PATH, contrac
 ***Deploy contract on default account:***
 ```javascript
 const eoslimeTool = require('eoslime');
-const defaultContractAccount = new eoslimeTool.Account('name', 'publicKey', 'privateKey');
-const eoslime = eoslimeTool.init({ defaultAccount: defaultContractAccount });
+// Pre-created local network account
+const defaultContractAccount = new eoslimeTool.Account('name', 'privateKey');
+// Local network initialization
+const eoslime = eoslimeTool.init(defaultContractAccount);
 
 const WASM_PATH = './contract/contract.wasm';
 const ABI_PATH = './contract/contract.abi';
@@ -232,6 +236,7 @@ In this way the Clean Deployer always deploys a contract on a new account.
 This brings convince in the following scenario for example:   
 We have two tests and one contract account. The first test writes to the contract storage, but you need this storage to be clear for the second test due to some assertions or something like that.
 ```javascript
+// Local network initialization
 const eoslime = require('eoslime').init();
 
 const WASM_PATH = './contract/contract.wasm';
@@ -248,10 +253,12 @@ You can get a contract instance in two ways
 * Each Deployer returns to you a new contract after deployment
 * You can instatiate an already existing contract as:
 ```javascript
+// Local network initialization
 const eoslime = require('eoslime').init();
 
 const CONTRACT_NAME = 'mycontract';
-const CONTRACT_EXECUTOR = new eoslime.Account('myaccount', 'publicKey', 'privateKey');
+// Pre-created local network account
+const CONTRACT_EXECUTOR = new eoslime.Account('myaccount', 'privateKey');
 const ABI_PATH = './contract/contract.abi';
 
 let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_EXECUTOR);
@@ -261,13 +268,15 @@ let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_EXECUTOR);
 
 If you want to call a contract method from another account(executor) you can do:
 ```javascript
+// Local network initialization
 const eoslime = require('eoslime').init();
 
 const CONTRACT_NAME = 'mycontract';
 const ABI_PATH = './contract/contract.abi';
 
-const EXECUTOR_1 = new eoslime.Account('myacc1', 'publicKey1', 'privateKey1');
-const EXECUTOR_2 = new eoslime.Account('myacc2', 'publicKey2', 'privateKey2');
+// Pre-created local network accounts
+const EXECUTOR_1 = new eoslime.Account('myacc1', 'privateKey1');
+const EXECUTOR_2 = new eoslime.Account('myacc2', 'privateKey2');
 
 let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, EXECUTOR_1);
 
@@ -353,6 +362,27 @@ describe('Test Contract', function () {
             // doSmth is a contract method which could be called only from contract account
             contract.doSmth(name, { from: maliciousAccount })
         );
+    });
+}
+```
+
+`eoslime.utils.test.createTestingAccounts`
+ 
+
+```javascript
+const eoslime = require('eoslime').init();
+
+
+const WASM_PATH = './contract/contract.wasm';
+const ABI_PATH = './contract/contract.abi';
+
+describe('Test Contract', function () {
+    it('Should create 10 test accounts', async () => {
+        let testAccounts = await eoslime.utils.test.createTestingAccounts;
+        
+        let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
+        
+      
     });
 }
 ```
