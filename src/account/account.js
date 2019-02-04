@@ -6,7 +6,6 @@ const EOSInstance = require('./../helpers/eos-instance');
 
 const createAccountNameFromPublicKey = require('./public-key-name-generator').createAccountNameFromPublicKey;
 
-
 class Account {
 
     constructor(name, privateKey, network = 'local') {
@@ -28,20 +27,20 @@ class Account {
         this.network = Networks[network] || network;
     }
 
-    async loadRam(ramLoad = defaultRAMLoad) {
-        validateAccount(ramPayer);
-        let eosInstance = new EOSInstance(this.network, ramLoad.ramPayer.privateKey);
+    async loadRam(ramLoad = { payer: this, bytes: 10000 }) {
+        validateAccount(ramLoad.payer);
+        let eosInstance = new EOSInstance(this.network, ramLoad.payer.privateKey);
 
         await eosInstance.transaction(tr => {
             tr.buyrambytes({
-                payer: ramPayer.name,
+                payer: payer.name,
                 receiver: this.name,
                 bytes: ramLoad.bytes
             });
         });
     }
 
-    async loadBandwidth(bandwidthLoad = defaultBandwidthLoad) {
+    async loadBandwidth(bandwidthLoad = { payer: this, cpu: 10, net: 10 }) {
         validateAccount(bandwidthLoad.payer);
         let eosInstance = new EOSInstance(this.network, bandwidthLoad.payer.privateKey);
 
@@ -49,8 +48,8 @@ class Account {
             tr.delegatebw({
                 from: bandwidthLoad.payer.name,
                 receiver: this.name,
-                stake_cpu_quantity: `${payer.cpuQuantity} SYS`,
-                stake_net_quantity: `${payer.netQuantity} SYS`,
+                stake_cpu_quantity: `${bandwidthLoad.cpu} SYS`,
+                stake_net_quantity: `${bandwidthLoad.net} SYS`,
                 transfer: 0
             });
         });
@@ -95,11 +94,11 @@ class Account {
     static async createEncrypted(password, accountCreator = defaultAccount) {
         let newAccount = await Account.createRandom(accountCreator);
 
-        return {
+        return JSON.stringify({
             accountName: newAccount.name,
             network: accountCreator.network,
             ciphertext: cryptoJS.AES.encrypt(newAccount.privateKey, password).toString()
-        };
+        });
     }
 
     static fromEncryptedJson(json, password) {
@@ -114,9 +113,7 @@ class Account {
     }
 }
 
-const defaultAccount = require('./../defaults/account-default');
-const defaultRAMLoad = require('./../defaults/ram-load');
-const defaultBandwidthLoad = require('./../defaults/bandwidth-load');
+const defaultAccount = require('./../defaults/account-default').init(Account);
 
 let validateAccount = function (account) {
     if (!(account instanceof Account)) {

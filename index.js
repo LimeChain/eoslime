@@ -8,7 +8,7 @@ const AccountDeployer = require('./src/deployers/account-deployer');
 
 const EosInstance = require('./src/helpers/eos-instance');
 
-const DEFAULT_ACCOUNT = require('./src/defaults/account-default');
+const DEFAULT_ACCOUNT = require('./src/defaults/account-default').init(Account);
 
 const utils = require('./src/utils');
 const contractFilesReader = require('./src/helpers/contract-files-reader');
