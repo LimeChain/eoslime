@@ -28,7 +28,7 @@ class Account {
         this.network = Networks[network] || network;
     }
 
-    loadRam(ramLoad = defaultRAMLoad) {
+    async loadRam(ramLoad = defaultRAMLoad) {
         validateAccount(ramPayer);
         let eosInstance = new EOSInstance(this.network, ramLoad.ramPayer.privateKey);
 
@@ -41,7 +41,7 @@ class Account {
         });
     }
 
-    loadBandwidth(bandwidthLoad = defaultBandwidthLoad) {
+    async loadBandwidth(bandwidthLoad = defaultBandwidthLoad) {
         validateAccount(bandwidthLoad.payer);
         let eosInstance = new EOSInstance(this.network, bandwidthLoad.payer.privateKey);
 

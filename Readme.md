@@ -99,14 +99,9 @@ describe('EOSIO Token', function () {
 ## Eoslime initialization
 ---
 ***Parameters purpose***
-* network - network name. Supported names **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ]**. 
-For custom or another unsupported network, you could provide:
-```javascript
-{ network: { url: "Your network url", chainId: "Your network chainId" } }
-```
-
-* defaultAccount - It serves in three ways 
-    * As a creator of another accounts ([Accounts Loader](#accounts-loader))
+* account - an instance of **eoslime.Account**
+    It serves in three ways : 
+    * As a creator of another accounts/bandwidth and ram payer ([Account](#account))
     * In **[`eoslime.AccountDeployer.deploy(wasmPath, abiPath, contractAccount)`](#account-deployer)** as default parameter for **`contractAccount`**
     * In **[`eoslime.Contract(abiPath, contractName, contractExecutor)`](#contract)** as default parameter for **`contractExecutor`**
 
@@ -118,8 +113,7 @@ const eoslime = require('eoslime').init();
 ```
 
 ***Defaults***:
-* network - `local`
-* defaultAccount 
+* account 
 ```javascript
 Account {
     name: 'eosio',
@@ -128,12 +122,18 @@ Account {
         owner: { actor: 'eosio', permission: 'owner' }
     }
     publicKey: 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV',
-    privateKey: '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
+    privateKey: '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
+    network: {
+        "name": "local",
+        "url": "http://127.0.0.1:8888",
+        "chainId": "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f"
+    }
 }
 ```
 Initialization on supported network:
 ```javascript
 const eoslimeTool = require('eoslime');
+// Existing account on jungle network
 const jungleAccount = new eoslimeTool.Account('name', 'privateKey', 'jungle');
 
 const eoslime = eoslimeTool.init(jungleAccount);
@@ -142,57 +142,226 @@ const eoslime = eoslimeTool.init(jungleAccount);
 Initialization on unsupported network:
 ```javascript
 const eoslimeTool = require('eoslime');
+// Existing account on custom network
 const customNetworkAccount = new eoslimeTool.Account('name', 'privateKey', { url: 'Your network', chainId: 'Your chainId' });
 
 const eoslime = eoslimeTool.init(customNetworkAccount);
 ```
 ## Account
 ---
-Account is some kind of container for all information an EOS account has. 
-```javascript
-const eoslime = require('eoslime');
+Account is some kind of util for working with EOS accounts
 
-let account = new eoslime.Account('eosio', 'publicKey', 'privateKey');
-/*
-    {
-        name: 'eosio',
+***Initialization:***
+```javascript
+    const eoslime = require('eoslime');
+    let account = new eoslime.Account('name', 'privateKey', 'network');
+```
+
+***Parameters:***
+* name - account name
+* privateKey - private key of the account
+* network - network name. Supported names are: **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ]**. 
+
+***For custom or another unsupported network, you could provide:***
+```javascript
+{ url: "Your network url", chainId: "Your network chainId" }
+```
+
+***Defaults:***
+* network - `local`
+___
+
+**Initialized account properties:**
+* `name` - Account name
+* `permissions` - Account permissions
+```javascript
         permissions: {
-            active: { actor: 'eosio', permission: 'active' }
-            owner: { actor: 'eosio', permission: 'owner' }
+            active: { actor: '', permission: '' }
+            owner: { actor: '', permission: '' }
         }
-        publicKey: 'publicKey',
-        privateKey: 'privateKey'
-    }
-/*
 ```
-***Important! If eoslime function accepts account parameter, it should be an instance of `eoslime.Account`***
-
-## Accounts Loader
+* `publicKey` - Public key
+* `privateKey` - Private key
+* `network` - Network account lives in
+```javascript
+        network: { -
+            name: '',
+            url: '',
+            chainId: ''
+        }
+```
 ---
-Accounts Loader generates for you freshly new accounts which are set up and ready for use. 
+`loadRam` **[function]** - buy ram for this account
 ```javascript
-const eoslime = require('eoslime').init();
+    const eoslime = require('eoslime');
+    // Existing accounts on local network
+    let account1 = new eoslime.Account('myAcc1', 'myPrivateKey1');
+    let account2 = new eoslime.Account('myAcc1', 'myPrivateKey1');
+    
+    // Account1 will load ram for account2
+    await account2.loadRam({ payer: account1, bytes: 1000 });
+```
+**Defaults:**
+* `payer` - current account
+* `bytes` - 10000
+```javascript
+    const eoslime = require('eoslime');
+    
+    // Existing account on local network
+    let account = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // The account will load own ram for 10000 bytes
+    await account.loadRam();
+```
+---
+`loadBandwidth` **[function]** - buy cpu and network for this account
+```javascript
+    const eoslime = require('eoslime');
+    // Existing accounts on local network
+    let account1 = new eoslime.Account('myAcc1', 'myPrivateKey1');
+    let account2 = new eoslime.Account('myAcc1', 'myPrivateKey1');
+    
+    // Account1 will load cpu and network for account2 for 100 SYS 
+    await account2.loadBandwidth({ payer: account1, cpu: '100', net: '100' });
+```
+**Defaults:**
+* `payer` - current account
+* `cpu` - 10 SYS
+* `net` - 10 SYS
+```javascript
+    const eoslime = require('eoslime');
+    
+    // Existing account on local network
+    let account = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // The account will load own cpu and net for 10 SYS
+    await account.loadBandwidth();
+```
+---
 
-let accounts = await eoslime.AccountsLoader.load(2);
+**Static account properties:**
+
+`createFromName` - Creates freshly new account from name
+
+**Important!** Keep in mind that this name may already exists on the network
+```javascript
+    const eoslime = require('eoslime');
+
+    // Existing account on local network
+    let accountCreator = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // accountCreator will create account2 on his network, a.k.a accountCreator.network
+    let account2 = await eoslime.Account.createFromName('name', accountCreator);
+```
+**Defaults:**
+* `accountCreator` - eosio account
+```javascript
+    const eoslime = require('eoslime');
+    
+    // Eosio account will create this account on local network
+    let account = await eoslime.Account.createFromName('name');
 ```
 
-***Important!***
-The creator of these accounts is the [`defaultAccount`](#eoslime-initialization) you have passed on initialization.   
-
-Accounts are preset with the following:
-* RAM - `8192 bytes` 
-* Stake of network quantity - `10.0000 SYS`
-* Stake of cpu quantity - `10.0000 SYS`
-
-**Both the RAM buyer and the bandwidth delegate are the same [`defaultAccount`](#eoslime-initialization)**
-
-You could use the Accounts Loader to prepare only one account as:
-
+`createRandom` - Creates freshly new random account
 ```javascript
-const eoslime = require('eoslime').init();
+    const eoslime = require('eoslime');
 
-let oneAccount = (await eoslime.AccountsLoader.load())[0];
+    // Existing account on local network
+    let accountCreator = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // accountCreator will create account2 on his network, a.k.a accountCreator.network
+    let account2 = await eoslime.Account.createRandom(accountCreator);
 ```
+**Defaults:**
+* `accountCreator` - eosio account
+```javascript
+    const eoslime = require('eoslime');
+    
+    // Eosio account will create this account on local network
+    let account = await eoslime.Account.createRandom();
+```
+
+`createRandoms` - Creates freshly new random accounts
+```javascript
+    const eoslime = require('eoslime');
+
+    // Existing account on local network
+    let accountsCreator = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // accountsCreator will create random accounts on his network, a.k.a accountsCreator.network
+    const accountsCount = 2;
+    let accounts = await eoslime.Account.createRandoms(accountsCount, accountsCreator);
+```
+**Defaults:**
+* `accountCreator` - eosio account
+```javascript
+    const eoslime = require('eoslime');
+    
+    // Eosio account will create this accounts on local network
+    const accountsCount = 2;
+    let accounts = await eoslime.Account.createRandoms(accountsCount);
+```
+
+`createEncrypted` - Creates freshly new encrypted account
+```javascript
+    const eoslime = require('eoslime');
+
+    // Existing account on local network
+    let accountCreator = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // accountCreator will create encrypted JSON account on his network, a.k.a accountCreator.network
+    const password = 'secret password';
+    let encryptedJSONAccount = await eoslime.Account.createEncrypted(password, accountCreator);
+    
+    /*
+     Encrypted JSON account => {
+            "accountName": "random generated",
+            "network": {
+                    "name": accountCreator.network.name,
+                    "url": accountCreator.network.url,
+                    "chainId": accountCreator.network.chainId
+                },
+            "ciphertext": "encrypted private key"
+        }
+    */
+```
+**Defaults:**
+* `accountCreator` - eosio account
+```javascript
+    const eoslime = require('eoslime');
+
+    // Eosio account will create this account on local network
+    const password = 'secret password';
+    let encryptedJSONAccount = await eoslime.Account.createEncrypted(password);
+    
+    /*
+     Encrypted JSON account => {
+            "accountName": "random generated",
+            "network": {
+                "name": "local",
+                "url": "http://127.0.0.1:8888",
+                "chainId": "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f"
+            }
+            "ciphertext": "encrypted private key"
+        }
+    */
+```
+
+`fromEncryptedJson` - Convert encrypted account in account
+```javascript
+    const eoslime = require('eoslime');
+
+    // Existing account on local network
+    let accountCreator = new eoslime.Account('myAcc', 'myPrivateKey');
+    
+    // accountCreator will create encrypted JSON account on his network, a.k.a accountCreator.network
+    const password = 'secret password';
+    let encryptedJSONAccount = await eoslime.Account.createEncrypted(password, accountCreator);
+    
+    let decryptedAccount = eoslime.Account.fromEncryptedJson(password, encryptedJSONAccount);
+```
+
+***Important! If eoslime function accepts account parameter, it should be an instance of `eoslime.Account`***
 
 ## Deployers
 ---
@@ -320,10 +489,8 @@ On contract initialization you provide a contract executor. This is the account,
 ### Test
 
  `eoslime.utils.test.expectAssert`
- 
 ```javascript
 const eoslime = require('eoslime').init();
-
 
 const WASM_PATH = './contract/contract.wasm';
 const ABI_PATH = './contract/contract.abi';
@@ -342,11 +509,8 @@ describe('Test Contract', function () {
 ```
 
 `eoslime.utils.test.expectMissingAuthority`
- 
-
-```javascript
+ ```javascript
 const eoslime = require('eoslime').init();
-
 
 const WASM_PATH = './contract/contract.wasm';
 const ABI_PATH = './contract/contract.abi';
@@ -367,22 +531,22 @@ describe('Test Contract', function () {
 ```
 
 `eoslime.utils.test.createTestingAccounts`
- 
-
 ```javascript
+const assert = require('assert');
 const eoslime = require('eoslime').init();
-
 
 const WASM_PATH = './contract/contract.wasm';
 const ABI_PATH = './contract/contract.abi';
 
 describe('Test Contract', function () {
     it('Should create 10 test accounts', async () => {
-        let testAccounts = await eoslime.utils.test.createTestingAccounts;
+        let testAccounts = await eoslime.utils.test.createTestingAccounts();
         
-        let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
+        for (const account of testAccounts) {
+            assert(account instanceof eoslime.Account, 'Broken account');
+        }
         
-      
+        assert(testAccounts.length == 10, 'Unexpected accounts count');
     });
 }
 ```
@@ -401,5 +565,7 @@ npm test
 ---
 
 * ***cli***
+* ***Write eoslime tests***
 * ***Built in mocha as testing framework***
 * ***Make it more configurable***
+
