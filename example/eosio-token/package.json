@@ -1,0 +1,14 @@
+{
+  "name": "eoslime-example",
+  "version": "1.0.0",
+  "description": "Eoslime example usage",
+  "main": "usage-example.js",
+  "scripts": {
+    "start": "mocha ./usage-example.js"
+  },
+  "author": "Lyubomir Kiprov (Limechain)",
+  "license": "MIT",
+  "dependencies": {
+    "mocha": "^5.2.0"
+  }
+}

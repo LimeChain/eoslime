@@ -17,8 +17,8 @@ const assert = require('assert');
 */
 const eoslime = require('./../../').init();
 
-const TOKEN_WASM_PATH = './example/eosio-token/contract/eosio.token.wasm';
-const TOKEN_ABI_PATH = './example/eosio-token/contract/eosio.token.abi';
+const TOKEN_WASM_PATH = './contract/eosio.token.wasm';
+const TOKEN_ABI_PATH = './contract/eosio.token.abi';
 
 describe('EOSIO Token', function () {
 
