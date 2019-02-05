@@ -55,6 +55,31 @@ class Account {
         });
     }
 
+    async send(toAccount, amount) {
+        validateAccount(toAccount);
+        let eosInstance = new EOSInstance(this.network, this.privateKey);
+
+        await eosInstance.transfer(
+            this.name,
+            toAccount.name, `${amount} SYS`,
+            this.permissions.active,
+            { broadcast: true, sign: true }
+        );
+    }
+
+    async getBalance() {
+        // let eosInstance = new EOSInstance(this.network, this.privateKey);
+
+        // let balance = await eosInstance.getCurrencyBalance('myaccount', 'myaccount', 'SYS');
+        // return balance;
+        // await eosInstance.transfer(
+        //     this.name,
+        //     toAccount.name, `${amount} SYS`,
+        //     this.permissions.active,
+        //     { broadcast: true, sign: true }
+        // );
+    }
+
     static async createFromName(accountName, accountCreator = defaultAccount) {
         validateAccount(accountCreator);
 
