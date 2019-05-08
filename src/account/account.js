@@ -27,62 +27,57 @@ class Account {
         this.network = Networks[network] || network;
     }
 
-    async loadRam(payer, bytes = 10000) {
-        let ramPayer = payer || this;
-        validateAccount(ramPayer);
+    async loadRam(ramLoad = { payer: this, bytes: 10000 }) {
+        validateAccount(ramLoad.payer);
+        let eosInstance = new EOSInstance(this.network, ramLoad.payer.privateKey);
 
-        let eosInstance = new EOSInstance(this.network, ramPayer.privateKey);
-
-        let tx = await eosInstance.transaction(tr => {
+        await eosInstance.transaction(tr => {
             tr.buyrambytes({
-                payer: ramPayer.name,
+                payer: payer.name,
                 receiver: this.name,
-                bytes: bytes
+                bytes: ramLoad.bytes
             });
         });
-
-        return tx;
     }
 
-    async loadBandwidth(payer, cpu = 10, net = 10) {
-        let bandwidthPayer = payer || this;
-        validateAccount(bandwidthPayer);
+    async loadBandwidth(bandwidthLoad = { payer: this, cpu: 10, net: 10 }) {
+        validateAccount(bandwidthLoad.payer);
+        let eosInstance = new EOSInstance(this.network, bandwidthLoad.payer.privateKey);
 
-        let eosInstance = new EOSInstance(this.network, bandwidthPayer.privateKey);
-
-        let tx = await eosInstance.transaction(tr => {
+        await eosInstance.transaction(tr => {
             tr.delegatebw({
-                from: bandwidthPayer.name,
+                from: bandwidthLoad.payer.name,
                 receiver: this.name,
-                stake_cpu_quantity: `${cpu} SYS`,
-                stake_net_quantity: `${net} SYS`,
+                stake_cpu_quantity: `${bandwidthLoad.cpu} SYS`,
+                stake_net_quantity: `${bandwidthLoad.net} SYS`,
                 transfer: 0
             });
         });
-
-        return tx;
     }
 
     async send(toAccount, amount) {
         validateAccount(toAccount);
         let eosInstance = new EOSInstance(this.network, this.privateKey);
 
-        let tx = await eosInstance.transfer(
+        await eosInstance.transfer(
             this.name,
-            toAccount.name,
-            amount,
+            toAccount.name, `${amount} SYS`,
             this.permissions.active,
             { broadcast: true, sign: true }
         );
-
-        return tx;
     }
 
     async getBalance() {
-        let eosInstance = new EOSInstance(this.network, this.privateKey);
+        // let eosInstance = new EOSInstance(this.network, this.privateKey);
 
-        let balance = await eosInstance.getCurrencyBalance('eosio.token', this.name, 'SYS');
-        return balance;
+        // let balance = await eosInstance.getCurrencyBalance('myaccount', 'myaccount', 'SYS');
+        // return balance;
+        // await eosInstance.transfer(
+        //     this.name,
+        //     toAccount.name, `${amount} SYS`,
+        //     this.permissions.active,
+        //     { broadcast: true, sign: true }
+        // );
     }
 
     static async createFromName(accountName, accountCreator = defaultAccount) {
