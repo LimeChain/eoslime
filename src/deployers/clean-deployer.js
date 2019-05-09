@@ -1,17 +1,16 @@
-const Account = require('./../account/account');
 const EOSDeployer = require('./eos-deployer');
 
 const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
 
 class CleanDeployer extends EOSDeployer {
 
-    constructor(eosInstance, contractFactory, accountCreator) {
-        super(eosInstance, contractFactory);
+    constructor(provider, contractFactory, accountFactory) {
+        super(provider, contractFactory);
         defineImmutableProperties(this, [
             {
                 name: 'deploy',
                 value: async function (wasmPath, abiPath) {
-                    let newContractAccount = await Account.createRandom(accountCreator);
+                    let newContractAccount = await accountFactory.createRandom();
                     return this.__deploy(wasmPath, abiPath, newContractAccount);;
                 }
             }

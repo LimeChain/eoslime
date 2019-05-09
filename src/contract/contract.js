@@ -4,14 +4,14 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class Contract {
 
-    constructor(eos, abi, contractName, contractExecutorAccount) {
+    constructor(provider, abi, contractName, contractExecutorAccount) {
         defineImmutableProperties(this, [
-            { name: 'eosInstance', value: eos },
+            { name: 'provider', value: provider },
             { name: 'contractName', value: contractName },
             { name: 'defaultExecutor', value: contractExecutorAccount },
         ]);
 
-        declareFunctionsFromABI.call(this, abi, eos);
+        declareFunctionsFromABI.call(this, abi, provider.eos);
     }
 }
 

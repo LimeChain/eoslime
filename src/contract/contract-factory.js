@@ -5,18 +5,18 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class ContractFactory {
 
-    constructor(eos) {
+    constructor(provider) {
         defineImmutableProperties(this, [
-            { name: 'eos', value: eos }
+            { name: 'provider', value: provider }
         ]);
     }
 
-    buildExisting(abi, contractName, contractExecutorAccount) {
+    buildExisting(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
         if (!(contractExecutorAccount instanceof Account)) {
             throw new Error('Invalid account');
         }
 
-        let contract = new Contract(this.eos, abi, contractName, contractExecutorAccount);
+        let contract = new Contract(this.provider, abi, contractName, contractExecutorAccount);
         return contract;
     }
 }

@@ -1,47 +1,42 @@
 const path = require('path');
 
-const Account = require('./src/account/account');
+const Provider = require('./src/network-providers/provider');
+
+const AccountFactory = require('./src/account/account-factory');
 const ContractFactory = require('./src/contract/contract-factory');
 
 const CleanDeployer = require('./src/deployers/clean-deployer');
 const AccountDeployer = require('./src/deployers/account-deployer');
 
-const EosInstance = require('./src/helpers/eos-instance');
-
-const DEFAULT_ACCOUNT = require('./src/defaults/account-default').init(Account);
-
 const utils = require('./src/utils');
 const contractFilesReader = require('./src/helpers/contract-files-reader');
 
+
 module.exports = (function () {
 
-    let init = function (initAccount = DEFAULT_ACCOUNT) {
+    let init = function (network = 'local') {
+        let provider = new Provider(network)
 
-        if (!(initAccount instanceof Account)) {
-            throw new Error('Invalid account');
-        }
+        let accountFactory = new AccountFactory(provider);
+        let contractFactory = new ContractFactory(provider);
 
-        let eosInstance = new EosInstance(initAccount.network, initAccount.privateKey);
-
-        let contractFactory = new ContractFactory(eosInstance);
-
-        let cleanDeployer = new CleanDeployer(eosInstance, contractFactory, initAccount);
-        let accountDeployer = new AccountDeployer(eosInstance, contractFactory, initAccount);
+        let accountDeployer = new AccountDeployer(provider, contractFactory);
+        let cleanDeployer = new CleanDeployer(provider, contractFactory, accountFactory);
 
         return {
+            Provider: provider,
+            Account: accountFactory,
             CleanDeployer: cleanDeployer,
             AccountDeployer: accountDeployer,
-            Account: Account,
-            Contract: function (abiPath, contractName, contractExecutorAccount = initAccount) {
+            Contract: function (abiPath, contractName, contractExecutorAccount) {
                 let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
                 return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
             },
-            utils: utils
+            utils
         };
     }
 
     return {
-        init: init,
-        Account: Account
+        init: init
     };
 })();

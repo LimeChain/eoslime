@@ -4,7 +4,8 @@
   "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./tests/"
+    "test": "mocha ./tests/",
+    "start": "mocha ./example/eosio-token/usage-example.js"
   },
   "author": "Lyubomir Kiprov (Limechain)",
   "license": "MIT",

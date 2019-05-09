@@ -59,12 +59,12 @@ describe('EOSIO Token', function () {
         await tokenContract.create(tokensIssuer.name, TOTAL_SUPPLY);
 
         /*
-            You have access to the EOS(eosjs) instance as -> contract.eosInstance
+            You have access to the EOS(eosjs) instance as -> contract.provider.eos
             This gives us flexibility and convenience
 
                 For example when you want to read a table -> 
 
-                await contract.eosInstance.getTableRows({
+                await contract.provider.eos.getTableRows({
                     code: code,
                     scope: scope,
                     table: table,
@@ -74,7 +74,7 @@ describe('EOSIO Token', function () {
                     json: true
                 });
         */
-        let tokenInitialization = await tokenContract.eosInstance.getCurrencyStats(tokenContract.contractName, 'SYS');
+        let tokenInitialization = await tokenContract.provider.eos.getCurrencyStats(tokenContract.contractName, 'SYS');
 
         assert.equal(tokenInitialization.SYS.max_supply, TOTAL_SUPPLY, 'Incorrect tokens supply');
         assert.equal(tokenInitialization.SYS.issuer, tokensIssuer.name, 'Incorrect tokens issuer');
@@ -89,7 +89,7 @@ describe('EOSIO Token', function () {
         */
         await tokenContract.issue(tokensHolder.name, HOLDER_SUPPLY, 'memo', { from: tokensIssuer });
 
-        let holderBalance = await tokenContract.eosInstance.getCurrencyBalance(tokenContract.contractName, tokensHolder.name, 'SYS');
+        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.contractName, tokensHolder.name, 'SYS');
         assert.equal(holderBalance[0], HOLDER_SUPPLY, 'Incorrect holder balance');
     });
 
@@ -104,7 +104,7 @@ describe('EOSIO Token', function () {
             tokenContract.issue(tokensHolder.name, INVALID_ISSUING_AMOUNT, 'memo', { from: tokensIssuer })
         );
 
-        let holderBalance = await tokenContract.eosInstance.getCurrencyBalance(tokenContract.contractName, tokensHolder.name, 'SYS');
+        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.contractName, tokensHolder.name, 'SYS');
         assert.equal(holderBalance.length, 0, 'Incorrect holder balance');
     });
 });
