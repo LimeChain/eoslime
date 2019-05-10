@@ -22,58 +22,47 @@ class Account {
         this.publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
     }
 
-    async loadRam(ramLoad = { payer: this, bytes: 10000 }) {
-        is(ramLoad.payer).instanceOf(Account);
+    async buyRam(bytes, payer = this) {
+        is(payer).instanceOf(Account);
 
-        await this.provider.eos.transaction(tr => {
+        return this.provider.eos.transaction(tr => {
             tr.buyrambytes({
                 payer: payer.name,
                 receiver: this.name,
-                bytes: ramLoad.bytes
+                bytes: bytes
             });
-        }, { keyProvider: ramLoad.payer.privateKey });
+        }, { keyProvider: payer.privateKey });
     }
 
-    async loadBandwidth(bandwidthLoad = { payer: this, cpu: 10, net: 10 }) {
-        is(bandwidthLoad.payer).instanceOf(Account);
+    async buyBandwidth(cpu, net, payer = this) {
+        is(payer).instanceOf(Account);
 
-        await this.provider.eos.transaction(tr => {
+        return this.provider.eos.transaction(tr => {
             tr.delegatebw({
-                from: bandwidthLoad.payer.name,
+                from: payer.name,
                 receiver: this.name,
-                stake_cpu_quantity: `${bandwidthLoad.cpu} SYS`,
-                stake_net_quantity: `${bandwidthLoad.net} SYS`,
+                stake_cpu_quantity: `${cpu} SYS`,
+                stake_net_quantity: `${net} SYS`,
                 transfer: 0
             });
-        }, { keyProvider: ramLoad.payer.privateKey });
+        }, { keyProvider: payer.privateKey });
     }
 
     async send(toAccount, amount) {
         is(toAccount).instanceOf(Account);
 
-        await this.provider.eos.transfer(
+        return this.provider.eos.transfer(
             this.name,
-            toAccount.name, `${amount} SYS`,
+            toAccount.name,
+            `${amount} SYS`,
             this.permissions.active,
-            { broadcast: true, sign: true },
-            { keyProvider: this.privateKey }
+            { broadcast: true, sign: true, keyProvider: this.privateKey }
         );
     }
 
-    async getBalance() {
-        // let eosInstance = new EOSInstance(this.network, this.privateKey);
-
-        // let balance = await eosInstance.getCurrencyBalance('myaccount', 'myaccount', 'SYS');
-        // return balance;
-        // await eosInstance.transfer(
-        //     this.name,
-        //     toAccount.name, `${amount} SYS`,
-        //     this.permissions.active,
-        //     { broadcast: true, sign: true }
-        // );
+    async getBalance(code = 'eosio.token', symbol = 'SYS') {
+        return this.provider.eos.getCurrencyBalance(code, this.name, symbol);
     }
-
-
 }
 
 module.exports = Account;

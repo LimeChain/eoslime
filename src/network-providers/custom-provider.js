@@ -6,7 +6,16 @@ class CustomProvider extends BaseProvider {
             throw new Error('Invalid network. Custom network should have { url: "Your network", chainId: "Your chainId" }');
         }
 
-        super(networkConfig)
+        const CustomNetworkConfig = {
+            name: 'custom',
+            url: '',
+            chainId: ''
+        }
+
+        CustomNetworkConfig.url = networkConfig.url;
+        CustomNetworkConfig.chainId = networkConfig.chainId;
+
+        super(CustomNetworkConfig)
     }
 }
 

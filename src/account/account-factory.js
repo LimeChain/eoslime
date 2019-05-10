@@ -1,8 +1,8 @@
 const Account = require('./account');
 
-const is = require('../helpers/is')
-const cryptoJS = require('crypto-js');
+const is = require('./../helpers/is')
 const eosECC = require('eosjs').modules.ecc;
+const crypto = require('./../helpers/crypto');
 const createAccountNameFromPublicKey = require('./public-key-name-generator').createAccountNameFromPublicKey;
 
 class AccountFactory {
@@ -10,7 +10,7 @@ class AccountFactory {
         this.provider = provider;
     }
 
-    async load(name, privateKey) {
+    load(name, privateKey) {
         return new Account(name, privateKey, this.provider);
     }
 
@@ -42,7 +42,6 @@ class AccountFactory {
         let accounts = [];
         for (let i = 0; i < accountsCount; i++) {
             let newAccount = await this.createRandom(accountCreator);
-
             accounts.push(newAccount);
         }
 
@@ -50,24 +49,42 @@ class AccountFactory {
     }
 
     async createEncrypted(password, accountCreator = this.provider.defaultAccount) {
-        let newAccount = await this.createRandom(accountCreator);
+        try {
+            let newAccount = await this.createRandom(accountCreator);
+            let dataToBeEncrypted = {
+                name: newAccount.name,
+                network: newAccount.provider.network,
+            };
 
-        return JSON.stringify({
-            accountName: newAccount.name,
-            network: accountCreator.network,
-            ciphertext: cryptoJS.AES.encrypt(newAccount.privateKey, password).toString()
-        });
+            let dataHash = crypto.hash(JSON.stringify({ ...dataToBeEncrypted, privateKey: newAccount.privateKey }));
+            let cipherText = crypto.encrypt(`${newAccount.privateKey}::${dataHash}`, password);
+
+            return { ...dataToBeEncrypted, cipherText };
+        } catch (error) {
+            throw new Error(`Account encryption: ${error.message}`);
+        }
     }
 
-    // Todo: Think about encryption + provider
-    async fromEncryptedJson(json, password) {
+    fromEncrypted(encryptedAccount, password) {
         try {
-            let encryptedAccountJson = JSON.parse(JSON.stringify(json));
-            let privateKey = cryptoJS.AES.decrypt(encryptedAccountJson.ciphertext, password).toString(cryptoJS.enc.Utf8);
+            let decryptedAccount = JSON.parse(JSON.stringify(encryptedAccount));
 
-            return new Account(encryptedAccountJson.accountName, privateKey, encryptedAccountJson.network);
+            let pureData = crypto.decrypt(encryptedAccount.cipherText, password);
+            let dataParts = pureData.split('::');
+
+            delete decryptedAccount.cipherText;
+            decryptedAccount.privateKey = dataParts[0];
+            decryptedAccount.network = this.provider.network;
+
+            let dataHash = crypto.hash(JSON.stringify(decryptedAccount));
+
+            if (dataHash != dataParts[1]) {
+                throw new Error('Broken account. Most of time reason: invalid network');
+            }
+
+            return new Account(decryptedAccount.name, decryptedAccount.privateKey, this.provider);
         } catch (error) {
-            throw new Error('Invalid json account or password');
+            throw new Error(`Account decryption: ${error.message}`);
         }
     }
 }

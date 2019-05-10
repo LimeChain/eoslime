@@ -1,169 +1,235 @@
 const assert = require('assert');
-const eoslimeTool = require('./../');
-const eoslime = eoslimeTool.init();
+const eoslime = require('./../');
+const eoslimeTool = eoslime.init();
 
-const Account = eoslime.Account;
-const Networks = require('./../src/helpers/networks.json');
-const EOSInstance = require('./../src/helpers/eos-instance');
+const Account = eoslimeTool.Account;
+const Provider = eoslimeTool.Provider;
 
-const createUniqueAccountName = require('./../src/account/public-key-name-generator').createAccountNameFromPublicKey;
+const createAccountNameFromPublicKey = require('./../src/account/public-key-name-generator').createAccountNameFromPublicKey;
 
 /*
     You should have running local nodeos in order to run tests
 */
 
+const Networks = {
+    bos: {
+        name: 'bos',
+        url: 'https://hapi.bos.eosrio.io',
+        chainId: 'd5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86'
+    },
+    local: {
+        name: 'local',
+        url: 'http://127.0.0.1:8888',
+        chainId: 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
+    },
+    worbli: {
+        name: 'main',
+        url: 'https://eos.greymass.com',
+        chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+    },
+    jungle: {
+        name: 'jungle',
+        url: 'https://jungle2.cryptolions.io',
+        chainId: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'
+    },
+    main: {
+        name: 'main',
+        url: 'https://eos.greymass.com',
+        chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
+    },
+    custom: {
+        name: 'custom',
+        url: 'https://custom.com',
+        chainId: '123'
+    },
+}
+
 describe('Account', function () {
 
     // Increase mocha(testing framework) time, otherwise tests fails
-    // this.timeout(15000);
+    this.timeout(15000);
 
-    /*
-        Deploy eos token contract on local nodoes so we can get tokens for buying ram and bandwidth
-    */
-
-    const SYSTEM_TOKEN_NAME = 'acc.systoken';
     const ACCOUNT_NAME = 'eosio';
     const ACCOUNT_PRIVATE_KEY = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
     const ACCOUNT_PUBLIC_KEY = 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV';
 
-    before(async () => {
+    /*
+        Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
+    */
+    async function createEOSToken() {
         const TOKEN_ABI_PATH = './example/eosio-token/contract/eosio.token.abi';
         const TOKEN_WASM_PATH = './example/eosio-token/contract/eosio.token.wasm';
         const TOTAL_SUPPLY = '1000000000.0000 SYS';
 
-        // Creates eosio account if you don't have it
+        // Creates eosio.token account if you don't have it
         try {
-            await Account.createFromName(ACCOUNT_NAME);
-        } catch (error) { }
-
-        try {
-            var tokenAccount = await Account.createFromName(SYSTEM_TOKEN_NAME);
-            let tokenContract = await eoslime.AccountDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
-
+            const tokenAccount = await Account.createFromName('eosio.token');
+            const tokenContract = await eoslimeTool.AccountDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
             await tokenContract.create(tokenAccount.name, TOTAL_SUPPLY);
             await tokenContract.issue(ACCOUNT_NAME, TOTAL_SUPPLY, 'memo');
-        } catch (error) { }
+        } catch (error) {
+        }
+    }
+
+    before(async () => {
+        await createEOSToken();
     });
+
+    function assertCorrectAccount(account) {
+        assert(account.name == ACCOUNT_NAME, 'Incorrect name');
+        assert(account.privateKey == ACCOUNT_PRIVATE_KEY, 'Incorrect private key');
+        assert(account.publicKey == ACCOUNT_PUBLIC_KEY, 'Incorrect public key');
+        assert(account.permissions.active.actor == ACCOUNT_NAME, 'Incorrect active actor');
+        assert(account.permissions.owner.actor == ACCOUNT_NAME, 'Incorrect owner actor');
+
+        const network = account.provider.network;
+        assert(JSON.stringify(account.provider.network) == JSON.stringify(Networks[network.name]))
+    }
 
     describe('Instantiation', function () {
         it('Should instantiate correct instance of Account', async () => {
-            let localAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
 
-            assert(localAccount.name == ACCOUNT_NAME, 'Incorrect name');
-            assert(localAccount.privateKey == ACCOUNT_PRIVATE_KEY, 'Incorrect private key');
-            assert(localAccount.publicKey == ACCOUNT_PUBLIC_KEY, 'Incorrect public key');
-            assert(localAccount.permissions.active.actor == ACCOUNT_NAME, 'Incorrect active actor');
-            assert(localAccount.permissions.owner.actor == ACCOUNT_NAME, 'Incorrect owner actor');
-            assert(JSON.stringify(localAccount.network) == JSON.stringify(Networks['local']), 'Incorrect local network');
+            // Local
+            let LocalAccount = eoslime.init().Account;
+            let localAccount = LocalAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(localAccount);
 
-            let jungleAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY, 'jungle');
-            assert(JSON.stringify(jungleAccount.network) == JSON.stringify(Networks['jungle']), 'Incorrect jungle network');
+            // Jungle
+            let JungleAccount = eoslime.init('jungle').Account;
+            let jungleAccount = JungleAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(jungleAccount);
 
-            let worbliAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY, 'worbli');
-            assert(JSON.stringify(worbliAccount.network) == JSON.stringify(Networks['worbli']), 'Incorrect worbli network');
+            // Worbli
+            let WorbliAccount = eoslime.init('worbli').Account;
+            let worbliAccount = WorbliAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(worbliAccount);
 
-            let bosAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY, 'bos');
-            assert(JSON.stringify(bosAccount.network) == JSON.stringify(Networks['bos']), 'Incorrect bos network');
+            // Main
+            let MainAccount = eoslime.init('main').Account;
+            let mainAccount = MainAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(mainAccount);
 
-            let mainAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY, 'main');
-            assert(JSON.stringify(mainAccount.network) == JSON.stringify(Networks['main']), 'Incorrect main network');
+            // Bos
+            let BosAccount = eoslime.init('bos').Account;
+            let bosAccount = BosAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(bosAccount);
 
-            let customNetwork = { url: 'Test', chainId: 'Test' };
-            let customAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY, customNetwork);
-            assert(JSON.stringify(customAccount.network) == JSON.stringify(customNetwork), 'Incorrect custom network');
+            // Custom
+            let CustomAccount = eoslime.init({ url: Networks.custom.url, chainId: Networks.custom.chainId }).Account;
+            let customAccount = CustomAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(customAccount);
         });
 
         it('Should send EOS tokens', async () => {
-            const SEND_AMOUNT = '10 SYS';
-            let senderAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            const SEND_AMOUNT = '10.0000';
+            let senderAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
 
-            // eosio[defualt] account will be the creator of this account
             let receiverAccount = await Account.createRandom();
-            let receiverBalanceBeforeSend = await receiverAccount.getBalance(SYSTEM_TOKEN_NAME);
+            let receiverBalanceBeforeSend = await receiverAccount.getBalance();
             assert(receiverBalanceBeforeSend == 0, 'Incorrect tokens amount before send');
 
             await senderAccount.send(receiverAccount, SEND_AMOUNT);
 
-            let receiverBalanceAfterSend = await receiverAccount.getBalance(SYSTEM_TOKEN_NAME);
-            assert(receiverBalanceAfterSend == SEND_AMOUNT, 'Incorrect tokens amount after send');
+            let receiverBalanceAfterSend = await receiverAccount.getBalance();
+            assert(receiverBalanceAfterSend[0] == `${SEND_AMOUNT} SYS`, 'Incorrect tokens amount after send');
         });
 
-        it('Should load ram from provided payer', async () => {
-            let payerAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+        it('Should throw if one tries to send EOS tokens to incorrect account', async () => {
+            try {
+                const SEND_AMOUNT = '10.0000';
+                let senderAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                await senderAccount.send('Fake account', SEND_AMOUNT);
 
-            // eosio[defualt] account will be the creator of this account
+                assert(false, 'Should throw');
+            } catch (error) {
+                assert(error.message.includes('Provided String is not an instance of Account'));
+            }
+        });
+
+        it('Should load ram [payer]', async () => {
+            let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
-            await account.loadRam(payerAccount);
-
-            // Todo: how to check how much ram we have loaded
+            let tx = await account.buyRam(1000, payer);
+            assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
         });
 
         it('Should load ram by self', async () => {
-            let eosAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-
-            // eosio[defualt] account will be the creator of this account
+            let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
-            // Send 10 EOS so the account have enough balance to pay for his ram
-            // await eosAccount.send(account, 10);
+            // Send 10 EOS to the account in order to have enough balance to pay for his ram
+            await eosAccount.send(account, '10.0000');
 
-            await account.loadRam();
-
-            // Todo: think about to return the tx from the operation
+            let tx = await account.buyRam(1000);
+            assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
         });
 
-        it('Should load bandwidth from provided payer', async () => {
-            let payerAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+        it('Should throw if one provide incorrect account as ram payer', async () => {
+            try {
+                let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                await eosAccount.buyRam(1000, 'Fake account');
 
-            // eosio[defualt] account will be the creator of this account
-            // let account = await Account.createRandom();
+                assert(false, 'Should throw');
+            } catch (error) {
+                assert(error.message.includes('Provided String is not an instance of Account'));
+            }
+        });
 
-            await account.loadBandwidth(payerAccount);
+        it('Should load bandwidth [payer]', async () => {
+            let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            let account = await Account.createRandom();
 
-            // Todo: how to check how much bandwidth we have loaded
+            let tx = await account.buyBandwidth(10, 10, payer);
+            assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
         });
 
         it('Should load bandwidth by self', async () => {
-            let eosAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-
-            // eosio[defualt] account will be the creator of this account
+            let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
-            // Send 10 EOS so the account have enough balance to pay for his bandwidth
-            await eosAccount.send(account, 10);
+            // Send 10 EOS to the account in order to have enough balance to pay for his bandwidth
+            await eosAccount.send(account, '10.0000');
 
-            await account.loadBandwidth();
+            let tx = await account.buyBandwidth(10, 19);
+            assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
+        });
 
-            // Todo: how to check how much bandwidth we have loaded
+        it('Should throw if one provide incorrect account as bandwidth payer', async () => {
+            try {
+                let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                await eosAccount.buyBandwidth(10, 19, 'Fake account');
+
+                assert(false, 'Should throw');
+            } catch (error) {
+                assert(error.message.includes('Provided String is not an instance of Account'));
+            }
         });
     });
 
     describe('Create from name', function () {
 
-        let accountName;
+        it('Should create account from name [account creator]', async () => {
+            let creatorAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
 
-        it('Should create account from name with provided account', async () => {
-            let creatorAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-
-            accountName = createUniqueAccountName('Unique');
+            // We are using Date.now() in order name to be 'unique'
+            let accountName = createAccountNameFromPublicKey(Date.now());
             await Account.createFromName(accountName, creatorAccount);
 
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
-            assert(await eos.getAccount(accountName), 'Account is not created on blockchain');
+            assert(await Provider.eos.getAccount(accountName), 'Account is not created on blockchain');
         });
 
-        it('Should create account from name with default account', async () => {
-            accountName = createUniqueAccountName('Unique');
-
+        it('Should create account from name [default account]', async () => {
+            // We are using Date.now() in order name to be 'unique'
+            let accountName = createAccountNameFromPublicKey(Date.now());
             await Account.createFromName(accountName);
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
-            assert(await eos.getAccount(accountName), 'Account is not created on blockchain');
+
+            assert(await Provider.eos.getAccount(accountName), 'Account is not created on blockchain');
         });
 
         it('Should throw if one try to create an account on already existing name', async () => {
             try {
-                await Account.createFromName(accountName);
+                await Account.createFromName(ACCOUNT_NAME);
                 assert(false, 'Should throw');
             } catch (error) {
                 assert(error.includes('that name is already taken'));
@@ -172,31 +238,28 @@ describe('Account', function () {
 
         it('Should throw if one provide incorrect account as account creator', async () => {
             try {
-                accountName = createUniqueAccountName('Unique');
+                // We are using Date.now() in order name to be 'unique'
+                let accountName = createAccountNameFromPublicKey(Date.now());
 
                 await Account.createFromName(accountName, 'Fake account');
                 assert(false, 'Should throw');
             } catch (error) {
-                assert(error.message.includes('Provided account is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of Account'));
             }
         });
     });
 
     describe('Create random', function () {
-        it('Should create random account with provided creator', async () => {
-            let creatorAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-
+        it('Should create random account [account creator]', async () => {
+            let creatorAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let newAccount = await Account.createRandom(creatorAccount);
 
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
-            assert(await eos.getAccount(newAccount.name), 'Account is not created on blockchain');
+            assert(await Provider.eos.getAccount(newAccount.name), 'Account is not created on blockchain');
         });
 
-        it('Should create random account with default creator', async () => {
+        it('Should create random account [default account]', async () => {
             let newAccount = await Account.createRandom();
-
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
-            assert(await eos.getAccount(newAccount.name), 'Account is not created on blockchain');
+            assert(await Provider.eos.getAccount(newAccount.name), 'Account is not created on blockchain');
         });
 
         it('Should throw if one provide incorrect account as account creator', async () => {
@@ -205,41 +268,38 @@ describe('Account', function () {
                 assert(false, 'Should throw');
 
             } catch (error) {
-                assert(error.message.includes('Provided account is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of Account'));
             }
         });
     });
 
     describe('Create randoms', function () {
-        it('Should create random accounts with provided creator', async () => {
-            let creatorAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+        it('Should create random accounts [account creator]', async () => {
+            let creatorAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
 
             let accounts = await Account.createRandoms(2, creatorAccount);
-
             assert(accounts.length == 2, 'Incorrect accounts count');
 
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
             for (const account of accounts) {
-                assert(await eos.getAccount(account.name), `Account: ${account.name} is not created on blockchain`);
+                assert(await Provider.eos.getAccount(account.name), `Account: ${account.name} is not created on blockchain`);
             }
         });
 
-        it('Should create random accounts with default creator', async () => {
+        it('Should create random accounts [default account]', async () => {
             let accounts = await Account.createRandoms(2);
-
             assert(accounts.length == 2, 'Incorrect accounts count');
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
+
             for (const account of accounts) {
-                assert(await eos.getAccount(account.name), `Account: ${account.name} is not created on blockchain`);
+                assert(await Provider.eos.getAccount(account.name), `Account: ${account.name} is not created on blockchain`);
             }
         });
 
         it('Should throw if one provide incorrect account as accounts creator', async () => {
             try {
-                await Account.createRandoms('Fake account');
+                await Account.createRandoms(2, 'Fake account');
                 assert(false, 'Should throw');
             } catch (error) {
-                assert(error.message.includes('Provided account is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of Account'));
             }
         });
     });
@@ -248,22 +308,20 @@ describe('Account', function () {
 
         const PASSWORD = 'secret password';
 
-        it('Should create encrypted account with provided creator', async () => {
-            let creatorAccount = new Account(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+        it('Should create encrypted account [account creator]', async () => {
+            let creatorAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
 
-            let encryptedAccount = JSON.parse(await Account.createEncrypted(PASSWORD, creatorAccount));
+            let encryptedAccount = await Account.createEncrypted(PASSWORD, creatorAccount);
 
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
-            assert(await eos.getAccount(encryptedAccount.name), 'Account is not created on blockchain');
+            assert(await Provider.eos.getAccount(encryptedAccount.name), 'Account is not created on blockchain');
             assert(encryptedAccount.cipherText, 'Cipher is missing');
             assert(encryptedAccount.network, 'Network is missing');
         });
 
-        it('Should create encrypted account with default creator', async () => {
-            let encryptedAccount = JSON.parse(await Account.createEncrypted(PASSWORD));
+        it('Should create encrypted account [default account]', async () => {
+            let encryptedAccount = await Account.createEncrypted(PASSWORD);
 
-            let eos = new EOSInstance(Networks['local'], ACCOUNT_PRIVATE_KEY);
-            assert(await eos.getAccount(encryptedAccount.name), 'Account is not created on blockchain');
+            assert(await Provider.eos.getAccount(encryptedAccount.name), 'Account is not created on blockchain');
             assert(encryptedAccount.cipherText, 'Cipher is missing');
             assert(encryptedAccount.network, 'Network is missing');
         });
@@ -273,7 +331,7 @@ describe('Account', function () {
                 await Account.createEncrypted(PASSWORD, 'Fake account');
                 assert(false, 'Should throw');
             } catch (error) {
-                assert(error.message.includes('Provided account is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of Account'));
             }
         });
     });
@@ -288,33 +346,42 @@ describe('Account', function () {
         });
 
         it('Should convert encrypted account into account', async () => {
-            let decryptedJSONAccount = Account.fromEncryptedJson(encryptedJSONAccount, PASSWORD);
+            let decryptedJSONAccount = Account.fromEncrypted(encryptedJSONAccount, PASSWORD);
 
-            assert(decryptedJSONAccount instanceof Account, 'Expected instance of Account');
+            assert(decryptedJSONAccount.constructor.name === 'Account', 'Expected instance of Account');
             assert(decryptedJSONAccount.name, 'Incorrect name');
             assert(decryptedJSONAccount.privateKey, 'Incorrect private key');
             assert(decryptedJSONAccount.publicKey, 'Incorrect public key');
             assert(JSON.stringify(decryptedJSONAccount.permissions) != "{}", 'Incorrect permissions');
-            assert(JSON.stringify(localAccount.network) == JSON.stringify(Networks['local']), 'Incorrect network');
+            assert(JSON.stringify(decryptedJSONAccount.provider.network) == JSON.stringify(Networks['local']), 'Incorrect network');
         });
 
-        it('Should throw if one try to convert encrypted account into account and provide incorrect password', async () => {
+        it('Should throw if one try to convert encrypted account with incorrect password', async () => {
             try {
-                Account.fromEncryptedJson(encryptedJSONAccount, 'Fake password');
+                Account.fromEncrypted(encryptedJSONAccount, 'Fake password');
                 assert(false, 'Should throw');
             } catch (error) {
-                // Todo: check for appropriate error
-                assert();
+                assert(error.message.includes('Account decryption: Couldn\'t decrypt the data'));
             }
         });
 
-        it('Should throw if one try to convert encrypted account into account and provide incorrect json file', async () => {
+        it('Should throw if one try to convert encrypted account with incorrect json file', async () => {
             try {
-                Account.fromEncryptedJson('Fake JSON', PASSWORD);
+                Account.fromEncrypted('Fake JSON', PASSWORD);
                 assert(false, 'Should throw');
             } catch (error) {
-                // Todo: check for appropriate error
-                assert();
+                assert(error.message.includes('Account decryption: Couldn\'t decrypt the data'));
+            }
+        });
+
+        it('Should throw if one try to decrypt another network account', async () => {
+            try {
+                let jungleInstance = eoslime.init('jungle');
+                jungleInstance.Account.fromEncrypted(encryptedJSONAccount, PASSWORD);
+
+                assert(false, 'Should throw');
+            } catch (error) {
+                assert(error.message.includes('Broken account. Most of time reason: invalid network'));
             }
         });
     });

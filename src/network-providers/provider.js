@@ -16,7 +16,11 @@ const NETWORKS = {
 
 class Provider {
     constructor(network) {
-        return NETWORKS[network]() || NETWORKS.custom(network);
+        if (NETWORKS[network]) {
+            return NETWORKS[network]()
+        }
+
+        return NETWORKS.custom(network);
     }
 }
 
