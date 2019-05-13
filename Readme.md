@@ -175,12 +175,12 @@ eoslime.provider.defaultAccount =>
 ```
 // Todo: add link to default account
 **Important ! Only local network comes with preset `provider's default account`. If you connect to another network you should set provider's default account mannually**
-##### Initialization on supported network:
+##### Initialization on supported network
 ```javascript
 const eoslime = require('eoslime').init('jungle');
 ```
 
-##### Initialization on unsupported network:
+##### Initialization on unsupported network
 ```javascript
 const eoslime = require('eoslime').init({ url: 'Your network', chainId: 'Your chainId' });
 ```
@@ -188,7 +188,7 @@ const eoslime = require('eoslime').init({ url: 'Your network', chainId: 'Your ch
 ---
 Account is a class which provides you easy access to blockchain account endpoint
 
-#### 1. Instantiate:
+#### 1. Instantiate
 ```javascript
     const eoslime = require('eoslime').init();
     
@@ -200,8 +200,8 @@ Account is a class which provides you easy access to blockchain account endpoint
 * name - account name
 * privateKey - private key of the account
 
-#### 2. Instantiated account:
-##### 2.1 Properties:
+#### 2. Instantiated account
+##### 2.1 Properties
 * name
 * publicKey
 * privateKey
@@ -214,7 +214,7 @@ Account is a class which provides you easy access to blockchain account endpoint
         }
 ```
 ---
-##### 2.2 Functions: 
+##### 2.2 Functions
 * **buyRam (bytes, payer)** - buy ram for this account
 ```javascript
     const eoslime = require('eoslime').init();
@@ -295,7 +295,7 @@ Account is a class which provides you easy access to blockchain account endpoint
 ```
 
 
-#### 3. Static account properties:
+#### 3. Static account properties
 * **createFromName (name, accountCreator)** - Creates freshly new account from name
 **Important!** Keep in mind that this name may already exists on the network
 
@@ -360,7 +360,16 @@ Account is a class which provides you easy access to blockchain account endpoint
 ```
 
 * **createEncrypted (password, accountCreator)** - Creates freshly new account and returns encrypted json format of it
+How it works: Creates a freshly new random account. Created account's data is hashed and a **cipherText** is compiled by encrypting **privateKey::dataHash**
 
+```javascript
+// Account data for hashing
+{ 
+    name: account.name, 
+    network: account.provider.network, 
+    privateKey: account.privateKey 
+}
+```
 ```javascript
     const eoslime = require('eoslime').init();
 
@@ -373,13 +382,13 @@ Account is a class which provides you easy access to blockchain account endpoint
     
     /*
      Encrypted JSON account => {
-            "accountName": "random generated",
+            "name": "random generated",
             "network": {
-                    "name": accountCreator.network.name,
-                    "url": accountCreator.network.url,
-                    "chainId": accountCreator.network.chainId
+                    "name": 'name',
+                    "url": 'url',
+                    "chainId": 'chainId'
                 },
-            "ciphertext": "encrypted private key"
+            "ciphertext": "encrypted private key + dataHash"
         }
     */
 ```
@@ -391,21 +400,10 @@ Account is a class which provides you easy access to blockchain account endpoint
     // Provider's default account will create this account on local network
     const password = 'secret password';
     let encryptedJSONAccount = await eoslime.Account.createEncrypted(password);
-    
-    /*
-     Encrypted JSON account => {
-            "accountName": "random generated",
-            "network": {
-                "name": "local",
-                "url": "http://127.0.0.1:8888",
-                "chainId": "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f"
-            }
-            "ciphertext": "encrypted private key"
-        }
-    */
 ```
 
 * **fromEncrypted (encryptedAccount, password)** - Convert encrypted account in account
+How it works: Decrypts **cipherText** and get it's parts (privateKey and dataHash). PrivateKey is merged with other **encryptedAccount** properties into an object which after the merging is hashed. This hash is compared to the **dataHash** for correctness.
 
 ```javascript
     const eoslime = require('eoslime').init();
@@ -423,7 +421,7 @@ Account is a class which provides you easy access to blockchain account endpoint
 ***Important! Keep in mind, that each account creation method actually executes an account creation blockchain transaction***
 
 
-#### 4. Default account:
+#### 4. Default account
 Default account or main account is the account which executes blockchain transactions if none is provided. Most of the functions has executor in the form of **payer** | **accountCreator** | **contractExecutor**. For example -> When you are on local network, **eosio** account is preset automatically for you as default/main account and you can just do 
 ```javascript
 await Account.createFromName('some name')
