@@ -1,20 +1,4 @@
 const assert = require('assert');
-
-/*
-    eoslime initialization requires :
-        eos endpoint
-        chainId
-        account
-
-    Otherwise defaults are applies :
-        local eos endpoint - http://127.0.0.1:8888
-        chainId - cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f
-        eosio account - 
-            name: 'eosio',
-            publicKey: 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV',
-            privateKey: '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3'
-
-*/
 const eoslime = require('./../../').init();
 
 const TOKEN_WASM_PATH = './example/eosio-token/contract/eosio.token.wasm';
@@ -50,7 +34,7 @@ describe('EOSIO Token', function () {
 
             Note! CleanDeployer always deploy the contract code on a new fresh account
 
-            You can access the contract account as -> tokenContract.defaultExecutor
+            You can access the contract account as -> tokenContract.executor
         */
         tokenContract = await eoslime.CleanDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
     });
@@ -74,7 +58,7 @@ describe('EOSIO Token', function () {
                     json: true
                 });
         */
-        let tokenInitialization = await tokenContract.provider.eos.getCurrencyStats(tokenContract.contractName, 'SYS');
+        let tokenInitialization = await tokenContract.provider.eos.getCurrencyStats(tokenContract.name, 'SYS');
 
         assert.equal(tokenInitialization.SYS.max_supply, TOTAL_SUPPLY, 'Incorrect tokens supply');
         assert.equal(tokenInitialization.SYS.issuer, tokensIssuer.name, 'Incorrect tokens issuer');
@@ -89,7 +73,7 @@ describe('EOSIO Token', function () {
         */
         await tokenContract.issue(tokensHolder.name, HOLDER_SUPPLY, 'memo', { from: tokensIssuer });
 
-        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.contractName, tokensHolder.name, 'SYS');
+        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.name, tokensHolder.name, 'SYS');
         assert.equal(holderBalance[0], HOLDER_SUPPLY, 'Incorrect holder balance');
     });
 
@@ -104,7 +88,7 @@ describe('EOSIO Token', function () {
             tokenContract.issue(tokensHolder.name, INVALID_ISSUING_AMOUNT, 'memo', { from: tokensIssuer })
         );
 
-        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.contractName, tokensHolder.name, 'SYS');
+        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.name, tokensHolder.name, 'SYS');
         assert.equal(holderBalance.length, 0, 'Incorrect holder balance');
     });
 });

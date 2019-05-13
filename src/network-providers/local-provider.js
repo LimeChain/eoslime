@@ -12,6 +12,7 @@ class LocalProvider extends BaseProvider {
     constructor() {
         super(LocalNetworkConfig)
         this.defaultAccount = LOCAL_DEFATULT_ACCOUNT
+        this.defaultAccount.provider = this;
     }
 }
 
