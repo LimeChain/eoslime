@@ -238,8 +238,8 @@ Account is a class that provides an easy access to blockchain account endpoint.
     // Existing account on local network
     let account = eoslime.Account.load('myAcc', 'myPrivateKey');
     
-    // The account will load ram by self for 10000 bytes
-    await account.loadRam(10000);
+    // The account will buy ram by self for 10000 bytes
+    await account.buyRam(10000);
 ```    
 
 
@@ -250,7 +250,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let payer = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     let account2 = eoslime.Account.load('myAcc2', 'myPrivateKey2');
     
-    // Payer will load cpu and network for account2 for 100 SYS 
+    // Payer will buy cpu and network for account2 for 100 SYS 
     await account2.buyBandwidth(100, 100, payer);
 ```
 *Defaults:*
@@ -261,7 +261,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
     // Existing account on local network
     let account = eoslime.Account.load('myAcc', 'myPrivateKey');
     
-    // The account will load cpu and net by self for 10 SYS
+    // The account will buy cpu and net by self for 10 SYS
     await account.buyBandwidth(10, 10);
 ```
 
