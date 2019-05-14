@@ -364,7 +364,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let accounts = await eoslime.Account.createRandoms(accountsCount);
 ```
 
-* **createEncrypted (password, accountCreator)** - Creates fresh new account and returns the encrypted json format of it
+* **createEncrypted (password, accountCreator)** - Creates fresh new account and returns the encrypted json format of it  
 How it works: Creates a fresh new random account. Created account's data is hashed and a **cipherText** is derived by encrypting **privateKey::dataHash**
 
 ```javascript
@@ -407,7 +407,7 @@ How it works: Creates a fresh new random account. Created account's data is hash
     let encryptedJSONAccount = await eoslime.Account.createEncrypted(password);
 ```
 
-* **fromEncrypted (encryptedAccount, password)** - Decrypt an encrypted account
+* **fromEncrypted (encryptedAccount, password)** - Decrypt an encrypted account   
 How it works: Decrypts **cipherText** and gets it's parts (privateKey and dataHash). The PrivateKey is merged with the other **encryptedAccount** properties into an object which after the merging is hashed. This hash is validated against the **dataHash** for correctness.
 
 ```javascript
@@ -449,6 +449,7 @@ In this way **jungleMainAccount** will execute every blockchain transaction when
 ## Providers
 ---
 Providers are the blockchain connectors. A provider is instantiated internally based on the network name provided on initialization: **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }**   
+   
 Depending on what network you want to connect to, the following providers are available:
 **[ LocalProvider ] [ JungleProvider ] [ BosProvider ] [ WorbliProvider ] [ MainProvider ] [ CustomProvider ]** : 
 ``` javascript
