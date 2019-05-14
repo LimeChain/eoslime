@@ -150,7 +150,7 @@ const eoslime = require('eoslime').init();
 ```
 
 ***Defaults***:
-* network name - **local** 
+* network name - **local**   
 On local network, eoslime.provider.defaultAccount is set automatically to **eosio**
 
 ```javascript
@@ -176,7 +176,6 @@ eoslime.provider.defaultAccount =>
         }
     }
 ```
-// Todo: add link to default account
 
 **Important ! Only local network comes with preset `provider's default account`. If you connect to another network you should set provider's default account manually**
 ##### Initialization on supported network
