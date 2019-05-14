@@ -30,7 +30,7 @@ let tokensIssuer = accounts[0];
 let tokensHolder = accounts[1];
 
 // Deploy contract (localhost)
-let tokenContract = await eoslime.AccountDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
+let tokenContract = await eoslime.CleanDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
 
 // Call contract functions
 // By default provider's default account(localhost - eosio) executes methods calls on the blockchain
