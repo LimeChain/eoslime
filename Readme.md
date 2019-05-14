@@ -1,4 +1,4 @@
-[![npm version](https://badge.fury.io/js/etherlime.svg)](https://badge.fury.io/js/eoslime.svg) 
+[![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) 
 [![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
 
 eoslime.js
