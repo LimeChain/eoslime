@@ -6,7 +6,18 @@ module.exports = {
     },
     expectMissingAuthority: function (promise) {
         return expectEOSError(promise, 'missing_auth_exception', 'missing authority');
-    }
+    },
+    // Todo: Uncomment it once test cli command is ready
+    // createTestingAccounts: async function () {
+    //     let accounts = await Account.createRandoms(10);
+
+    //     for (let i = 0; i < accounts.length; i++) {
+    //         await accounts[i].loadRam({ bytes: 2500000, b });
+    //         await accounts[i].loadBandwidth({ cpuQuantity: '100', netQuantity: '100' });
+    //     }
+
+    //     return accounts;
+    // }
 }
 
 let expectEOSError = async function (promise, errorType, errorInfo) {

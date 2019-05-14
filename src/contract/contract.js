@@ -4,14 +4,14 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class Contract {
 
-    constructor(eos, abi, contractName, contractExecutorAccount) {
+    constructor(provider, abi, contractName, contractExecutorAccount) {
         defineImmutableProperties(this, [
-            { name: 'eosInstance', value: eos },
-            { name: 'contractName', value: contractName },
-            { name: 'defaultExecutor', value: contractExecutorAccount },
+            { name: 'provider', value: provider },
+            { name: 'name', value: contractName },
+            { name: 'executor', value: contractExecutorAccount },
         ]);
 
-        declareFunctionsFromABI.call(this, abi, eos);
+        declareFunctionsFromABI.call(this, abi, provider.eos);
     }
 }
 
@@ -38,11 +38,11 @@ let declareFunctionsFromABI = function (abi, eos) {
             if (optionals && optionals.from instanceof Account) {
                 authorizationAccount = optionals.from;
             } else {
-                authorizationAccount = this.defaultExecutor;
+                authorizationAccount = this.executor;
             }
 
             let structuredParams = structureParamsToExpectedLook(functionParams, contractStructs[functionName].fields);
-            return executeFunction(eos, this.contractName, functionName, structuredParams, authorizationAccount);
+            return executeFunction(eos, this.name, functionName, structuredParams, authorizationAccount);
         }
     }
 }

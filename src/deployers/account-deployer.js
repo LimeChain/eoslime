@@ -3,13 +3,13 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class AccountDeployer extends EOSDeployer {
 
-    constructor(eos, contractFactory, defaultDeploymentAccount) {
-        super(eos, contractFactory);
+    constructor(provider, contractFactory) {
+        super(provider, contractFactory);
 
         defineImmutableProperties(this, [
             {
                 name: 'deploy',
-                value: async function (wasmPath, abiPath, contractAccount = defaultDeploymentAccount) {
+                value: async function (wasmPath, abiPath, contractAccount) {
                     return this.__deploy(wasmPath, abiPath, contractAccount);
                 }
             }
