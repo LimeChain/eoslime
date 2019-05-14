@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/etherlime.svg)](https://badge.fury.io/js/eoslime.svg) 
+
 eoslime.js
 ============
 
@@ -274,7 +276,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
     await sender.send(receiver, 100);
 ```
 
-* **getBalance (code, symbol)** - get the token balance for token with name `Custom` for an account
+* **getBalance (code, symbol)** - get the account balance for token with symbol
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
@@ -445,7 +447,7 @@ In this way **jungleMainAccount** will execute every blockchain transaction when
 
 ## Providers
 ---
-Providers are the blockchain connectors. A provider is instantiated internally based on the network name provided on initialization: **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }**
+Providers are the blockchain connectors. A provider is instantiated internally based on the network name provided on initialization: **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }**   
 Depending on what network you want to connect to, the following providers are available:
 **[ LocalProvider ] [ JungleProvider ] [ BosProvider ] [ WorbliProvider ] [ MainProvider ] [ CustomProvider ]** : 
 ``` javascript
@@ -545,8 +547,8 @@ await contract.doSmth('Something');
 **Important! eoslime is based on eosjs and when we are calling a contract method, eosjs options `{ broadcast: true, sign: true }` are always set to true**
 
 #### 1. Properties
-* **name** - For convenience you have accsess to the contract name
-* **provider** - For convenience you have accsess to the network provider
+* name - For convenience you have accsess to the contract name
+* provider - For convenience you have accsess to the network provider
 This is helpful when you want, for example, to read a table
 ```javascript
 let tableResults = await contract.provider.eos.getTableRows({
@@ -559,8 +561,8 @@ let tableResults = await contract.provider.eos.getTableRows({
                 json: true
             });
 ```
-* **executor** - The account which will execute contract methods (**transactions**) on the blockchain
-* **contract methods** 
+* executor - The account which will execute contract methods (**transactions**) on the blockchain
+* contract methods
 
 ## Utils
 ---
@@ -625,4 +627,3 @@ npm run start
 * ***Write eoslime tests***
 * ***Built in mocha as testing framework***
 * ***Make it more configurable***
-
