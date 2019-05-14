@@ -1,6 +1,6 @@
 {
   "name": "eoslime",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
   "main": "index.js",
   "scripts": {
