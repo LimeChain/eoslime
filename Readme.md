@@ -174,7 +174,8 @@ eoslime.provider.defaultAccount =>
     }
 ```
 // Todo: add link to default account
-**Important ! Only local network comes with preset `provider's default account`. If you connect to another network you should set provider's default account mannually**
+
+**Important ! Only local network comes with preset `provider's default account`. If you connect to another network you should set provider's default account manually**
 ##### Initialization on supported network
 ```javascript
 const eoslime = require('eoslime').init('jungle');
@@ -186,7 +187,7 @@ const eoslime = require('eoslime').init({ url: 'Your network', chainId: 'Your ch
 ```
 ## Account
 ---
-Account is a class which provides you easy access to blockchain account endpoint
+Account is a class that provides an easy access to blockchain account endpoint.
 
 #### 1. Instantiate
 ```javascript
@@ -205,7 +206,7 @@ Account is a class which provides you easy access to blockchain account endpoint
 * name
 * publicKey
 * privateKey
-* provider - The network provider account connected to
+* provider - The network provider that the account is connected to
 * permissions:
 ```javascript
         {
@@ -273,7 +274,7 @@ Account is a class which provides you easy access to blockchain account endpoint
     await sender.send(receiver, 100);
 ```
 
-* **getBalance (code, symbol)** - get account balance for token with symbol
+* **getBalance (code, symbol)** - get the token balance for token with name `Custom` for an account
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
@@ -296,7 +297,8 @@ Account is a class which provides you easy access to blockchain account endpoint
 
 
 #### 3. Static account properties
-* **createFromName (name, accountCreator)** - Creates freshly new account from name
+* **createFromName (name, accountCreator)** - Creates a fresh new account for a given name
+
 **Important!** Keep in mind that this name may already exists on the network
 
 ```javascript
@@ -317,7 +319,7 @@ Account is a class which provides you easy access to blockchain account endpoint
     let account = await eoslime.Account.createFromName('name');
 ```
 
-* **createRandom (accountCreator)** - Creates freshly new random account
+* **createRandom (accountCreator)** - Creates new random account
 
 ```javascript
     const eoslime = require('eoslime').init();
@@ -337,7 +339,7 @@ Account is a class which provides you easy access to blockchain account endpoint
     let account = await eoslime.Account.createRandom();
 ```
 
-* **createRandoms (accountsCount, accountCreator)** - Creates freshly new random accounts
+* **createRandoms (accountsCount, accountCreator)** - Creates new random accounts
 
 ```javascript
     const eoslime = require('eoslime').init();
@@ -359,8 +361,8 @@ Account is a class which provides you easy access to blockchain account endpoint
     let accounts = await eoslime.Account.createRandoms(accountsCount);
 ```
 
-* **createEncrypted (password, accountCreator)** - Creates freshly new account and returns encrypted json format of it
-How it works: Creates a freshly new random account. Created account's data is hashed and a **cipherText** is compiled by encrypting **privateKey::dataHash**
+* **createEncrypted (password, accountCreator)** - Creates fresh new account and returns the encrypted json format of it
+How it works: Creates a fresh new random account. Created account's data is hashed and a **cipherText** is derived by encrypting **privateKey::dataHash**
 
 ```javascript
 // Account data for hashing
@@ -402,8 +404,8 @@ How it works: Creates a freshly new random account. Created account's data is ha
     let encryptedJSONAccount = await eoslime.Account.createEncrypted(password);
 ```
 
-* **fromEncrypted (encryptedAccount, password)** - Convert encrypted account in account
-How it works: Decrypts **cipherText** and get it's parts (privateKey and dataHash). PrivateKey is merged with other **encryptedAccount** properties into an object which after the merging is hashed. This hash is compared to the **dataHash** for correctness.
+* **fromEncrypted (encryptedAccount, password)** - Decrypt an encrypted account
+How it works: Decrypts **cipherText** and gets it's parts (privateKey and dataHash). The PrivateKey is merged with the other **encryptedAccount** properties into an object which after the merging is hashed. This hash is validated against the **dataHash** for correctness.
 
 ```javascript
     const eoslime = require('eoslime').init();
@@ -418,15 +420,17 @@ How it works: Decrypts **cipherText** and get it's parts (privateKey and dataHas
     let decryptedAccount = eoslime.Account.fromEncrypted(encryptedJSONAccount, password);
 ```
 
-***Important! Keep in mind, that each account creation method actually executes an account creation blockchain transaction***
+***Important! Keep in mind that each account creation method is executing an account creation blockchain transaction***
 
 
 #### 4. Default account
-Default account or main account is the account which executes blockchain transactions if none is provided. Most of the functions has executor in the form of **payer** | **accountCreator** | **contractExecutor**. For example -> When you are on local network, **eosio** account is preset automatically for you as default/main account and you can just do 
+Default account or main account is the account which executes blockchain transactions if none is provided. Most of the functions have executor in the form of **payer** | **accountCreator** | **contractExecutor**. 
+For example:
+When you are on local network **eosio** account is preset automatically for you as default/main account. You are able to do 
 ```javascript
 await Account.createFromName('some name')
 ```
-without the need to specify each time the **accountCreator**
+without the need of specifying the **accountCreator** every time.
 
 If you are on another network, you can set the default/main account as follow:
 
@@ -437,12 +441,13 @@ const jungleMainAccount = eoslime.Account.load('name', 'privateKey');
 eoslime.Provider.defaultAccount = jungleMainAccount;
 ```
 
-In this way **jungleMainAccount** will executes each blockchain transaction when execution account is needed but none provided.
+In this way **jungleMainAccount** will execute every blockchain transaction whenever the execution account is needed but none was provided.
 
 ## Providers
 ---
 Providers are the blockchain connectors. A provider is instantiated internally based on the network name provided on initialization: **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }**
-Based on the network name you want to connect to there are the following providers: **[ LocalProvider ] [ JungleProvider ] [ BosProvider ] [ WorbliProvider ] [ MainProvider ] [ CustomProvider ]**
+Depending on what network you want to connect to, the following providers are available:
+**[ LocalProvider ] [ JungleProvider ] [ BosProvider ] [ WorbliProvider ] [ MainProvider ] [ CustomProvider ]** : 
 ``` javascript
 const eoslime = require('eoslime').init('jungle') -> JungleProvider
 ```
@@ -456,8 +461,8 @@ const eoslime = require('eoslime').init('jungle') -> JungleProvider
     chainId: ''
 }
 ```
-* defaultAccount - The default/main account which executes blockchain transactions
-* eos - **eosjs** instance which is the bridge with the blockchain
+* defaultAccount - The default/main account from which the blockchain transactions are executed
+* eos - **eosjs** instance that serves as a bridge with the blockchain
 
 ## Deployers
 ---
@@ -475,13 +480,13 @@ let contractAccount = eoslime.Account.load('name', 'privateKey');
 let contract = await eoslime.AccountDeployer.deploy(WASM_PATH, ABI_PATH, contractAccount);
 ```
 
-The `deploy` function returns to you a ready to use [instance](#contract) of the deployed contract.
+The `deploy` function returns a ready to use [instance](#contract) of the deployed contract.
 
 ### Clean Deployer
-Clean Deployer is used when you don't have a contract account. It creates for you a new contract account on which the contract is deployed after that. The creator of the new contract account is the provider's default account. In this way the Clean Deployer always deploys a contract on a new account. 
+Clean Deployer is used when you don't have a contract account. It creates a new contract account on which the contract is is being deployed. The creator of the new contract account is the provider's default account. The Clean Deployer is always deploying contracts on new accounts. 
 
-This brings convince in the following scenario for example:   
-We have two tests and one contract account. The first test writes to the contract storage, but you need this storage to be clear for the second test due to some assertions or something like that.
+This is helpful when we want to do the following:   
+We have two tests and one contract account. The first test writes to the contract storage, but you need this storage to be clear for the second test due to some assertions or something like that depending on the use-case.
 ```javascript
 // Local network initialization
 const eoslime = require('eoslime').init();
@@ -492,13 +497,13 @@ const ABI_PATH = './contract/contract.abi';
 let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
 ```
 
-The `deploy` function returns to you a ready to use [instance](#contract) of the deployed contract.
+The `deploy` function returns a ready to use [instance](#contract) of the deployed contract.
 
 ## Contract
 ---
-You can get a contract instance in two ways
+You can get a contract's instance in two ways
 * Each Deployer returns to you a new contract after deployment
-* You can instatiate an already existing contract as:
+* You can instatiate an already existing contract by doing:
 ```javascript
 // Local network initialization
 const eoslime = require('eoslime').init();
@@ -540,9 +545,9 @@ await contract.doSmth('Something');
 **Important! eoslime is based on eosjs and when we are calling a contract method, eosjs options `{ broadcast: true, sign: true }` are always set to true**
 
 #### 1. Properties
-* **name** - For convience you have accsess to the contract name
-* **provider** - For convience you have accsess to the network provider
-This is useful when you want, for example, to read a table
+* **name** - For convenience you have accsess to the contract name
+* **provider** - For convenience you have accsess to the network provider
+This is helpful when you want, for example, to read a table
 ```javascript
 let tableResults = await contract.provider.eos.getTableRows({
                 code: contract.name,
@@ -605,7 +610,8 @@ describe('Test Contract', function () {
 ---
 
 You can check eosio.token example to get better idea of how to work with **`eoslime`**.   
-The example was made as tests so you should:
+The example is for testing purposes only.
+You must:
 * Run nodoes locally
 * Start example with:
 ```
