@@ -539,7 +539,7 @@ await contract.doSmth('Something');
 
 **Important! eoslime is based on eosjs and when we are calling a contract method, eosjs options `{ broadcast: true, sign: true }` are always set to true**
 
-#### 1. Properties:
+#### 1. Properties
 * **name** - For convience you have accsess to the contract name
 * **provider** - For convience you have accsess to the network provider
 This is useful when you want, for example, to read a table
@@ -555,6 +555,7 @@ let tableResults = await contract.provider.eos.getTableRows({
             });
 ```
 * **executor** - The account which will execute contract methods (**transactions**) on the blockchain
+* **contract methods** 
 
 ## Utils
 ---
