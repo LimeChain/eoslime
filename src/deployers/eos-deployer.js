@@ -13,8 +13,8 @@ class EOSDeployer {
                     let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
                     let wasm = contractFilesReader.readWASMFromFile(path.resolve(wasmPath));
 
-                    await provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
-                    await provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
+                    await provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.keys['active']['private'] });
+                    await provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.keys['active']['private'] });
 
                     let contract = contractFactory.buildExisting(abi, contractAccount.name, contractAccount);
                     return contract;

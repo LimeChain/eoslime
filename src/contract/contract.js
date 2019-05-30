@@ -70,6 +70,6 @@ let executeFunction = function (eos, contractName, actionName, data, authorizati
                 }
             ]
         },
-        { broadcast: true, sign: true, keyProvider: authorizationAccount.privateKey }
+        { broadcast: true, sign: true, keyProvider: authorizationAccount.keys['active']['private'] }
     );
 }

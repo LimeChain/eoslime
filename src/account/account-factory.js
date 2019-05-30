@@ -56,8 +56,8 @@ class AccountFactory {
                 network: newAccount.provider.network,
             };
 
-            let dataHash = crypto.hash(JSON.stringify({ ...dataToBeEncrypted, privateKey: newAccount.privateKey }));
-            let cipherText = crypto.encrypt(`${newAccount.privateKey}::${dataHash}`, password);
+            let dataHash = crypto.hash(JSON.stringify({ ...dataToBeEncrypted, keys: newAccount.keys }));
+            let cipherText = crypto.encrypt(`${newAccount.keys}::${dataHash}`, password);
 
             return { ...dataToBeEncrypted, cipherText };
         } catch (error) {
@@ -94,10 +94,10 @@ let createAccountOnBlockchain = async function (accountToBeCreated, accountCreat
         tr.newaccount({
             creator: accountCreator.name,
             name: accountToBeCreated.name,
-            owner: accountToBeCreated.publicKey,
-            active: accountToBeCreated.publicKey
+            owner: accountToBeCreated.keys['owner']['public'],
+            active: accountToBeCreated.keys['active']['public']
         });
-    }, { keyProvider: accountCreator.privateKey });
+    }, { keyProvider: accountCreator.keys['active']['private'] });
 }
 
 module.exports = AccountFactory;

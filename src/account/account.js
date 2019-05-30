@@ -4,6 +4,7 @@ const eosECC = require('eosjs').modules.ecc;
 class Account {
 
     constructor(name, privateKey, provider) {
+        this.keys = {}
         this.name = name;
         this.provider = provider
 
@@ -20,6 +21,20 @@ class Account {
 
         this.privateKey = privateKey;
         this.publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
+
+        this.keys['owner'] = {}
+        this.keys['active'] = {}
+        this.keys['owner']['private'] = this.privateKey;
+        this.keys['owner']['public'] = this.publicKey;
+        this.keys['active']['private'] = this.privateKey;
+        this.keys['active']['public'] = this.publicKey;
+    }
+
+    addKey(keyname, privateKey) {
+        this.keys[keyname] = {}
+        this.keys[keyname]['private'] = privateKey;
+        publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
+        this.keys[keyname]['public'] = publicKey;
     }
 
     async buyRam(bytes, payer = this) {
@@ -31,7 +46,7 @@ class Account {
                 receiver: this.name,
                 bytes: bytes
             });
-        }, { keyProvider: payer.privateKey });
+        }, { keyProvider: payer.keys['active']['private'] });
     }
 
     async buyBandwidth(cpu, net, payer = this) {
@@ -45,7 +60,7 @@ class Account {
                 stake_net_quantity: `${net} SYS`,
                 transfer: 0
             });
-        }, { keyProvider: payer.privateKey });
+        }, { keyProvider: payer.keys['active']['private'] });
     }
 
     async send(toAccount, amount) {
@@ -56,7 +71,7 @@ class Account {
             toAccount.name,
             `${amount} SYS`,
             this.permissions.active,
-            { broadcast: true, sign: true, keyProvider: this.privateKey }
+            { broadcast: true, sign: true, keyProvider: this.keys['active']['private'] }
         );
     }
 
