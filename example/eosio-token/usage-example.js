@@ -17,11 +17,6 @@ describe('EOSIO Token', function () {
     const HOLDER_SUPPLY = '100.0000 SYS';
 
     before(async () => {
-        /* 
-            Accounts loader generates random accounts for easier testing
-            But you could use it also to create new accounts on each network
-            For more details, visit the documentation
-        */
         let accounts = await eoslime.Account.createRandoms(2);
         tokensIssuer = accounts[0];
         tokensHolder = accounts[1];

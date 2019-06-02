@@ -61,11 +61,6 @@ describe('EOSIO Token', function () {
     const HOLDER_SUPPLY = '100.0000 SYS';
 
     before(async () => {
-        /* 
-            Accounts loader generates random accounts for easier testing
-            But you could use it also to create new accounts on each network
-            For more details, visit the documentation
-        */
         let accounts = await eoslime.Account.createRandoms(2);
         tokensIssuer = accounts[0];
         tokensHolder = accounts[1];
@@ -251,7 +246,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let account2 = eoslime.Account.load('myAcc2', 'myPrivateKey2');
     
     // Payer will buy cpu and network for account2 for 100 SYS 
-    await account2.buyBandwidth(100, 100, payer);
+    await account2.buyBandwidth('100 SYS', '100 SYS'', payer);
 ```
 *Defaults:*
 * `payer` - current account
@@ -262,33 +257,34 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let account = eoslime.Account.load('myAcc', 'myPrivateKey');
     
     // The account will buy cpu and net by self for 10 SYS
-    await account.buyBandwidth(10, 10);
+    await account.buyBandwidth('10 SYS', '10 SYS');
 ```
 
-* **send (toAccount, amount)** - send EOS tokens(SYS) to another account
+* **send (toAccount, amount)** - send EOS tokens to another account
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let sender = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     let receiver = eoslime.Account.load('myAcc2', 'myPrivateKey2');
     
-    // The sender will send 100 SYS tokens to receiver
+    // The sender will send 100 EOS tokens to receiver
     await sender.send(receiver, 100);
 ```
 
-* **getBalance (code, symbol)** - get the account balance for token with symbol
+* **getBalance (symbol, code)** - get the account balance for token with symbol
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let account = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     
     // custom.token is a contract account with a token deployed on it
-    await account.getBalance(custom.token, 'Custom');
+    await account.getBalance('CUSTOM', custom.token);
 ```
 
 *Defaults:*
+* `symbol` - EOS
 * `code` - eosio.token
-* `symbol` - SYS
+
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
@@ -299,6 +295,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
 
 
 #### 3. Static account properties
+***Note! Each of the create-account functions, behind the scene executes also buyRam transaction for 8192 bytes***
 * **createFromName (name, accountCreator)** - Creates a fresh new account for a given name
 
 **Important!** Keep in mind that this name may already exists on the network

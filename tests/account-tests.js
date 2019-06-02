@@ -146,7 +146,7 @@ describe('Account', function () {
             }
         });
 
-        it('Should load ram [payer]', async () => {
+        it('Should buy ram [payer]', async () => {
             let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
@@ -154,7 +154,7 @@ describe('Account', function () {
             assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
         });
 
-        it('Should load ram by self', async () => {
+        it('Should buy ram by self', async () => {
             let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
@@ -176,22 +176,22 @@ describe('Account', function () {
             }
         });
 
-        it('Should load bandwidth [payer]', async () => {
+        it('Should buy bandwidth [payer]', async () => {
             let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
-            let tx = await account.buyBandwidth(10, 10, payer);
+            let tx = await account.buyBandwidth('10.0000 SYS', '10.0000 SYS', payer);
             assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
         });
 
-        it('Should load bandwidth by self', async () => {
+        it('Should buy bandwidth by self', async () => {
             let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             let account = await Account.createRandom();
 
             // Send 10 EOS to the account in order to have enough balance to pay for his bandwidth
             await eosAccount.send(account, '10.0000');
 
-            let tx = await account.buyBandwidth(10, 19);
+            let tx = await account.buyBandwidth('10 SYS', '10 SYS');
             assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
         });
 
@@ -341,7 +341,7 @@ describe('Account', function () {
         let encryptedJSONAccount;
         const PASSWORD = 'secret password';
 
-        before(async () => {
+        beforeEach(async () => {
             encryptedJSONAccount = await Account.createEncrypted(PASSWORD);
         });
 
