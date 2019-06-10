@@ -41,26 +41,26 @@ class Account {
             tr.delegatebw({
                 from: payer.name,
                 receiver: this.name,
-                stake_cpu_quantity: `${cpu} SYS`,
-                stake_net_quantity: `${net} SYS`,
+                stake_cpu_quantity: cpu,
+                stake_net_quantity: net,
                 transfer: 0
             });
         }, { keyProvider: payer.privateKey });
     }
 
-    async send(toAccount, amount) {
-        is(toAccount).instanceOf(Account);
+    async send(receiver, amount, symbol = 'EOS') {
+        is(receiver).instanceOf(Account);
 
         return this.provider.eos.transfer(
             this.name,
-            toAccount.name,
-            `${amount} SYS`,
+            receiver.name,
+            `${amount} ${symbol}`,
             this.permissions.active,
             { broadcast: true, sign: true, keyProvider: this.privateKey }
         );
     }
 
-    async getBalance(code = 'eosio.token', symbol = 'SYS') {
+    async getBalance(symbol = 'EOS', code = 'eosio.token') {
         return this.provider.eos.getCurrencyBalance(code, this.name, symbol);
     }
 }
