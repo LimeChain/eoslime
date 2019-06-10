@@ -37,6 +37,11 @@ const Networks = {
         url: 'https://eos.greymass.com',
         chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
     },
+    kylin: {
+        name: 'kylin',
+        url: 'https://kylin.eoscanada.com',
+        chainId: '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191'
+    },
     custom: {
         name: 'custom',
         url: 'https://custom.com',
@@ -118,6 +123,11 @@ describe('Account', function () {
             let CustomAccount = eoslime.init({ url: Networks.custom.url, chainId: Networks.custom.chainId }).Account;
             let customAccount = CustomAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
             assertCorrectAccount(customAccount);
+
+            // Kylin
+            let KylinAccount = eoslime.init('kylin').Account;
+            let kylinAccount = KylinAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+            assertCorrectAccount(kylinAccount);
         });
 
         it('Should send EOS tokens', async () => {
@@ -128,9 +138,9 @@ describe('Account', function () {
             let receiverBalanceBeforeSend = await receiverAccount.getBalance();
             assert(receiverBalanceBeforeSend == 0, 'Incorrect tokens amount before send');
 
-            await senderAccount.send(receiverAccount, SEND_AMOUNT);
+            await senderAccount.send(receiverAccount, SEND_AMOUNT, 'SYS');
 
-            let receiverBalanceAfterSend = await receiverAccount.getBalance();
+            let receiverBalanceAfterSend = await receiverAccount.getBalance('SYS');
             assert(receiverBalanceAfterSend[0] == `${SEND_AMOUNT} SYS`, 'Incorrect tokens amount after send');
         });
 
@@ -138,7 +148,7 @@ describe('Account', function () {
             try {
                 const SEND_AMOUNT = '10.0000';
                 let senderAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-                await senderAccount.send('Fake account', SEND_AMOUNT);
+                await senderAccount.send('Fake account', SEND_AMOUNT, 'SYS');
 
                 assert(false, 'Should throw');
             } catch (error) {
@@ -159,7 +169,7 @@ describe('Account', function () {
             let account = await Account.createRandom();
 
             // Send 10 EOS to the account in order to have enough balance to pay for his ram
-            await eosAccount.send(account, '10.0000');
+            await eosAccount.send(account, '10.0000', 'SYS');
 
             let tx = await account.buyRam(1000);
             assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
@@ -189,7 +199,7 @@ describe('Account', function () {
             let account = await Account.createRandom();
 
             // Send 10 EOS to the account in order to have enough balance to pay for his bandwidth
-            await eosAccount.send(account, '10.0000');
+            await eosAccount.send(account, '10.0000', 'SYS');
 
             let tx = await account.buyBandwidth('10 SYS', '10 SYS');
             assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');

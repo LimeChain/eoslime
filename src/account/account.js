@@ -48,13 +48,13 @@ class Account {
         }, { keyProvider: payer.privateKey });
     }
 
-    async send(toAccount, amount) {
-        is(toAccount).instanceOf(Account);
+    async send(receiver, amount, symbol = 'EOS') {
+        is(receiver).instanceOf(Account);
 
         return this.provider.eos.transfer(
             this.name,
-            toAccount.name,
-            `${amount} EOS`,
+            receiver.name,
+            `${amount} ${symbol}`,
             this.permissions.active,
             { broadcast: true, sign: true, keyProvider: this.privateKey }
         );
