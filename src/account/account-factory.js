@@ -70,9 +70,13 @@ class AccountFactory {
             let decryptedAccount = JSON.parse(JSON.stringify(encryptedAccount));
 
             let pureData = crypto.decrypt(encryptedAccount.cipherText, password);
-            let dataParts = pureData.split('::');
+            if (!pureData) {
+                throw new Error('Couldn\'t decrypt the data');
+            }
 
             delete decryptedAccount.cipherText;
+
+            let dataParts = pureData.split('::');
             decryptedAccount.privateKey = dataParts[0];
             decryptedAccount.network = this.provider.network;
 
@@ -97,6 +101,13 @@ let createAccountOnBlockchain = async function (accountToBeCreated, accountCreat
             owner: accountToBeCreated.publicKey,
             active: accountToBeCreated.publicKey
         });
+
+        tr.buyrambytes({
+            payer: accountCreator.name,
+            receiver: accountToBeCreated.name,
+            bytes: 8192
+        });
+
     }, { keyProvider: accountCreator.privateKey });
 }
 
