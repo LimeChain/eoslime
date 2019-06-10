@@ -17,7 +17,7 @@ npm install eoslime
 
 ```javascript
 /* 
-    Supported Networks: [ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }
+    Supported Networks: [ local ] [ jungle ] [ bos ] [ worbli ] [ main ] [kylin] or  { url: 'custom url', chainId: 'custom id' }
 */
 const eoslime = require('eoslime').init('local');
 
@@ -136,7 +136,7 @@ describe('EOSIO Token', function () {
 ## Eoslime initialization
 ---
 ***Parameters:***
-* network name - **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }**
+* network name - **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] [kylin] or  { url: 'custom url', chainId: 'custom id' }**
 ---
 
 ##### Initialization with default parameters:
@@ -246,7 +246,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let account2 = eoslime.Account.load('myAcc2', 'myPrivateKey2');
     
     // Payer will buy cpu and network for account2 for 100 EOS 
-    await account2.buyBandwidth('100 EOS', '100 EOS'', payer);
+    await account2.buyBandwidth('100.0000 EOS', '100.0000 EOS'', payer);
 ```
 *Defaults:*
 * `payer` - current account
@@ -257,10 +257,10 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let account = eoslime.Account.load('myAcc', 'myPrivateKey');
     
     // The account will buy cpu and net by self for 10 EOS
-    await account.buyBandwidth('10 EOS', '10 EOS');
+    await account.buyBandwidth('10.0000 EOS', '10.0000 EOS');
 ```
 
-* **send (toAccount, amount)** - send EOS tokens to another account
+* **send (receiver, amount, symbol)** - send EOS tokens to another account
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
@@ -268,7 +268,19 @@ Account is a class that provides an easy access to blockchain account endpoint.
     let receiver = eoslime.Account.load('myAcc2', 'myPrivateKey2');
     
     // The sender will send 100 EOS tokens to receiver
-    await sender.send(receiver, 100);
+    await sender.send(receiver, `100.0000`, 'EOS');
+```
+
+*Defaults:*
+* `symbol` - EOS
+```javascript
+    const eoslime = require('eoslime').init();
+    // Existing accounts on local network
+    let sender = eoslime.Account.load('myAcc1', 'myPrivateKey1');
+    let receiver = eoslime.Account.load('myAcc2', 'myPrivateKey2');
+    
+    // The sender will send 100 EOS tokens to receiver
+    await sender.send(receiver, `100.0000`);
 ```
 
 * **getBalance (symbol, code)** - get the account balance for token with symbol
