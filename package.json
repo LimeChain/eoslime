@@ -4,7 +4,7 @@
   "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --check-coverage --lines 85 mocha './tests/*.js'",
+    "test": "mocha './tests/*.js'",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "start": "mocha ./example/eosio-token/usage-example.js"
   },

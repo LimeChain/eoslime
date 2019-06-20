@@ -13,6 +13,14 @@ class Contract {
 
         declareFunctionsFromABI.call(this, abi, provider.eos);
     }
+
+    async makeInline() {
+        if (this.name != contractExecutorAccount.name) {
+            throw new Error('In order to make a contract inline one, the contract executor should be the account, on which the contract is deployed');
+        }
+
+        await contractExecutorAccount.addPermissionToAuthority('eosio.code', 'active');
+    }
 }
 
 module.exports = Contract;
