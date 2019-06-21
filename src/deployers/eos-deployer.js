@@ -3,8 +3,16 @@ const path = require('path');
 const contractFilesReader = require('./../helpers/contract-files-reader');
 const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
 
-const defaultOption = {
+const defaultDeployOptions = {
     inline: false
+}
+
+const deployOptionsActions = {
+    inline: async (contract, inline) => {
+        if (inline) {
+            return contract.makeInline();
+        }
+    }
 }
 
 class EOSDeployer {
@@ -13,7 +21,7 @@ class EOSDeployer {
         defineImmutableProperties(this, [
             {
                 name: '__deploy',
-                value: async function (wasmPath, abiPath, contractAccount, options = defaultOption) {
+                value: async function (wasmPath, abiPath, contractAccount, options = defaultDeployOptions) {
                     let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
                     let wasm = contractFilesReader.readWASMFromFile(path.resolve(wasmPath));
 
@@ -21,30 +29,28 @@ class EOSDeployer {
                     await provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
 
                     let contract = contractFactory.buildExisting(abi, contractAccount.name, contractAccount);
-                    await executeOptions(contract, options);
+
+                    options = Object.assign(defaultDeployOptions, options);
+                    await executeOptions(contract, options, this.__deploy.options);
 
                     return contract;
                 }
-            }
+            },
         ]);
-    }
 
-
-}
-
-const optionsActions = {
-    inline: async (contract, inline) => {
-        if (inline) {
-            await contract.makeInline();
-        }
+        this.__deploy.options = deployOptionsActions;
     }
 }
 
-const executeOptions = async function (contract, options) {
+
+const executeOptions = async function (contract, options, optionsActions) {
     const optionsKeys = Object.keys(options);
     for (let i = 0; i < optionsKeys.length; i++) {
         const optionKey = optionsKeys[i];
-        await optionsActions[optionKey](contract, options[optionKey]);
+
+        if (optionsActions[optionKey]) {
+            await optionsActions[optionKey](contract, options[optionKey]);
+        }
     }
 }
 

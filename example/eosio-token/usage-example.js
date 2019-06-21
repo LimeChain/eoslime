@@ -68,7 +68,7 @@ describe('EOSIO Token', function () {
         */
         await tokenContract.issue(tokensHolder.name, HOLDER_SUPPLY, 'memo', { from: tokensIssuer });
 
-        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.name, tokensHolder.name, 'SYS');
+        let holderBalance = await tokensHolder.getBalance('SYS', tokenContract.name);
         assert.equal(holderBalance[0], HOLDER_SUPPLY, 'Incorrect holder balance');
     });
 
@@ -83,7 +83,7 @@ describe('EOSIO Token', function () {
             tokenContract.issue(tokensHolder.name, INVALID_ISSUING_AMOUNT, 'memo', { from: tokensIssuer })
         );
 
-        let holderBalance = await tokenContract.provider.eos.getCurrencyBalance(tokenContract.name, tokensHolder.name, 'SYS');
+        let holderBalance = await tokensHolder.getBalance('SYS', tokenContract.name);
         assert.equal(holderBalance.length, 0, 'Incorrect holder balance');
     });
 });

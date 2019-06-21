@@ -55,6 +55,10 @@ describe('Account', function () {
     this.timeout(15000);
 
     const ACCOUNT_NAME = 'eosio';
+    const EXECUTIVE_AUTHORITY = {
+        actor: 'eosio',
+        permission: 'active'
+    }
     const ACCOUNT_PRIVATE_KEY = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
     const ACCOUNT_PUBLIC_KEY = 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV';
 
@@ -84,8 +88,8 @@ describe('Account', function () {
         assert(account.name == ACCOUNT_NAME, 'Incorrect name');
         assert(account.privateKey == ACCOUNT_PRIVATE_KEY, 'Incorrect private key');
         assert(account.publicKey == ACCOUNT_PUBLIC_KEY, 'Incorrect public key');
-        assert(account.permissions.active.actor == ACCOUNT_NAME, 'Incorrect active actor');
-        assert(account.permissions.owner.actor == ACCOUNT_NAME, 'Incorrect owner actor');
+        assert(account.executiveAuthority.actor == EXECUTIVE_AUTHORITY.actor, 'Incorrect executive authority actor');
+        assert(account.executiveAuthority.permission == EXECUTIVE_AUTHORITY.permission, 'Incorrect executive authority permission');
 
         const network = account.provider.network;
         assert(JSON.stringify(account.provider.network) == JSON.stringify(Networks[network.name]))
@@ -130,91 +134,169 @@ describe('Account', function () {
             assertCorrectAccount(kylinAccount);
         });
 
-        it('Should send EOS tokens', async () => {
-            const SEND_AMOUNT = '10.0000';
-            let senderAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-
-            let receiverAccount = await Account.createRandom();
-            let receiverBalanceBeforeSend = await receiverAccount.getBalance();
-            assert(receiverBalanceBeforeSend == 0, 'Incorrect tokens amount before send');
-
-            await senderAccount.send(receiverAccount, SEND_AMOUNT, 'SYS');
-
-            let receiverBalanceAfterSend = await receiverAccount.getBalance('SYS');
-            assert(receiverBalanceAfterSend[0] == `${SEND_AMOUNT} SYS`, 'Incorrect tokens amount after send');
-        });
-
-        it('Should throw if one tries to send EOS tokens to incorrect account', async () => {
-            try {
+        describe('Send tokens', function () {
+            it('Should send EOS tokens', async () => {
                 const SEND_AMOUNT = '10.0000';
                 let senderAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-                await senderAccount.send('Fake account', SEND_AMOUNT, 'SYS');
 
-                assert(false, 'Should throw');
-            } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
-            }
+                let receiverAccount = await Account.createRandom();
+                let receiverBalanceBeforeSend = await receiverAccount.getBalance();
+                assert(receiverBalanceBeforeSend == 0, 'Incorrect tokens amount before send');
+
+                await senderAccount.send(receiverAccount, SEND_AMOUNT, 'SYS');
+
+                let receiverBalanceAfterSend = await receiverAccount.getBalance('SYS');
+                assert(receiverBalanceAfterSend[0] == `${SEND_AMOUNT} SYS`, 'Incorrect tokens amount after send');
+            });
+
+            it('Should throw if one tries to send EOS tokens to incorrect account', async () => {
+                try {
+                    const SEND_AMOUNT = '10.0000';
+                    let senderAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                    await senderAccount.send('Fake account', SEND_AMOUNT, 'SYS');
+
+                    assert(false, 'Should throw');
+                } catch (error) {
+                    assert(error.message.includes('Provided String is not an instance of Account'));
+                }
+            });
         });
 
-        it('Should buy ram [payer]', async () => {
-            let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-            let account = await Account.createRandom();
+        describe('Buy ram', function () {
+            it('Should buy ram [payer]', async () => {
+                let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                let account = await Account.createRandom();
 
-            let tx = await account.buyRam(1000, payer);
-            assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
-        });
+                let tx = await account.buyRam(1000, payer);
+                assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
+            });
 
-        it('Should buy ram by self', async () => {
-            let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-            let account = await Account.createRandom();
-
-            // Send 10 EOS to the account in order to have enough balance to pay for his ram
-            await eosAccount.send(account, '10.0000', 'SYS');
-
-            let tx = await account.buyRam(1000);
-            assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
-        });
-
-        it('Should throw if one provide incorrect account as ram payer', async () => {
-            try {
+            it('Should buy ram by self', async () => {
                 let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-                await eosAccount.buyRam(1000, 'Fake account');
+                let account = await Account.createRandom();
 
-                assert(false, 'Should throw');
-            } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
-            }
+                // Send 10 EOS to the account in order to have enough balance to pay for his ram
+                await eosAccount.send(account, '10.0000', 'SYS');
+
+                let tx = await account.buyRam(1000);
+                assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
+            });
+
+            it('Should throw if one provide incorrect account as ram payer', async () => {
+                try {
+                    let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                    await eosAccount.buyRam(1000, 'Fake account');
+
+                    assert(false, 'Should throw');
+                } catch (error) {
+                    assert(error.message.includes('Provided String is not an instance of Account'));
+                }
+            });
+
         });
 
-        it('Should buy bandwidth [payer]', async () => {
-            let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-            let account = await Account.createRandom();
+        describe('Buy bandwidth', function () {
+            it('Should buy bandwidth [payer]', async () => {
+                let payer = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                let account = await Account.createRandom();
 
-            let tx = await account.buyBandwidth('10.0000 SYS', '10.0000 SYS', payer);
-            assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
-        });
+                let tx = await account.buyBandwidth('10.0000 SYS', '10.0000 SYS', payer);
+                assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
+            });
 
-        it('Should buy bandwidth by self', async () => {
-            let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-            let account = await Account.createRandom();
-
-            // Send 10 EOS to the account in order to have enough balance to pay for his bandwidth
-            await eosAccount.send(account, '10.0000', 'SYS');
-
-            let tx = await account.buyBandwidth('10 SYS', '10 SYS');
-            assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
-        });
-
-        it('Should throw if one provide incorrect account as bandwidth payer', async () => {
-            try {
+            it('Should buy bandwidth by self', async () => {
                 let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-                await eosAccount.buyBandwidth(10, 19, 'Fake account');
+                let account = await Account.createRandom();
 
-                assert(false, 'Should throw');
-            } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
-            }
+                // Send 10 EOS to the account in order to have enough balance to pay for his bandwidth
+                await eosAccount.send(account, '10.0000', 'SYS');
+
+                let tx = await account.buyBandwidth('10 SYS', '10 SYS');
+                assert(tx.transaction.transaction.actions[0].name == 'delegatebw', 'Incorrect buy bandwidth transaction');
+            });
+
+            it('Should throw if one provide incorrect account as bandwidth payer', async () => {
+                try {
+                    let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                    await eosAccount.buyBandwidth(10, 19, 'Fake account');
+
+                    assert(false, 'Should throw');
+                } catch (error) {
+                    assert(error.message.includes('Provided String is not an instance of Account'));
+                }
+            });
         });
+
+        describe('Create authority', function () {
+            const AUTHORITY = 'contracts';
+            const PARENT_AUTHORITY = 'active';
+
+            it('Should create authority', async () => {
+                let account = await Account.createRandom();
+                let authority = await getAuthorityForAccount(AUTHORITY, account.name);
+
+                assert(authority == undefined);
+
+                const newAuthorityAccount = await account.setAuthority(AUTHORITY, PARENT_AUTHORITY);
+                assert(newAuthorityAccount.name == account.name);
+                assert(newAuthorityAccount.executiveAuthority.actor == newAuthorityAccount.name);
+                assert(newAuthorityAccount.executiveAuthority.permission == AUTHORITY);
+
+                authority = await getAuthorityForAccount(AUTHORITY, newAuthorityAccount.name);
+                assert(authority.parent == PARENT_AUTHORITY);
+            });
+        });
+
+        describe('Create permission for authority', function () {
+            const AUTHORITY = 'active';
+            const PERMISSION = 'eosio.code';
+
+            it('Should create permission for active authority', async () => {
+                let account = await Account.createRandom();
+                let authority = await getAuthorityForAccount(AUTHORITY, account.name);
+
+                assert(authority.required_auth.accounts.length == 0);
+
+                await account.createPermissionForAuthority(PERMISSION, AUTHORITY);
+
+                authority = await getAuthorityForAccount(AUTHORITY, account.name);
+
+                assert(authority.required_auth.accounts[0].permission.actor == account.name);
+                assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
+            });
+
+            it('Should throw if one try to create a permission for non-existing authority', async () => {
+                try {
+                    let account = await Account.createRandom();
+                    await account.createPermissionForAuthority(PERMISSION, 'FAKE');
+
+                    assert(false, 'Should throw');
+                } catch (error) {
+                    assert(error.message.includes('Could not add permission to non-existing authority'));
+                }
+            });
+
+            it('Should not duplicate an authority permission if it already exists', async () => {
+                let account = await Account.createRandom();
+                await account.createPermissionForAuthority(PERMISSION, AUTHORITY);
+                await account.createPermissionForAuthority(PERMISSION, AUTHORITY);
+
+                authority = await getAuthorityForAccount(AUTHORITY, account.name);
+
+                assert(authority.required_auth.accounts.length == 1);
+                assert(authority.required_auth.accounts[0].permission.actor == account.name);
+                assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
+            });
+        });
+
+        const getAuthorityForAccount = async function (authorityName, accountName) {
+            let accountInfo = await Provider.eos.getAccount(accountName);
+            const authority = accountInfo.permissions.find((permission) => {
+                return permission.perm_name == authorityName;
+            });
+
+            return authority;
+        }
     });
 
     describe('Create from name', function () {

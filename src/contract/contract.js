@@ -15,11 +15,11 @@ class Contract {
     }
 
     async makeInline() {
-        if (this.name != contractExecutorAccount.name) {
+        if (this.name != this.executor.name) {
             throw new Error('In order to make a contract inline one, the contract executor should be the account, on which the contract is deployed');
         }
 
-        await contractExecutorAccount.addPermissionToAuthority('eosio.code', 'active');
+        return this.executor.createPermissionForAuthority('eosio.code', 'active');
     }
 }
 
@@ -73,7 +73,7 @@ let executeFunction = function (eos, contractName, actionName, data, authorizati
                 {
                     account: contractName,
                     name: actionName,
-                    authorization: [authorizationAccount.permissions.active],
+                    authorization: [authorizationAccount.executiveAuthority],
                     data: data
                 }
             ]

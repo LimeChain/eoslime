@@ -8,37 +8,41 @@ const createAccountNameFromPublicKey = require('./public-key-name-generator').cr
 class AccountFactory {
     constructor(provider) {
         this.provider = provider;
+        this.defaultOptions = {
+            authority: 'active',
+            accountCreator: this.provider.defaultAccount
+        }
     }
 
-    load(name, privateKey) {
-        return new Account(name, privateKey, this.provider);
+    load(name, privateKey, authorityName = this.defaultOptions.authority) {
+        return new Account(name, privateKey, this.provider, authorityName);
     }
 
-    async createFromName(accountName, accountCreator = this.provider.defaultAccount) {
+    async createFromName(accountName, accountCreator = this.defaultOptions.accountCreator) {
         is(accountCreator).instanceOf(Account);
 
         let accountPrivateKey = await eosECC.randomKey();
-        let newAccount = new Account(accountName, accountPrivateKey, this.provider);
+        let newAccount = new Account(accountName, accountPrivateKey, this.provider, this.defaultOptions.authority);
 
         await createAccountOnBlockchain(newAccount, accountCreator);
 
         return newAccount;
     }
 
-    async createRandom(accountCreator = this.provider.defaultAccount) {
+    async createRandom(accountCreator = this.defaultOptions.accountCreator) {
         is(accountCreator).instanceOf(Account);
 
         let privateKey = await eosECC.randomKey();
         let publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
         let name = createAccountNameFromPublicKey(publicKey);
 
-        let newAccount = new Account(name, privateKey, this.provider);
+        let newAccount = new Account(name, privateKey, this.provider, this.defaultOptions.authority);
         await createAccountOnBlockchain(newAccount, accountCreator);
 
         return newAccount;
     }
 
-    async createRandoms(accountsCount, accountCreator = this.provider.defaultAccount) {
+    async createRandoms(accountsCount, accountCreator = this.defaultOptions.accountCreator) {
         let accounts = [];
         for (let i = 0; i < accountsCount; i++) {
             let newAccount = await this.createRandom(accountCreator);
@@ -48,7 +52,7 @@ class AccountFactory {
         return accounts;
     }
 
-    async createEncrypted(password, accountCreator = this.provider.defaultAccount) {
+    async createEncrypted(password, accountCreator = this.defaultOptions.accountCreator) {
         try {
             let newAccount = await this.createRandom(accountCreator);
             let dataToBeEncrypted = {
@@ -65,6 +69,7 @@ class AccountFactory {
         }
     }
 
+    // Todo: change here cuz of the authority
     fromEncrypted(encryptedAccount, password) {
         try {
             let decryptedAccount = JSON.parse(JSON.stringify(encryptedAccount));
@@ -93,7 +98,7 @@ class AccountFactory {
     }
 }
 
-let createAccountOnBlockchain = async function (accountToBeCreated, accountCreator) {
+const createAccountOnBlockchain = async function (accountToBeCreated, accountCreator) {
     await accountToBeCreated.provider.eos.transaction(tr => {
         tr.newaccount({
             creator: accountCreator.name,
