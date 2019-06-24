@@ -58,6 +58,7 @@ class AccountFactory {
             let dataToBeEncrypted = {
                 name: newAccount.name,
                 network: newAccount.provider.network,
+                authority: newAccount.executiveAuthority
             };
 
             let dataHash = crypto.hash(JSON.stringify({ ...dataToBeEncrypted, privateKey: newAccount.privateKey }));
@@ -69,7 +70,6 @@ class AccountFactory {
         }
     }
 
-    // Todo: change here cuz of the authority
     fromEncrypted(encryptedAccount, password) {
         try {
             let decryptedAccount = JSON.parse(JSON.stringify(encryptedAccount));
@@ -91,7 +91,7 @@ class AccountFactory {
                 throw new Error('Broken account. Most of time reason: invalid network');
             }
 
-            return new Account(decryptedAccount.name, decryptedAccount.privateKey, this.provider);
+            return new Account(decryptedAccount.name, decryptedAccount.privateKey, this.provider, decryptedAccount.authority.permission);
         } catch (error) {
             throw new Error(`Account decryption: ${error.message}`);
         }

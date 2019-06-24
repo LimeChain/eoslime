@@ -19,7 +19,7 @@ class Contract {
             throw new Error('In order to make a contract inline one, the contract executor should be the account, on which the contract is deployed');
         }
 
-        return this.executor.createPermissionForAuthority('eosio.code', 'active');
+        return this.executor.addPermission('eosio.code');
     }
 }
 

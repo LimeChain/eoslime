@@ -53,14 +53,14 @@ class Account {
         );
     }
 
-    async setAuthority(authorityName, parentAuthorityName) {
+    async createAuthority(authorityName) {
         const authPrivateKey = await eosECC.randomKey();
 
         await this.provider.eos.transaction(tr => {
             tr.updateauth({
                 account: this.name,
                 permission: authorityName,
-                parent: parentAuthorityName,
+                parent: this.executiveAuthority.permission,
                 auth: eosECC.PrivateKey.fromString(authPrivateKey).toPublic().toString()
             }, { authorization: [this.executiveAuthority] });
 
@@ -69,10 +69,10 @@ class Account {
         return new Account(this.name, authPrivateKey, this.provider, authorityName);
     }
 
-    async createPermissionForAuthority(permName, authorityName) {
+    async addPermission(permName) {
         const accountInfo = await this.provider.eos.getAccount(this.name);
         const authority = accountInfo.permissions.find((permission) => {
-            return authorityName == permission.perm_name;
+            return this.executiveAuthority.permission == permission.perm_name;
         });
 
         if (!authority) {

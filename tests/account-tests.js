@@ -237,7 +237,7 @@ describe('Account', function () {
 
                 assert(authority == undefined);
 
-                const newAuthorityAccount = await account.setAuthority(AUTHORITY, PARENT_AUTHORITY);
+                const newAuthorityAccount = await account.createAuthority(AUTHORITY);
                 assert(newAuthorityAccount.name == account.name);
                 assert(newAuthorityAccount.executiveAuthority.actor == newAuthorityAccount.name);
                 assert(newAuthorityAccount.executiveAuthority.permission == AUTHORITY);
@@ -257,7 +257,7 @@ describe('Account', function () {
 
                 assert(authority.required_auth.accounts.length == 0);
 
-                await account.createPermissionForAuthority(PERMISSION, AUTHORITY);
+                await account.addPermission(PERMISSION);
 
                 authority = await getAuthorityForAccount(AUTHORITY, account.name);
 
@@ -268,7 +268,9 @@ describe('Account', function () {
             it('Should throw if one try to create a permission for non-existing authority', async () => {
                 try {
                     let account = await Account.createRandom();
-                    await account.createPermissionForAuthority(PERMISSION, 'FAKE');
+                    account.executiveAuthority.permission = 'FAKE';
+
+                    await account.addPermission(PERMISSION);
 
                     assert(false, 'Should throw');
                 } catch (error) {
@@ -278,8 +280,8 @@ describe('Account', function () {
 
             it('Should not duplicate an authority permission if it already exists', async () => {
                 let account = await Account.createRandom();
-                await account.createPermissionForAuthority(PERMISSION, AUTHORITY);
-                await account.createPermissionForAuthority(PERMISSION, AUTHORITY);
+                await account.addPermission(PERMISSION);
+                await account.addPermission(PERMISSION);
 
                 authority = await getAuthorityForAccount(AUTHORITY, account.name);
 
@@ -408,6 +410,8 @@ describe('Account', function () {
             assert(await Provider.eos.getAccount(encryptedAccount.name), 'Account is not created on blockchain');
             assert(encryptedAccount.cipherText, 'Cipher is missing');
             assert(encryptedAccount.network, 'Network is missing');
+            assert(encryptedAccount.authority.actor == encryptedAccount.name, 'Incorrect authority actor');
+            assert(encryptedAccount.authority.permission == 'active', 'Incorrect authority permission');
         });
 
         it('Should create encrypted account [default account]', async () => {
@@ -416,6 +420,8 @@ describe('Account', function () {
             assert(await Provider.eos.getAccount(encryptedAccount.name), 'Account is not created on blockchain');
             assert(encryptedAccount.cipherText, 'Cipher is missing');
             assert(encryptedAccount.network, 'Network is missing');
+            assert(encryptedAccount.authority.actor == encryptedAccount.name, 'Incorrect authority actor');
+            assert(encryptedAccount.authority.permission == 'active', 'Incorrect authority permission');
         });
 
         it('Should throw if one provide incorrect account as accounts creator', async () => {
@@ -444,7 +450,8 @@ describe('Account', function () {
             assert(decryptedJSONAccount.name, 'Incorrect name');
             assert(decryptedJSONAccount.privateKey, 'Incorrect private key');
             assert(decryptedJSONAccount.publicKey, 'Incorrect public key');
-            assert(JSON.stringify(decryptedJSONAccount.permissions) != "{}", 'Incorrect permissions');
+            assert(decryptedJSONAccount.executiveAuthority.actor == decryptedJSONAccount.name, 'Incorrect authority actor');
+            assert(decryptedJSONAccount.executiveAuthority.permission == 'active', 'Incorrect authority permission');
             assert(JSON.stringify(decryptedJSONAccount.provider.network) == JSON.stringify(Networks['local']), 'Incorrect network');
         });
 
