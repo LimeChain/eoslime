@@ -155,9 +155,8 @@ eoslime.provider.defaultAccount =>
 
     Account {
         name: 'eosio',
-        permissions: {
-            active: { actor: 'eosio', permission: 'active' }
-            owner: { actor: 'eosio', permission: 'owner' }
+        executiveAuthority: {
+            actor: 'eosio', permission: 'active'
         }
         publicKey: 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV',
         privateKey: '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3',
