@@ -248,7 +248,7 @@ Permission per account. If you want to operate with another account's permission
     let account2 = eoslime.Account.load('myAcc2', 'myPrivateKey2');
     
     // Payer will buy cpu and network for account2 for 100 EOS 
-    await account2.buyBandwidth('100.0000 EOS', '100.0000 EOS'', payer);
+    await account2.buyBandwidth('100.0000 EOS', '100.0000 EOS', payer);
 ```
 *Defaults:*
 * `payer` - current account
