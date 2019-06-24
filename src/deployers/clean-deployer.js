@@ -9,9 +9,9 @@ class CleanDeployer extends EOSDeployer {
         defineImmutableProperties(this, [
             {
                 name: 'deploy',
-                value: async function (wasmPath, abiPath) {
+                value: async function (wasmPath, abiPath, options) {
                     let newContractAccount = await accountFactory.createRandom();
-                    return this.__deploy(wasmPath, abiPath, newContractAccount);;
+                    return this.__deploy(wasmPath, abiPath, newContractAccount, options);;
                 }
             }
         ]);
