@@ -197,7 +197,7 @@ Account is a class that provides an easy access to blockchain account endpoint.
 ***Parameters:***
 * name - account name
 * privateKey - private key of the account
-* permission ( Optional )- the account's permission. Defaults to `active`  
+* permission ( Optional )- the account's permission. Default -> `active`  
 Permission per account. If you want to operate from another account's permission you should load the same account with the second permission.
 
 #### 2. Instantiated account
