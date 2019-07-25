@@ -69,7 +69,7 @@ class Account {
         return new Account(this.name, authPrivateKey, this.provider, authorityName);
     }
 
-    async addPermission(permName) {
+    async addPermission(permName, actor = this.name) {
         const accountInfo = await this.provider.eos.getAccount(this.name);
         const authority = accountInfo.permissions.find((permission) => {
             return this.executiveAuthority.permission == permission.perm_name;
@@ -84,7 +84,7 @@ class Account {
         });
 
         if (!hasAlreadyPermission) {
-            authority.required_auth.accounts.push({ permission: { actor: this.name, permission: permName }, weight: 1 });
+            authority.required_auth.accounts.push({ permission: { actor: actor, permission: permName }, weight: 1 });
 
             return this.provider.eos.transaction(tr => {
                 tr.updateauth({

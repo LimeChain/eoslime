@@ -265,6 +265,23 @@ describe('Account', function () {
                 assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
             });
 
+            it('Should allow another account to act on behalf', async () => {
+                let accounts = await Account.createRandoms(2);
+                let child = accounts[0];
+                let parent = accounts[1];
+
+                let authority = await getAuthorityForAccount(AUTHORITY, child.name);
+
+                assert(authority.required_auth.accounts.length == 0);
+
+                await child.addPermission(PERMISSION, parent.name);
+
+                authority = await getAuthorityForAccount(AUTHORITY, child.name);
+
+                assert(authority.required_auth.accounts[0].permission.actor == parent.name);
+                assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
+            });
+
             it('Should throw if one try to create a permission for non-existing authority', async () => {
                 try {
                     let account = await Account.createRandom();

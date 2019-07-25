@@ -301,7 +301,25 @@ Permission per account. If you want to operate with another account's permission
     */
 ```
 
-* **addPermission (permName)** - Adds a new permission in the account's authority
+* **addPermission (permName, actor)** - Adds a new permission in the account's authority
+```javascript
+    const eoslime = require('eoslime').init();
+    // Existing accounts on local network
+    let account = eoslime.Account.load('myaccount', 'myPrivateKey', 'active');
+    let tokenFactoryAccount = eoslime.Account.load('tokenfactory', 'factoryPrivateKey', 'active');
+
+    /* 
+        It will allow a contract account with eosio.code permission to act on behalf when you are authorizing an action with active authority
+        Use case:
+            We have two contracts:  TokenFactory and Token
+            TokenFactory.create behind the scene calls Token.issue_tokens. You want issue_tokens action to be called from you, not from the TokenFactory name
+
+    */
+    await account.addPermission('eosio.code', tokenFactoryAccount.name);
+```
+
+*Defaults:*
+* `actor` - current account name
 ```javascript
     const eoslime = require('eoslime').init();
     // Existing account on local network
