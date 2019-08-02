@@ -6,6 +6,8 @@ eoslime.js
 
 EOS development and deployment framework based on eosjs.js. The framework's main purpose is to make the process of unit testing, deployment and compilation much simpler and much easier.
 
+You can join us on telegram - https://t.me/eoslime
+
 ## Installing 
 ---
 
