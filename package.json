@@ -34,14 +34,10 @@
     "url": "https://github.com/LimeChain/eoslime/issues"
   },
   "homepage": "https://github.com/LimeChain/eoslime#readme",
-<<<<<<< HEAD
   "bin": {
     "eoslime": "./cli.js"
+  },
+  "devDependencies": {
+    "nyc": "^14.1.1"
   }
 }
-=======
-  "devDependencies": {
-  "nyc": "^14.1.1"
-}
-}
->>>>>>> bee8183ea33123c73de575de829bfb9975476cfc
