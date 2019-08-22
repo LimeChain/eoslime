@@ -5,7 +5,7 @@ class Option {
         this.definition = definition;
     }
 
-    execute(optionValue) { }
+    process(optionValue) { }
 }
 
 module.exports = Option;

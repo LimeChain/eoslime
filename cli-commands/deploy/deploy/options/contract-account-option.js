@@ -1,23 +1,33 @@
+const consoleInput = require('prompts');
+
 const Option = require('./../../option');
-const Account = require('./../../../src/account/account');
+const AccountFactory = require('./../../../../src/account/account-factory');
 
 class ContractAccountOption extends Option {
     constructor() {
         super(
-            'contractAccount',
+            'deployer',
             {
-                "describe": "Account the contract is going to be deployed on",
+                "describe": "Deployer account",
                 "type": "string",
-                "default": JSON.stringify(Account.random())
             }
         );
     }
 
-    execute(optionValue) {
-        let parsedOptionValue = JSON.parse(optionValue);
-        optionValue = new Account(parsedOptionValue.name, parsedOptionValue.privateKey);
+    async process(accountName, args) {
+        const accountFactory = new AccountFactory(args.network);
 
-        return optionValue;
+        if (accountName) {
+            const deployerPrivateKey = await consoleInput({
+                type: 'string',
+                name: 'privateKey',
+                message: 'Enter deployer private key'
+            });
+
+            return accountFactory.load(accountName, deployerPrivateKey, 'active');
+        }
+
+        return accountFactory.createRandom();
     }
 }
 

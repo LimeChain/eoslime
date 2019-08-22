@@ -7,26 +7,33 @@ const deployCommandDefinition = require('./deploy-command-definition.js');
 
 class DeployCommand extends Command {
     constructor() {
-        super(deployCommandDefinition.template, deployCommandDefinition.description);
-    }
-
-    defineOptions(yargs) {
-        super.defineOptions(yargs, deployCommandDefinition.options);
+        super(deployCommandDefinition);
     }
 
     async execute(args) {
         commandMessages.StartDeployment();
 
-        super.__execute(args, deployCommandDefinition.options, (option, executionResult) => {
-            args[option.name] = executionResult;
-        });
+        try {
+            super.process(args, (option, result) => {
+                args[option.name] = result;
+            });
 
-        args.path.forEach(deploymentFileFunction => {
-            await deploymentFileFunction(args.network, args.contractAccount);
-        });
-
-        commandMessages.StartDeployment();
+            await runDeploymentScripts(args.path, args.network, args.deployer);
+        } catch (error) {
+            commandMessages.UnsuccessfulDeployment(error);
+        }
     }
+}
+
+const runDeploymentScripts = async function (deploymentScripts, networkProvider, deployer) {
+    deploymentScripts.forEach(deploymentScript => {
+        try {
+            await deploymentScript.deploy(networkProvider, deployer);
+            commandMessages.SuccessfulDeploymentOfScript(deploymentScript);
+        } catch (error) {
+            commandMessages.UnsuccessfulDeploymentOfScript(deploymentScript, error);
+        }
+    });
 }
 
 module.exports = new DeployCommand();

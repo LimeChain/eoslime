@@ -16,16 +16,18 @@ class WithExampleOption extends Option {
     }
 
     execute(optionValue) {
-        fileSystemUtil.createDir('./contracts/example/');
+        if (optionValue) {
+            fileSystemUtil.createDir('./contracts/example/');
 
-        const exampleContractsDestination = path.join(__dirname, './../../../../example/eosio-token/contract/');
-        fileSystemUtil.copyAllFilesFromDirTo(exampleContractsDestination, './contracts/example/');
+            const exampleContractsDestination = path.join(__dirname, './../../../../example/eosio-token/contract/');
+            fileSystemUtil.copyAllFilesFromDirTo(exampleContractsDestination, './contracts/example/');
 
-        const exampleDeploymentFileDestination = path.join(__dirname, './deployment-example/deployment.js');
-        fileSystemUtil.copyFileFromTo(exampleDeploymentFileDestination, './deployment/example-deploy.js');
+            const exampleDeploymentFileDestination = path.join(__dirname, './deployment-example/deployment.js');
+            fileSystemUtil.copyFileFromTo(exampleDeploymentFileDestination, './deployment/example-deploy.js');
 
-        const exampleTestsFileDestination = path.join(__dirname, './tests-example/tests.js');
-        fileSystemUtil.copyFileFromTo(exampleTestsFileDestination, './tests/example-tests.js');
+            const exampleTestsFileDestination = path.join(__dirname, './tests-example/tests.js');
+            fileSystemUtil.copyFileFromTo(exampleTestsFileDestination, './tests/example-tests.js');
+        }
     }
 }
 

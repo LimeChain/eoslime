@@ -12,10 +12,11 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^2.4.2",
+    "crypto-js": "3.1.9-1",
     "eosjs": "16.0.9",
     "mocha": "5.2.0",
-    "yargs": "12.0.5",
-    "crypto-js": "3.1.9-1"
+    "prompts": "^2.2.1",
+    "yargs": "12.0.5"
   },
   "keywords": [
     "lime",

@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 
-module.exports = {
+const fileSystemUtils = {
     createDir: (dirName) => {
         if (!fs.existsSync(dirName)) {
             fs.mkdirSync(dirName);
@@ -29,7 +29,26 @@ module.exports = {
     isFile: (path) => {
         return fs.lstatSync(path).isFile();
     },
-    executeActionForEachFileInDir: (dirPath, actionCallback) => {
+    recursivelyReadDir(dirPath) {
+        const files = [];
+
+        fs.readdir(dirPath, function (err, filenames) {
+            if (err) {
+                throw new Error(err.message);
+            }
+
+            filenames.forEach(function (filePath) {
+                if (fileSystemUtils.isDir(filePath)) {
+                    files.concat(recursivelyReadDir(filePath));
+                } else {
+                    files.push(`${__dirname}/${filePath}`);
+                }
+            });
+        });
+
+        return files;
+    },
+    forEachFileInDir: (dirPath, actionCallback) => {
         fs.readdir(dirPath, function (err, filenames) {
             if (err) {
                 throw new Error(err.message);
@@ -44,3 +63,5 @@ module.exports = {
         return fs.existsSync(path);
     }
 }
+
+module.exports = fileSystemUtils;

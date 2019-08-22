@@ -15,11 +15,7 @@ const defaultPackageJsonDestination = `${__dirname}/default-package.json`;
 class InitCommand extends Command {
 
     constructor() {
-        super(initCommandDefinition.template, initCommandDefinition.description);
-    }
-
-    defineOptions(yargs) {
-        super.defineOptions(yargs, initCommandDefinition.options);
+        super(initCommandDefinition);
     }
 
     execute(args) {
@@ -31,7 +27,8 @@ class InitCommand extends Command {
             createTestsDir();
             copyDefaultPackageJson();
 
-            super.__execute(args, initCommandDefinition.options);
+            super.processOptions(args, initCommandDefinition.options);
+            // super.__execute(args, initCommandDefinition.options);
         } catch (error) {
             commandMessages.UnsuccessfulInstallation();
             throw new Error(error.message);

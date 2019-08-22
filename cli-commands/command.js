@@ -1,22 +1,22 @@
 class Command {
-    constructor(template, description) {
-        this.template = template;
-        this.description = description;
-    }
+    constructor(commandDefinition) {
+        this.template = commandDefinition.template;
+        this.description = commandDefinition.description;
+        this.options = {};
 
-    defineOptions(yargs, options) {
-        for (const option of options) {
+        for (const option of commandDefinition.options) {
+            this.options[option.name] = option;
             yargs.options(option.name, option.definition);
         }
     }
 
-    __execute(args, commandOptions, postExecuteCallback = function (option, executionResult) { }) {
-        for (let i = 0; i < commandOptions.length; i++) {
-            let option = commandOptions[i];
+    processOptions(args, postExecuteCallback = function (option, result) { }) {
+        for (let i = 0; i < this.options.length; i++) {
+            let option = this.options[i];
 
             if (args.hasOwnProperty(option.name)) {
-                let executionResult = option.execute(args[option.name]);
-                postExecuteCallback(option, executionResult);
+                let result = option.process(args[option.name], args);
+                postExecuteCallback(option, result);
             }
         }
     }

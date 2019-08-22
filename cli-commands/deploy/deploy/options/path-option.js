@@ -1,7 +1,6 @@
 const Option = require('./../../option');
 
-
-const fileSystemUtil = require('./../../utils/file-system-util');
+const fileSystemUtil = require('./../../../utils/file-system-util');
 
 class PathOption extends Option {
     constructor() {
@@ -15,11 +14,11 @@ class PathOption extends Option {
         );
     }
 
-    async execute(optionValue) {
+    async process(optionValue) {
         let deploymentFilesFunctions = [];
 
         if (fileSystemUtil.isDir(optionValue)) {
-            fileSystemUtil.executeActionForEachFileInDir(optionValue, (filename) => {
+            fileSystemUtil.forEachFileInDir(optionValue, (filename) => {
                 deploymentFilesFunctions.push(require(`${optionValue}${filename}`));
             });
 

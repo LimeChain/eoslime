@@ -1,5 +1,5 @@
 const Option = require('./../../option');
-const Networks = require('./../../../src/helpers/networks.json');
+const Provider = require('./../../../src/network-providers/provider');
 
 class NetworkOption extends Option {
     constructor() {
@@ -7,21 +7,17 @@ class NetworkOption extends Option {
             'network',
             {
                 "describe": "The blockchain network you are going to deploy on",
-                "type": "string",
+                "type": "network name or in case of custom { url: custom url, chainId: custom chain id }",
                 "default": "local",
                 "choices": [
-                    "local",
-                    "jungle",
-                    "bos",
-                    "worbli",
-                    "main"
+                    Provider.availableNetworks().all
                 ]
             }
         );
     }
 
-    execute(optionValue) {
-        return Networks[optionValue];
+    execute(network) {
+        return new Provider(network);
     }
 }
 
