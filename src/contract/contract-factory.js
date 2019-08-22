@@ -1,22 +1,21 @@
 const Contract = require('./contract');
+const is = require('./../helpers/is');
 const Account = require('./../account/account');
 
 const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
 
 class ContractFactory {
 
-    constructor(eos) {
+    constructor(provider) {
         defineImmutableProperties(this, [
-            { name: 'eos', value: eos }
+            { name: 'provider', value: provider }
         ]);
     }
 
-    buildExisting(abi, contractName, contractExecutorAccount) {
-        if (!(contractExecutorAccount instanceof Account)) {
-            throw new Error('Invalid account');
-        }
+    buildExisting(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
+        is(contractExecutorAccount).instanceOf(Account);
 
-        let contract = new Contract(this.eos, abi, contractName, contractExecutorAccount);
+        let contract = new Contract(this.provider, abi, contractName, contractExecutorAccount);
         return contract;
     }
 }

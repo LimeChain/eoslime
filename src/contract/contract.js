@@ -4,14 +4,22 @@ const defineImmutableProperties = require('./../helpers/immutable-properties').d
 
 class Contract {
 
-    constructor(eos, abi, contractName, contractExecutorAccount) {
+    constructor(provider, abi, contractName, contractExecutorAccount) {
         defineImmutableProperties(this, [
-            { name: 'eosInstance', value: eos },
-            { name: 'contractName', value: contractName },
-            { name: 'defaultExecutor', value: contractExecutorAccount },
+            { name: 'provider', value: provider },
+            { name: 'name', value: contractName },
+            { name: 'executor', value: contractExecutorAccount },
         ]);
 
-        declareFunctionsFromABI.call(this, abi, eos);
+        declareFunctionsFromABI.call(this, abi, provider.eos);
+    }
+
+    async makeInline() {
+        if (this.name != this.executor.name) {
+            throw new Error('In order to make a contract inline one, the contract executor should be the account, on which the contract is deployed');
+        }
+
+        return this.executor.addPermission('eosio.code');
     }
 }
 
@@ -38,11 +46,11 @@ let declareFunctionsFromABI = function (abi, eos) {
             if (optionals && optionals.from instanceof Account) {
                 authorizationAccount = optionals.from;
             } else {
-                authorizationAccount = this.defaultExecutor;
+                authorizationAccount = this.executor;
             }
 
             let structuredParams = structureParamsToExpectedLook(functionParams, contractStructs[functionName].fields);
-            return executeFunction(eos, this.contractName, functionName, structuredParams, authorizationAccount);
+            return executeFunction(eos, this.name, functionName, structuredParams, authorizationAccount);
         }
     }
 }
@@ -65,7 +73,7 @@ let executeFunction = function (eos, contractName, actionName, data, authorizati
                 {
                     account: contractName,
                     name: actionName,
-                    authorization: [authorizationAccount.permissions.active],
+                    authorization: [authorizationAccount.executiveAuthority],
                     data: data
                 }
             ]
