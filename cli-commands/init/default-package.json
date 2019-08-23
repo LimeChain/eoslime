@@ -4,7 +4,10 @@
     "description": "This is the default package.json generated for your project",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha ./tests/*.js"
+    },
+    "devDependencies": {
+        "mocha": "^6.2.0"
     },
     "author": "",
     "license": "MIT"

@@ -1,4 +1,4 @@
-const withExampleOption = require('./../options/with-example/with-example-option');
+const withExampleOption = require('./options/with-example/with-example-option');
 
 
 module.exports = {

@@ -1,13 +1,22 @@
 #!/usr/bin/env node
 const exec = require('child_process').exec;
 
-const initCommand = require('./cli-commands/init/command/init-command');
+const InitCommand = require('./cli-commands/init');
+const DeployCommand = require('./cli-commands/deploy/');
+const CompileCommand = require('./cli-commands/compile/');
 
 (() => {
 
     let menu = require('yargs');
 
-    menu.command(initCommand.template, initCommand.description, initCommand.defineOptions, initCommand.execute);
+    const initCommand = new InitCommand();
+    const deployCommand = new DeployCommand();
+    const compileCommand = new CompileCommand();
+
+    menu.command(initCommand.template, initCommand.description, InitCommand.defineCommandOptions(initCommand), InitCommand.executeWithContext(initCommand));
+    menu.command(deployCommand.template, deployCommand.description, DeployCommand.defineCommandOptions(deployCommand), DeployCommand.executeWithContext(deployCommand));
+    menu.command(compileCommand.template, compileCommand.description, CompileCommand.defineCommandOptions(compileCommand), CompileCommand.executeWithContext(compileCommand));
+
     menu.command({
         command: '*',
         handler(args) {
