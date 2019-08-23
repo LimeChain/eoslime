@@ -3,7 +3,7 @@ const Command = require('./../command');
 const commandMessages = require('./messages');
 const deployCommandDefinition = require('./definition');
 
-// eoslime deploy --path --network --contractAccount
+// eoslime deploy --path --network --deployer
 
 class DeployCommand extends Command {
     constructor() {
@@ -11,14 +11,10 @@ class DeployCommand extends Command {
     }
 
     async execute(args) {
-        commandMessages.StartDeployment();
-
         try {
-            super.process(args, (option, result) => {
-                args[option.name] = result;
-            });
-
-            await runDeploymentScripts(args.path, args.network, args.deployer);
+            commandMessages.StartDeployment();
+            const optionsResults = await super.processOptions(args);
+            await runDeploymentScripts(optionsResults.path, optionsResults.network, optionsResults.deployer);
         } catch (error) {
             commandMessages.UnsuccessfulDeployment(error);
         }
@@ -30,11 +26,11 @@ const runDeploymentScripts = async function (deploymentScripts, networkProvider,
         const deploymentScript = deploymentScripts[i];
         try {
             await deploymentScript.deploy(networkProvider, deployer);
-            commandMessages.SuccessfulDeploymentOfScript(deploymentScript);
+            commandMessages.SuccessfulDeploymentOfScript(deploymentScript.fileName);
         } catch (error) {
-            commandMessages.UnsuccessfulDeploymentOfScript(deploymentScript, error);
+            commandMessages.UnsuccessfulDeploymentOfScript(deploymentScript.fileName, error);
         }
     }
 }
 
-module.exports = new DeployCommand();
+module.exports = DeployCommand;

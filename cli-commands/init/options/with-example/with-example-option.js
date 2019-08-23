@@ -19,7 +19,7 @@ class WithExampleOption extends Option {
         if (optionValue) {
             fileSystemUtil.createDir('./contracts/example/');
 
-            const exampleContractsDestination = path.join(__dirname, './../../../../example/eosio-token/contract/');
+            const exampleContractsDestination = path.join(__dirname, './contract-example/');
             fileSystemUtil.copyAllFilesFromDirTo(exampleContractsDestination, './contracts/example/');
 
             const exampleDeploymentFileDestination = path.join(__dirname, './deployment-example/deployment.js');

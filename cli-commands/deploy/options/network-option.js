@@ -9,14 +9,12 @@ class NetworkOption extends Option {
                 "describe": "The blockchain network you are going to deploy on",
                 "type": "network name or in case of custom { url: custom url, chainId: custom chain id }",
                 "default": "local",
-                "choices": [
-                    Provider.availableNetworks().all
-                ]
+                "choices": Provider.availableNetworks().all
             }
         );
     }
 
-    execute(network) {
+    process(network) {
         return new Provider(network);
     }
 }

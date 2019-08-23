@@ -13,9 +13,9 @@ const CompileCommand = require('./cli-commands/compile/');
     const deployCommand = new DeployCommand();
     const compileCommand = new CompileCommand();
 
-    menu.command(initCommand.template, initCommand.description, initCommand.defineOptions, InitCommand.executeWithContext(initCommand));
-    menu.command(deployCommand.template, deployCommand.description, deployCommand.defineOptions, DeployCommand.executeWithContext(deployCommand));
-    menu.command(compileCommand.template, compileCommand.description, compileCommand.defineOptions, CompileCommand.executeWithContext(compileCommand));
+    menu.command(initCommand.template, initCommand.description, InitCommand.defineCommandOptions(initCommand), InitCommand.executeWithContext(initCommand));
+    menu.command(deployCommand.template, deployCommand.description, DeployCommand.defineCommandOptions(deployCommand), DeployCommand.executeWithContext(deployCommand));
+    menu.command(compileCommand.template, compileCommand.description, CompileCommand.defineCommandOptions(compileCommand), CompileCommand.executeWithContext(compileCommand));
 
     menu.command({
         command: '*',

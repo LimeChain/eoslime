@@ -1,3 +1,4 @@
+const path = require('path');
 const Option = require('./../../option');
 
 const fileSystemUtil = require('./../../utils/file-system-util');
@@ -16,19 +17,26 @@ class PathOption extends Option {
 
     async process(optionValue) {
         let deploymentFilesFunctions = [];
-
         if (fileSystemUtil.isDir(optionValue)) {
-            fileSystemUtil.forEachFileInDir(optionValue, (filename) => {
-                deploymentFilesFunctions.push(require(`${optionValue}${filename}`));
-            });
+            const dirFiles = await fileSystemUtil.recursivelyReadDir(optionValue);
 
-            return deploymentFilesFunctions;
+            for (let i = 0; i < dirFiles.length; i++) {
+                const dirFile = dirFiles[i];
+                deploymentFilesFunctions.push({
+                    fileName: dirFile.fileName,
+                    deploy: require(path.resolve('./', dirFile.fullPath))
+                });
+            }
         }
 
         if (fileSystemUtil.isFile(optionValue)) {
-            deploymentFilesFunctions.push(deploymentFile);
-            return deploymentFilesFunctions;
+            deploymentFilesFunctions.push({
+                fileName: optionValue,
+                deploy: require(path.resolve('./', optionValue))
+            });
         }
+
+        return deploymentFilesFunctions;
     }
 }
 

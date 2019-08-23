@@ -6,13 +6,6 @@ class Command {
         this.options = commandDefinition.options;
     }
 
-    defineOptions(yargs) {
-        for (const option in this.options) {
-            yargs.options(option.name, option.definition);
-        }
-    }
-
-
     async processOptions(args) {
         const optionResults = {};
 
@@ -30,9 +23,19 @@ class Command {
 
     execute(args) { }
 
-    static executeWithContext(initContext) {
+    static defineCommandOptions(command) {
+        return (yargs) => {
+            for (const option of command.options) {
+                yargs = yargs.options(option.name, option.definition);
+            }
+
+            return yargs;
+        }
+    }
+
+    static executeWithContext(context) {
         return async (args) => {
-            await initContext.execute(args);
+            await context.execute(args);
         }
     }
 }
