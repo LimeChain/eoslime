@@ -1,7 +1,7 @@
 const consoleInput = require('prompts');
 
 const Option = require('./../../option');
-const AccountFactory = require('./../../../../src/account/account-factory');
+const AccountFactory = require('./../../../src/account/account-factory');
 
 class ContractAccountOption extends Option {
     constructor() {

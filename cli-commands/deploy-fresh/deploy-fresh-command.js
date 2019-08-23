@@ -1,10 +1,10 @@
 const path = require('path');
-const eoslimeTool = require('./../../../../index');
+const eoslimeTool = require('./../../index');
 
-const fileSystemUtil = require('./../../../utils/file-system-util');
+const fileSystemUtil = require('../utils/file-system-util');
 const deployFreshCommandDefinition = require('./deploy-fresh-command-definition');
 
-const Command = require('./../../command');
+const Command = require('../command');
 
 const CONTRACTS_FOLDER = './contracts/';
 

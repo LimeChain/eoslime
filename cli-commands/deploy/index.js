@@ -1,7 +1,7 @@
-const Command = require('./../../command');
+const Command = require('./../command');
 
-const commandMessages = require('./command-messages');
-const deployCommandDefinition = require('./deploy-command-definition.js');
+const commandMessages = require('./messages');
+const deployCommandDefinition = require('./definition');
 
 // eoslime deploy --path --network --contractAccount
 
@@ -26,14 +26,15 @@ class DeployCommand extends Command {
 }
 
 const runDeploymentScripts = async function (deploymentScripts, networkProvider, deployer) {
-    deploymentScripts.forEach(deploymentScript => {
+    for (let i = 0; i < deploymentScripts.length; i++) {
+        const deploymentScript = deploymentScripts[i];
         try {
             await deploymentScript.deploy(networkProvider, deployer);
             commandMessages.SuccessfulDeploymentOfScript(deploymentScript);
         } catch (error) {
             commandMessages.UnsuccessfulDeploymentOfScript(deploymentScript, error);
         }
-    });
+    }
 }
 
 module.exports = new DeployCommand();

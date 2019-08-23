@@ -15,7 +15,7 @@ class WithExampleOption extends Option {
         );
     }
 
-    execute(optionValue) {
+    process(optionValue) {
         if (optionValue) {
             fileSystemUtil.createDir('./contracts/example/');
 

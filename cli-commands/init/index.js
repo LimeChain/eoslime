@@ -1,12 +1,12 @@
-const exec = require('child_process').exec;
+const AsyncSoftExec = require('./../utils/async-soft-exec');
 
-const Command = require('./../../command');
+const Command = require('./../command');
 
-const initDirectories = require('./init-directories');
-const initCommandDefinition = require('./init-command-definition');
+const initDirectories = require('./directories');
+const initCommandDefinition = require('./definition');
 
-const commandMessages = require('./command-messages');
-const fileSystemUtil = require('../../utils/file-system-util');
+const commandMessages = require('./messages');
+const fileSystemUtil = require('./../utils/file-system-util');
 
 const defaultPackageJsonDestination = `${__dirname}/default-package.json`;
 
@@ -18,7 +18,11 @@ class InitCommand extends Command {
         super(initCommandDefinition);
     }
 
-    execute(args) {
+    defineOptions(yargs) {
+        super.defineOptions(yargs, initCommandDefinition.options);
+    }
+
+    async execute(args) {
         try {
             commandMessages.Installation();
 
@@ -27,20 +31,16 @@ class InitCommand extends Command {
             createTestsDir();
             copyDefaultPackageJson();
 
-            super.processOptions(args, initCommandDefinition.options);
-            // super.__execute(args, initCommandDefinition.options);
+            super.processOptions(args);
         } catch (error) {
-            commandMessages.UnsuccessfulInstallation();
-            throw new Error(error.message);
+            commandMessages.UnsuccessfulInstallation(error);
         }
 
-        exec('npm install eoslime', (error) => {
-            if (error) {
-                commandMessages.UnsuccessfulInstallation();
-            }
+        const asyncSoftExec = new AsyncSoftExec('npm install eoslime');
+        asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulInstallation(error); });
+        asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulInstallation(); });
 
-            commandMessages.SuccessfulInstallation();
-        });
+        await asyncSoftExec.exec();
     }
 }
 
@@ -60,4 +60,4 @@ let copyDefaultPackageJson = function () {
     fileSystemUtil.copyFileFromTo(defaultPackageJsonDestination, initDirectories.PACKAGE_JSON);
 }
 
-module.exports = new InitCommand();
+module.exports = InitCommand;

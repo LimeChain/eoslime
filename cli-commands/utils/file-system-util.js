@@ -29,24 +29,32 @@ const fileSystemUtils = {
     isFile: (path) => {
         return fs.lstatSync(path).isFile();
     },
-    recursivelyReadDir(dirPath) {
-        const files = [];
+    recursivelyReadDir: async function (dirPath) {
+        return new Promise(async (resolve, reject) => {
+            let files = [];
 
-        fs.readdir(dirPath, function (err, filenames) {
-            if (err) {
-                throw new Error(err.message);
-            }
-
-            filenames.forEach(function (filePath) {
-                if (fileSystemUtils.isDir(filePath)) {
-                    files.concat(recursivelyReadDir(filePath));
-                } else {
-                    files.push(`${__dirname}/${filePath}`);
+            fs.readdir(dirPath, async function (err, filenames) {
+                if (err) {
+                    return void reject(err.message);
                 }
+
+                for (let i = 0; i < filenames.length; i++) {
+                    const fileName = filenames[i];
+
+                    if (fileSystemUtils.isDir(`${dirPath}/${fileName}`)) {
+                        const dirFiles = await fileSystemUtils.recursivelyReadDir(`${dirPath}/${fileName}`);
+                        files = files.concat(dirFiles);
+                    } else {
+                        files.push({
+                            fileName: fileName,
+                            fullPath: `${dirPath}/${fileName}`
+                        });
+                    }
+                }
+
+                resolve(files);
             });
         });
-
-        return files;
     },
     forEachFileInDir: (dirPath, actionCallback) => {
         fs.readdir(dirPath, function (err, filenames) {

@@ -1,23 +1,38 @@
+
 class Command {
     constructor(commandDefinition) {
         this.template = commandDefinition.template;
         this.description = commandDefinition.description;
-        this.options = {};
+        this.options = commandDefinition.options;
+    }
 
-        for (const option of commandDefinition.options) {
-            this.options[option.name] = option;
+    defineOptions(yargs) {
+        for (const option in this.options) {
             yargs.options(option.name, option.definition);
         }
     }
 
-    processOptions(args, postExecuteCallback = function (option, result) { }) {
+
+    async processOptions(args) {
+        const optionResults = {};
+
         for (let i = 0; i < this.options.length; i++) {
-            let option = this.options[i];
+            const option = this.options[i];
 
             if (args.hasOwnProperty(option.name)) {
-                let result = option.process(args[option.name], args);
-                postExecuteCallback(option, result);
+                const result = await option.process(args[option.name], args);
+                optionResults[option.name] = result;
             }
+        }
+
+        return optionResults;
+    }
+
+    execute(args) { }
+
+    static executeWithContext(initContext) {
+        return async (args) => {
+            await initContext.execute(args);
         }
     }
 }

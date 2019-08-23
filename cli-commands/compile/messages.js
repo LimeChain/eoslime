@@ -7,8 +7,9 @@ module.exports = {
         console.log(error);
     },
     'SuccessfulCompilationOfContract': (contract) => { console.log(chalk.greenBright(`===== Successfully compilation of ${contract} =====`)); },
-    'UnsuccessfulCompilationOfFile': (error, file) => {
+    'UnsuccessfulCompilationOfContract': (error, file) => {
         console.log(chalk.redBright(`===== Unsuccessful compilation of ${file} =====`));
         console.log(error);
-    }
+    },
+    'ContractNotExisting': () => { console.log(chalk.redBright(`===== There is not a contract to compile =====`)); }
 }

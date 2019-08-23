@@ -1,4 +1,4 @@
-const accountOption = require('./../options/account-option');
+const accountOption = require('./options/account-option');
 const networkOption = require('./../../global-options/network-option');
 
 module.exports = {
