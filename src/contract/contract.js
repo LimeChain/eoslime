@@ -10,6 +10,7 @@ class Contract {
         ]);
 
         declareFunctionsFromABI.call(this, abi);
+        declareTableGetters.call(this, abi);
     }
 
     async makeInline() {
@@ -80,4 +81,29 @@ let executeFunction = function(eos, functionRawTx) {
         },
         { broadcast: true, sign: true, keyProvider: functionRawTx.defaultExecutor.privateKey }
     );
+};
+
+let declareTableGetters = function(abi) {
+    const defaultOptionals = { index: 1, index_type: "i64", limit: 100 };
+    let contractTables = abi.tables;
+
+    for (let i = 0; i < contractTables.length; i++) {
+        let tableName = contractTables[i].name;
+
+        this[tableName] = async function(criteria, optionals = defaultOptionals) {
+            const optionalsParams = Object.assign({}, defaultOptionals, optionals);
+
+            return (await this.provider.eos.getTableRows({
+                code: this.name,
+                scope: this.name,
+                table: tableName,
+                key_type: optionalsParams.index_type,
+                index_position: optionalsParams.index,
+                lower_bound: criteria,
+                upper_bound: criteria,
+                json: true,
+                limit: optionalsParams.limit
+            })).rows;
+        };
+    }
 };
