@@ -6,3 +6,4 @@ package-lock.json
 .npmignore
 coverage.lcov
 .nyc_output
+.history
