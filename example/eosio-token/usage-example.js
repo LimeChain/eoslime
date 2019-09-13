@@ -1,11 +1,10 @@
-const assert = require('assert');
-const eoslime = require('./../../').init();
+const assert = require("assert");
+const eoslime = require("./../../").init();
 
-const TOKEN_WASM_PATH = './example/eosio-token/contract/eosio.token.wasm';
-const TOKEN_ABI_PATH = './example/eosio-token/contract/eosio.token.abi';
+const TOKEN_WASM_PATH = "./example/eosio-token/contract/eosio.token.wasm";
+const TOKEN_ABI_PATH = "./example/eosio-token/contract/eosio.token.abi";
 
-describe('EOSIO Token', function () {
-
+describe("EOSIO Token", function() {
     // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
 
@@ -13,8 +12,8 @@ describe('EOSIO Token', function () {
     let tokensIssuer;
     let tokensHolder;
 
-    const TOTAL_SUPPLY = '1000000000.0000 SYS';
-    const HOLDER_SUPPLY = '100.0000 SYS';
+    const TOTAL_SUPPLY = "1000000000.0000 SYS";
+    const HOLDER_SUPPLY = "100.0000 SYS";
 
     before(async () => {
         let accounts = await eoslime.Account.createRandoms(2);
@@ -34,7 +33,7 @@ describe('EOSIO Token', function () {
         tokenContract = await eoslime.CleanDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
     });
 
-    it('Should create a new token', async () => {
+    it("Should create a new token", async () => {
         await tokenContract.create(tokensIssuer.name, TOTAL_SUPPLY);
 
         /*
@@ -53,37 +52,34 @@ describe('EOSIO Token', function () {
                     json: true
                 });
         */
-        let tokenInitialization = await tokenContract.provider.eos.getCurrencyStats(tokenContract.name, 'SYS');
+        let tokenInitialization = await tokenContract.provider.eos.getCurrencyStats(tokenContract.name, "SYS");
 
-        assert.equal(tokenInitialization.SYS.max_supply, TOTAL_SUPPLY, 'Incorrect tokens supply');
-        assert.equal(tokenInitialization.SYS.issuer, tokensIssuer.name, 'Incorrect tokens issuer');
-
+        assert.equal(tokenInitialization.SYS.max_supply, TOTAL_SUPPLY, "Incorrect tokens supply");
+        assert.equal(tokenInitialization.SYS.issuer, tokensIssuer.name, "Incorrect tokens issuer");
     });
 
-    it('Should issue tokens', async () => {
+    it("Should issue tokens", async () => {
         await tokenContract.create(tokensIssuer.name, TOTAL_SUPPLY);
         /*
             On each contract method you can provide an optional object -> { from: account }
             If you don't provide a 'from' object, the method will be executed from the contract account authority
         */
-        await tokenContract.issue(tokensHolder.name, HOLDER_SUPPLY, 'memo', { from: tokensIssuer });
+        await tokenContract.issue(tokensHolder.name, HOLDER_SUPPLY, "memo", { from: tokensIssuer });
 
-        let holderBalance = await tokensHolder.getBalance('SYS', tokenContract.name);
-        assert.equal(holderBalance[0], HOLDER_SUPPLY, 'Incorrect holder balance');
+        let holderBalance = await tokensHolder.getBalance("SYS", tokenContract.name);
+        assert.equal(holderBalance[0], HOLDER_SUPPLY, "Incorrect holder balance");
     });
 
-    it('Should throw if tokens quantity is negative', async () => {
+    it("Should throw if tokens quantity is negative", async () => {
         await tokenContract.create(tokensIssuer.name, TOTAL_SUPPLY);
-        const INVALID_ISSUING_AMOUNT = '-100.0000 SYS';
+        const INVALID_ISSUING_AMOUNT = "-100.0000 SYS";
 
         /*
             For easier testing, eoslime provides you ('utils.test') with helper functions
         */
-        await eoslime.utils.test.expectAssert(
-            tokenContract.issue(tokensHolder.name, INVALID_ISSUING_AMOUNT, 'memo', { from: tokensIssuer })
-        );
+        await eoslime.utils.test.expectAssert(tokenContract.issue(tokensHolder.name, INVALID_ISSUING_AMOUNT, "memo", { from: tokensIssuer }));
 
-        let holderBalance = await tokensHolder.getBalance('SYS', tokenContract.name);
-        assert.equal(holderBalance.length, 0, 'Incorrect holder balance');
+        let holderBalance = await tokensHolder.getBalance("SYS", tokenContract.name);
+        assert.equal(holderBalance.length, 0, "Incorrect holder balance");
     });
 });
