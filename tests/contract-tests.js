@@ -136,6 +136,29 @@ describe('Contract', function () {
             // After the execution, the contract executor should be the same as the initially provided one
             assert(faucetContract.executor.name == faucetAccount.name);
         });
+
+        it('Should process nonce-action', async () => {
+            const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+            const executor = await eoslime.Account.createRandom();
+
+            await faucetContract.produce(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo', { from: executor, unique: true });
+            await faucetContract.produce(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo', { from: executor, unique: true });
+            assert(true);
+        });
+
+        it('Should throw without nonce-action', async () => {
+            const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+            const executor = await eoslime.Account.createRandom();
+
+            try {
+                await faucetContract.produce(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo', { from: executor });
+                await faucetContract.produce(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo', { from: executor });
+            } catch (error) {
+                assert(error.includes('duplicate transaction'));
+            }
+        });
     });
 
     describe('Inline a contract', function () {
