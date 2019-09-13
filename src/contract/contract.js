@@ -90,7 +90,7 @@ let declareTableGetters = function (abi) {
     for (let i = 0; i < contractTables.length; i++) {
         let tableName = contractTables[i].name;
 
-        this[tableName] = async function (params = defaultParameters) {
+        this[`get${tableName.charAt(0).toUpperCase() + tableName.slice(1)}`] = async function (params = defaultParameters) {
             const queryParams = Object.assign({}, defaultParameters, params);
 
             if (queryParams.equal) {
