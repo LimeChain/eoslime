@@ -1,4 +1,4 @@
-const optionalsFunctions = require("./optionals");
+const optionalsFunctions = require("./function-optionals");
 const defineImmutableProperties = require("./../helpers/immutable-properties").defineImmutableProperties;
 
 class Contract {

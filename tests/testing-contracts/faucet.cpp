@@ -30,13 +30,22 @@ public:
 
 	ACTION produce(name to, asset quantity, std::string token_name, std::string memo)
 	{
-
-		withdrawersTable.emplace(_self, [&](auto &s) {
-			s.account = to.value;
-			s.quantity = quantity;
-			s.token_name = token_name;
-			s.memo = memo;
-		});
+		auto withdrawal_itr = withdrawersTable.find(to.value);
+		if (withdrawal_itr != withdrawersTable.end())
+		{
+			withdrawersTable.modify(withdrawal_itr, _self, [&](auto &withdrawal) {
+				withdrawal.quantity.amount += quantity.amount;
+			});
+		}
+		else
+		{
+			withdrawersTable.emplace(_self, [&](auto &new_withdrawal) {
+				new_withdrawal.account = to.value;
+				new_withdrawal.quantity = quantity;
+				new_withdrawal.token_name = token_name;
+				new_withdrawal.memo = memo;
+			});
+		}
 	}
 
 	ACTION withdraw(name withdrawer)
