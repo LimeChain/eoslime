@@ -10,7 +10,7 @@ const FAUCET_WASM_PATH = "./tests/testing-contracts/wasms/faucet.wasm";
     You should have running local nodeos in order to run tests
 */
 
-describe("Contract", function() {
+describe("Contract", function () {
     // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
 
@@ -19,6 +19,7 @@ describe("Contract", function() {
     let tokenContract;
     const TOTAL_SUPPLY = "1000000000.0000 TKNS";
     const PRODUCED_TOKENS_AMOUNT = "100.0000 TKNS";
+    const TOKEN_PRECISION = Math.pow(10, 4);
 
     /*
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
@@ -49,7 +50,7 @@ describe("Contract", function() {
         await createToken();
     });
 
-    describe("Instantiation", function() {
+    describe("Instantiation", function () {
         const CONTRACT_NETWORK = {
             name: "local",
             url: "http://127.0.0.1:8888",
@@ -97,7 +98,7 @@ describe("Contract", function() {
         });
     });
 
-    describe("Blockchain methods", function() {
+    describe("Blockchain methods", function () {
         it("Should execute a blockchain method from the provided executor", async () => {
             const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
@@ -105,18 +106,10 @@ describe("Contract", function() {
             // faucetAccount is the executor
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
-            const result = await faucetContract.provider.eos.getTableRows({
-                code: faucetContract.name,
-                scope: faucetContract.name,
-                table: "withdrawers",
-                limit: 1,
-                lower_bound: tokensHolder.name,
-                upper_bound: tokensHolder.name,
-                json: true
-            });
+            const result = await faucetContract.withdrawers({ limit: 1, equal: tokensHolder.name });
 
-            assert(result.rows[0].quantity == PRODUCED_TOKENS_AMOUNT);
-            assert(result.rows[0].token_name == tokenContract.name);
+            assert(result.quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(result.token_name == tokenContract.name);
         });
 
         it("Should execute a blockchain method from another executor", async () => {
@@ -131,7 +124,73 @@ describe("Contract", function() {
         });
     });
 
-    describe("Inline a contract", function() {
+    describe("Blockchain tables", function () {
+
+        it("Should have a default table getter", async () => {
+            const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+
+            // withdrawers is a table in the contract
+            assert(faucetContract.withdrawers);
+        });
+
+        it("Should apply the default query params if none provided", async () => {
+            const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            // faucetAccount is the executor
+            await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
+
+            const allWithdrawers = await faucetContract.withdrawers();
+
+            assert(allWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(allWithdrawers[0].token_name == tokenContract.name);
+        });
+
+        it("Should query a table", async () => {
+            const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            // faucetAccount is the executor
+            await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
+
+            // With equal criteria
+            const equalResult = await faucetContract.withdrawers({ equal: tokensHolder.name });
+            assert(equalResult[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(equalResult[0].token_name == tokenContract.name);
+
+            // With range criteria
+            const rangeResult = await faucetContract.withdrawers({ lower: 0, upper: 100 * TOKEN_PRECISION, index: 2 });
+            assert(rangeResult[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(rangeResult[0].token_name == tokenContract.name);
+
+            // With limit
+            // There is only one withdrawer
+            const allWithdrawers = await faucetContract.withdrawers({ limit: 10 });
+            assert(allWithdrawers.length == 1);
+            assert(allWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(allWithdrawers[0].token_name == tokenContract.name);
+
+            // With different index (By Balance)
+            const balanceWithdrawers = await faucetContract.withdrawers({ equal: 100 * TOKEN_PRECISION, index: 2 });
+            assert(balanceWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(balanceWithdrawers[0].token_name == tokenContract.name);
+        });
+
+        it('Should return the resulted record in case of query parameter -> limit = 1', async () => {
+            const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            // faucetAccount is the executor
+            await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
+
+            const firstWithdrawer = await faucetContract.withdrawers({ limit: 1 });
+
+            assert(firstWithdrawer.quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(firstWithdrawer.token_name == tokenContract.name);
+        });
+    });
+
+    describe("Inline a contract", function () {
         it("Should execute a blockchain method which makes inline transaction to another contract", async () => {
             const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             await faucetContract.makeInline();

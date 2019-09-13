@@ -24,14 +24,14 @@ class Contract {
 
 module.exports = Contract;
 
-let declareFunctionsFromABI = function(abi) {
+let declareFunctionsFromABI = function (abi) {
     let contractActions = abi.actions;
     let contractStructs = Object.assign({}, ...abi.structs.map(struct => ({ [struct["name"]]: struct })));
 
     for (let i = 0; i < contractActions.length; i++) {
         let functionName = contractActions[i].name;
 
-        this[functionName] = async function(...params) {
+        this[functionName] = async function (...params) {
             let functionParamsCount = contractStructs[functionName].fields.length;
             let functionParams = params.slice(0, functionParamsCount);
             let structuredParams = structureParamsToExpectedLook(functionParams, contractStructs[functionName].fields);
@@ -49,7 +49,7 @@ let declareFunctionsFromABI = function(abi) {
     }
 };
 
-let buildMainFunctionTx = function(contractName, actionName, data, authorizationAccount) {
+let buildMainFunctionTx = function (contractName, actionName, data, authorizationAccount) {
     return {
         defaultExecutor: authorizationAccount,
         actions: [
@@ -63,7 +63,7 @@ let buildMainFunctionTx = function(contractName, actionName, data, authorization
     };
 };
 
-let structureParamsToExpectedLook = function(params, expectedParamsLook) {
+let structureParamsToExpectedLook = function (params, expectedParamsLook) {
     let structuredParams = {};
 
     for (let i = 0; i < expectedParamsLook.length; i++) {
@@ -74,7 +74,7 @@ let structureParamsToExpectedLook = function(params, expectedParamsLook) {
     return structuredParams;
 };
 
-let executeFunction = function(eos, functionRawTx) {
+let executeFunction = function (eos, functionRawTx) {
     return eos.transaction(
         {
             actions: functionRawTx.actions
@@ -83,27 +83,38 @@ let executeFunction = function(eos, functionRawTx) {
     );
 };
 
-let declareTableGetters = function(abi) {
-    const defaultOptionals = { index: 1, index_type: "i64", limit: 100 };
+let declareTableGetters = function (abi) {
+    const defaultParameters = { equal: null, lower: null, upper: null, index: 1, index_type: "i64", limit: 100 };
     let contractTables = abi.tables;
 
     for (let i = 0; i < contractTables.length; i++) {
         let tableName = contractTables[i].name;
 
-        this[tableName] = async function(criteria, optionals = defaultOptionals) {
-            const optionalsParams = Object.assign({}, defaultOptionals, optionals);
+        this[tableName] = async function (params = defaultParameters) {
+            const queryParams = Object.assign({}, defaultParameters, params);
 
-            return (await this.provider.eos.getTableRows({
+            if (queryParams.equal) {
+                queryParams.lower = queryParams.equal;
+                queryParams.upper = queryParams.equal;
+            }
+
+            const result = await this.provider.eos.getTableRows({
                 code: this.name,
                 scope: this.name,
                 table: tableName,
-                key_type: optionalsParams.index_type,
-                index_position: optionalsParams.index,
-                lower_bound: criteria,
-                upper_bound: criteria,
+                key_type: queryParams.index_type,
+                index_position: queryParams.index,
+                lower_bound: queryParams.lower,
+                upper_bound: queryParams.upper,
                 json: true,
-                limit: optionalsParams.limit
-            })).rows;
+                limit: queryParams.limit
+            });
+
+            if (queryParams.limit == 1) {
+                return result.rows[0];
+            }
+
+            return result.rows;
         };
     }
 };
