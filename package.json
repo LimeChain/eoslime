@@ -1,50 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "eoslime",
-  "version": "0.0.15",
-  "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
-  "main": "index.js",
-  "scripts": {
-    "test": "nyc --check-coverage --lines 85 mocha './tests/*.js'",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "start": "mocha ./example/eosio-token/usage-example.js"
-  },
-  "author": "Lyubomir Kiprov (Limechain)",
-  "license": "MIT",
-  "dependencies": {
-    "chalk": "^2.4.2",
-    "cli-table": "^0.3.1",
-    "crypto-js": "3.1.9-1",
-    "eosjs": "16.0.9",
-    "mocha": "5.2.0",
-    "prompts": "^2.2.1",
-    "yargs": "12.0.5"
-  },
-  "keywords": [
-    "lime",
-    "eos",
-    "eoslime",
-    "framework",
-    "testing",
-    "deployment",
-    "contract"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/LimeChain/eoslime.git"
-  },
-  "bugs": {
-    "url": "https://github.com/LimeChain/eoslime/issues"
-  },
-  "homepage": "https://github.com/LimeChain/eoslime#readme",
-  "bin": {
-    "eoslime": "./cli.js"
-  },
-  "devDependencies": {
-    "nyc": "^14.1.1"
-  }
-}
-=======
     "name": "eoslime",
     "version": "0.0.17",
     "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
@@ -57,9 +11,13 @@
     "author": "Lyubomir Kiprov (Limechain)",
     "license": "MIT",
     "dependencies": {
+        "chalk": "^2.4.2",
+        "cli-table": "^0.3.1",
         "crypto-js": "3.1.9-1",
         "eosjs": "16.0.9",
-        "mocha": "5.2.0"
+        "mocha": "5.2.0",
+        "prompts": "^2.2.1",
+        "yargs": "12.0.5"
     },
     "keywords": [
         "lime",
@@ -78,8 +36,10 @@
         "url": "https://github.com/LimeChain/eoslime/issues"
     },
     "homepage": "https://github.com/LimeChain/eoslime#readme",
+    "bin": {
+        "eoslime": "./cli.js"
+    },
     "devDependencies": {
         "nyc": "^14.1.1"
     }
 }
->>>>>>> de023e985bac7bfab6fb8e9c918891b01000b59e

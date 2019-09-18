@@ -18,15 +18,20 @@ class ResourceReportOption extends Option {
         if (optionValue) {
             const cliTable = new CLITable();
             eoslime.Contract.on('init', (contract) => {
-                for (let i = 0; i < contract._methods.length; i++) {
-                    const contractMethod = contract._methods[i];
-                    contractMethod.on('processed', (outputs) => {
-                        cliTable.push({
-                            contract: contract.name,
-                            method: contractMethod.name,
-                            txReceipt: outputs.tx
-                        })
-                    });
+                for (const functionName in contract) {
+                    if (contract.hasOwnProperty(functionName)) {
+                        const contractFunction = contract[functionName];
+
+                        if (contractFunction.isTransactional) {
+                            contractFunction.on('processed', (txReceipt) => {
+                                cliTable.push({
+                                    contract: contract.name,
+                                    method: functionName,
+                                    txReceipt: txReceipt
+                                })
+                            });
+                        }
+                    }
                 }
             });
 

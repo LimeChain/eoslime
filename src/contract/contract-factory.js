@@ -1,12 +1,19 @@
-const Contract = require('./contract');
-const is = require('./../helpers/is');
 const Account = require('./../account/account');
+const Contract = require('./contract');
+const EventClass = require('./../helpers/event-class');
 
+const is = require('./../helpers/is');
 const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
 
-class ContractFactory {
+const EVENTS = {
+    'init': 'init'
+}
+
+class ContractFactory extends EventClass {
 
     constructor(provider) {
+        super(EVENTS);
+
         defineImmutableProperties(this, [
             { name: 'provider', value: provider }
         ]);
@@ -16,6 +23,8 @@ class ContractFactory {
         is(contractExecutorAccount).instanceOf(Account);
 
         let contract = new Contract(this.provider, abi, contractName, contractExecutorAccount);
+        this.emit(EVENTS.init, contract);
+
         return contract;
     }
 }

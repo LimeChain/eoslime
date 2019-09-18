@@ -15,23 +15,20 @@ const contractFilesReader = require('./src/helpers/contract-files-reader');
 module.exports = (function () {
 
     let init = function (network = 'local') {
-        let provider = new Provider(network)
+        const provider = new Provider(network)
 
-        let accountFactory = new AccountFactory(provider);
-        let contractFactory = new ContractFactory(provider);
+        const accountFactory = new AccountFactory(provider);
+        const contractFactory = new ContractFactory(provider);
 
-        let accountDeployer = new AccountDeployer(provider, contractFactory);
-        let cleanDeployer = new CleanDeployer(provider, contractFactory, accountFactory);
+        const accountDeployer = new AccountDeployer(provider, contractFactory);
+        const cleanDeployer = new CleanDeployer(provider, contractFactory, accountFactory);
 
         return {
             Provider: provider,
             Account: accountFactory,
             CleanDeployer: cleanDeployer,
             AccountDeployer: accountDeployer,
-            Contract: function (abiPath, contractName, contractExecutorAccount) {
-                let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
-                return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
-            },
+            Contract: buildContract(contractFactory),
             utils
         };
     }
@@ -41,3 +38,16 @@ module.exports = (function () {
         NETWORKS: Provider.availableNetworks
     };
 })();
+
+const buildContract = function (contractFactory) {
+    const buildFromABIPath = function (abiPath, contractName, contractExecutorAccount) {
+        let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
+        return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
+    }
+
+    buildFromABIPath.on = function (eventName, callback) {
+        contractFactory.on(eventName, callback)
+    }
+
+    return buildFromABIPath;
+}
