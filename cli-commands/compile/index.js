@@ -25,6 +25,7 @@ class CompileCommand extends Command {
                 fileSysUtils.createDir(compiledDirectories.COMPILED);
 
                 for (let i = 0; i < optionsResults.path.length; i++) {
+                    // Todo: Check how to compile without using eosio-cpp
                     const asyncSoftExec = new AsyncSoftExec(`eosio-cpp -I . -o ./compiled/${contracts[i].fileName}.wasm ${contracts[i].fullPath} --abigen`);
                     asyncSoftExec.onError((error) => commandMessages.UnsuccessfulCompilationOfContract(error, contracts[i].fileName));
                     asyncSoftExec.onSuccess(() => commandMessages.SuccessfulCompilationOfContract(contracts[i].fileName));

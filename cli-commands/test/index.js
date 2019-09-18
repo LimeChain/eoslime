@@ -3,7 +3,7 @@ const testCommandDefinition = require('./definition');
 
 const testUtils = require('./utils');
 
-// eoslime test --path --network --accounts
+// eoslime test --path --network --resource-report
 
 class TestCommand extends Command {
 
@@ -13,15 +13,14 @@ class TestCommand extends Command {
 
     async execute(args, TestFramework) {
         try {
-            // commandMessages.StartCompilation();
-
-            const optionsResults = await super.processOptions(args);
             const testFramework = new TestFramework(optionsResults.path);
+
+            const optionsResults = await super.processOptions(args, testFramework);
             setTestsHelpers();
 
             testFramework.runTests();
         } catch (error) {
-            // commandMessages.UnsuccessfulCompilation(error);
+            console.log(error);
         }
     }
 }

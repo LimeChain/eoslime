@@ -1,5 +1,5 @@
 const Option = require('./../../option');
-const Provider = require('./../../../src/network-providers/provider');
+const eoslime = require('./../../../index');
 
 class NetworkOption extends Option {
     constructor() {
@@ -9,13 +9,13 @@ class NetworkOption extends Option {
                 "describe": "The blockchain network you are going to deploy on",
                 "type": "network name or in case of custom { url: custom url, chainId: custom chain id }",
                 "default": "local",
-                "choices": Provider.availableNetworks().all
+                "choices": eoslime.NETWORKS
             }
         );
     }
 
     process(network) {
-        return new Provider(network);
+        return eoslime.init(network);
     }
 }
 

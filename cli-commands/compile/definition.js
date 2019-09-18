@@ -1,4 +1,4 @@
-const pathOption = require('./options/path/path-option');
+const pathOption = require('./options/path-option');
 
 module.exports = {
     "template": "compile [path]",
