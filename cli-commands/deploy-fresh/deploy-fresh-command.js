@@ -1,7 +1,7 @@
 const path = require('path');
 const eoslimeTool = require('./../../index');
 
-const fileSystemUtil = require('../utils/file-system-util');
+const fileSystemUtil = require('./../helpers/file-system-util');
 const deployFreshCommandDefinition = require('./deploy-fresh-command-definition');
 
 const Command = require('../command');

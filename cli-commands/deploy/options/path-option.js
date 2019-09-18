@@ -1,7 +1,7 @@
 const path = require('path');
 const Option = require('./../../option');
 
-const fileSystemUtil = require('./../../utils/file-system-util');
+const fileSystemUtil = require('./../../helpers/file-system-util');
 
 class PathOption extends Option {
     constructor() {

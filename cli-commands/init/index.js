@@ -1,4 +1,4 @@
-const AsyncSoftExec = require('./../utils/async-soft-exec');
+const AsyncSoftExec = require('./../helpers/async-soft-exec');
 
 const Command = require('./../command');
 
@@ -6,7 +6,7 @@ const initDirectories = require('./directories');
 const initCommandDefinition = require('./definition');
 
 const commandMessages = require('./messages');
-const fileSystemUtil = require('./../utils/file-system-util');
+const fileSystemUtil = require('./../helpers/file-system-util');
 
 const defaultPackageJsonDestination = `${__dirname}/default-package.json`;
 

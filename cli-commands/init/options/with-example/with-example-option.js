@@ -1,5 +1,5 @@
 const path = require('path');
-const fileSystemUtil = require('./../../../utils/file-system-util');
+const fileSystemUtil = require('./../../../helpers/file-system-util');
 
 const Option = require('./../../../option');
 

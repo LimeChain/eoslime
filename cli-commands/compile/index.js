@@ -1,11 +1,11 @@
-const AsyncSoftExec = require('./../utils/async-soft-exec');
+const AsyncSoftExec = require('./../helpers/async-soft-exec');
 const Command = require('./../command');
 
 const commandMessages = require('./messages');
 const compiledDirectories = require('./directories.json');
 const compileCommandDefinition = require('./definition');
 
-const fileSysUtils = require('./../utils/file-system-util');
+const fileSysUtils = require('./../helpers/file-system-util');
 
 // eoslime compile --path
 
