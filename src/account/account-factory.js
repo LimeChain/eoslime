@@ -15,7 +15,15 @@ class AccountFactory {
     }
 
     load(name, privateKey, authorityName = this.defaultOptions.authority) {
-        return new Account(name, privateKey, this.provider, authorityName);
+        if (`${name}`.length != 12) {
+            throw new Error('Account name should be 12 symbols');
+        }
+
+        try {
+            return new Account(name, privateKey, this.provider, authorityName);
+        } catch (error) {
+            throw new Error('Invalid private key. Invalid checksum');
+        }
     }
 
     async createFromName(accountName, accountCreator = this.defaultOptions.accountCreator) {

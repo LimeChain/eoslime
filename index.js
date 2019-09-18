@@ -37,6 +37,7 @@ module.exports = (function () {
     }
 
     return {
-        init: init
+        init: init,
+        NETWORKS: Provider.availableNetworks
     };
 })();

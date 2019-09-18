@@ -1,8 +1,18 @@
+<<<<<<< HEAD:example/eosio-token/usage-example.js
 const assert = require("assert");
 const eoslime = require("./../../").init();
 
 const TOKEN_WASM_PATH = "./example/eosio-token/contract/eosio.token.wasm";
 const TOKEN_ABI_PATH = "./example/eosio-token/contract/eosio.token.abi";
+=======
+const assert = require('assert');
+const eoslime = require('eoslime').init();
+
+const TOKEN_WASM_PATH = './contracts/example/eosio.token.wasm';
+const TOKEN_ABI_PATH = './contracts/example/eosio.token.abi';
+
+describe('EOSIO Token', function () {
+>>>>>>> aba28795acb895397b1aa0c8a2f5626716337c17:cli-commands/init/options/with-example/tests-example/tests.js
 
 describe("EOSIO Token", function() {
     // Increase mocha(testing framework) time, otherwise tests fails

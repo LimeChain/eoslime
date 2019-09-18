@@ -24,6 +24,16 @@ class Provider {
 
         return NETWORKS.custom(network);
     }
+
+    static availableNetworks() {
+        const networks = {};
+        Object.keys(NETWORKS).forEach(networkName => {
+            networks[networkName.toUpperCase] = networkName;
+        });
+
+        networks.all = Object.keys(NETWORKS);
+        return networks;
+    }
 }
 
 module.exports = Provider
