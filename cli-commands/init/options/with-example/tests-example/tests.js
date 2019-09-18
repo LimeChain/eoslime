@@ -85,3 +85,4 @@ describe('EOSIO Token', function () {
             assert.equal(holderBalance.length, 0, "Incorrect holder balance");
         });
     });
+});

@@ -15,10 +15,6 @@ class AccountFactory {
     }
 
     load(name, privateKey, authorityName = this.defaultOptions.authority) {
-        if (`${name}`.length != 12) {
-            throw new Error('Account name should be 12 symbols');
-        }
-
         try {
             return new Account(name, privateKey, this.provider, authorityName);
         } catch (error) {

@@ -1,16 +1,16 @@
 const assert = require("assert");
 const eoslime = require("./../").init();
 
-const TOKEN_WASM_PATH = "./example/eosio-token/contract/eosio.token.wasm";
-const TOKEN_ABI_PATH = "./example/eosio-token/contract/eosio.token.abi";
+const TOKEN_ABI_PATH = "./tests/testing-contracts/compiled/eosio.token.abi";
+const TOKEN_WASM_PATH = "./tests/testing-contracts/compiled/eosio.token.wasm";
 
-const FAUCET_ABI_PATH = "./tests/testing-contracts/abis/faucet.abi";
-const FAUCET_WASM_PATH = "./tests/testing-contracts/wasms/faucet.wasm";
+const FAUCET_ABI_PATH = "./tests/testing-contracts/compiled/faucet.abi";
+const FAUCET_WASM_PATH = "./tests/testing-contracts/compiled/faucet.wasm";
 /*
     You should have running local nodeos in order to run tests
 */
 
-describe("Contract", function () {
+describe.only("Contract", function () {
     // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
 

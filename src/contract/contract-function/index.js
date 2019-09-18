@@ -33,6 +33,8 @@ class ContractFunction extends EventClass {
         contractFunction.on = function (eventName, callback) {
             self.on(eventName, callback);
         }
+
+        return contractFunction;
     }
 }
 
