@@ -4,3 +4,6 @@ package-lock.json
 .vscode
 .idea/
 .npmignore
+coverage.lcov
+.nyc_output
+.history
