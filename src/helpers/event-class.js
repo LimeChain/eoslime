@@ -15,8 +15,8 @@ class EventClass {
     }
 
     emit(eventName, ...params) {
-        for (let i = 0; i < this.eventsHooks[EVENTS[eventName]].length; i++) {
-            this.eventsHooks[EVENTS[eventName]][i](...params);
+        for (let i = 0; i < this.eventsHooks[this.events[eventName]].length; i++) {
+            this.eventsHooks[this.events[eventName]][i](...params);
         }
     }
 }

@@ -8,7 +8,6 @@ const ContractFactory = require('./src/contract/contract-factory');
 const CleanDeployer = require('./src/deployers/clean-deployer');
 const AccountDeployer = require('./src/deployers/account-deployer');
 
-const utils = require('./src/utils');
 const contractFilesReader = require('./src/helpers/contract-files-reader');
 
 
@@ -28,8 +27,7 @@ module.exports = (function () {
             Account: accountFactory,
             CleanDeployer: cleanDeployer,
             AccountDeployer: accountDeployer,
-            Contract: buildContract(contractFactory),
-            utils
+            Contract: buildContract(contractFactory)
         };
     }
 

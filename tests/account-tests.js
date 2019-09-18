@@ -49,7 +49,7 @@ const Networks = {
     },
 }
 
-describe('Account', function () {
+describe.only('Account', function () {
 
     // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
