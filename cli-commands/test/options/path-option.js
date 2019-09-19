@@ -15,7 +15,7 @@ class PathOption extends Option {
         );
     }
 
-    async process(optionValue) {
+    async process(optionValue, args) {
         let deploymentFilesFunctions = [];
         if (fileSystemUtil.isDir(optionValue)) {
             const dirFiles = await fileSystemUtil.recursivelyReadDir(optionValue);
@@ -30,7 +30,7 @@ class PathOption extends Option {
             deploymentFilesFunctions.push(path.resolve('./', optionValue));
         }
 
-        return deploymentFilesFunctions;
+        args.testFramework.addTestFiles(deploymentFilesFunctions);
     }
 }
 

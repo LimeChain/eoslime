@@ -1,9 +1,11 @@
 const Command = require('./../command');
 const testCommandDefinition = require('./definition');
 
+const eoslime = require('./../../index');
+
 const testUtils = require('./utils');
 
-// eoslime test --path --network --resource-report
+// eoslime test --path --resource-report=
 
 class TestCommand extends Command {
 
@@ -13,24 +15,25 @@ class TestCommand extends Command {
 
     async execute(args, TestFramework) {
         try {
-            const testFramework = new TestFramework(optionsResults.path);
+            args.eoslime = eoslime.init();
+            args.testFramework = new TestFramework();
 
-            const optionsResults = await super.processOptions(args, testFramework);
-            setTestsHelpers();
+            await super.processOptions(args);
 
-            testFramework.runTests();
+            setTestsHelpers(args.eoslime);
+
+            args.testFramework.setDescribeArgs(args.eoslime);
+            args.testFramework.runTests();
         } catch (error) {
             console.log(error);
         }
     }
 }
 
-const setTestsHelpers = function () {
-    // global.assert = chai.assert;
-    // global.expect = chai.expect;
-    Object.assign(global, testUtils);
-    // Todo add accounts
-    // global.accounts = importedAccounts;
+const setTestsHelpers = function (eoslime) {
+    eoslime.tests = {
+        ...testUtils
+    }
 }
 
 module.exports = TestCommand;

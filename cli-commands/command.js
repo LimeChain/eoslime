@@ -33,7 +33,7 @@ class Command {
         }
     }
 
-    static executeWithContext(context, params) {
+    static executeWithContext(context, ...params) {
         return async (args) => {
             await context.execute(args, ...params);
         }

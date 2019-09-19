@@ -33,7 +33,7 @@ module.exports = (function () {
 
     return {
         init: init,
-        NETWORKS: Provider.availableNetworks
+        NETWORKS: Provider.availableNetworks().all
     };
 })();
 

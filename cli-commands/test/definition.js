@@ -1,5 +1,5 @@
 const pathOption = require('./options/path-option');
-const resourceReport = require('./options/resource-report-option');
+const resourceReport = require('./options/resource-report-option/resource-report-option');
 
 module.exports = {
     "template": "test [path] [resource-report]",

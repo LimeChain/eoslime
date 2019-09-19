@@ -1,11 +1,11 @@
-
-const path = require('path');
-
-
-const TOKEN_WASM_PATH = path.join(__dirname, './contract/example/eosio.token.wasm');
-const TOKEN_ABI_PATH = path.join(__dirname, './contract/example/eosio.token.abi');
+const TOKEN_WASM_PATH = './contracts/example/eosio.token.wasm';
+const TOKEN_ABI_PATH = './contracts/example/eosio.token.abi';
 
 let deploy = async function (eoslime, deployer) {
+
+    if (!deployer) {
+        deployer = await eoslime.Account.createRandom();
+    }
 
     /*
         Deploy command example:
