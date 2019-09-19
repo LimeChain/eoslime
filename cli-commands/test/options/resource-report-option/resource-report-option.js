@@ -15,16 +15,6 @@ class ResourceReportOption extends Option {
         this.reportTable = new ReportTable();
     }
 
-
-    // Todo: init eoslime for different networks
-    // Todo: add network option
-    // Todo: add aliases
-
-    // Todo: implement Contract.deploy method - YUP
-    // Todo: implement on('deploy') - YUP
-    // Todo: Deprecate Deployers - YUP
-    // Todo: add deployment cost - YUP
-
     process(optionValue, args) {
         if (optionValue != 'false') {
             const functionsResources = [];
