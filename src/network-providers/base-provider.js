@@ -21,6 +21,11 @@ class BaseProvider {
             }
         })
     }
+
+    reset(newProvider) {
+        is(newProvider).instanceOf(BaseProvider);
+        Object.assign(this, newProvider);
+    }
 }
 
 module.exports = BaseProvider

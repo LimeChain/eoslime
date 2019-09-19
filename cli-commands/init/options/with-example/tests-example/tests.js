@@ -30,7 +30,7 @@ describe("EOSIO Token", function (eoslime) {
  
             You can access the contract account as -> tokenContract.executor
         */
-        tokenContract = await eoslime.CleanDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
+        tokenContract = await eoslime.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
     });
 
     it("Should create a new token", async () => {

@@ -6,16 +6,17 @@ class NetworkOption extends Option {
         super(
             'network',
             {
-                "describe": "The blockchain network you are going to deploy on",
-                "type": "network name or in case of custom { url: custom url, chainId: custom chain id }",
+                "describe": "The blockchain network you are going to deploy on.\n\nParameters: \nNetwork name or in case of custom: \n{ url: custom url, chainId: custom chain id }\n",
+                "type": "string",
                 "default": "local",
-                "choices": eoslime.NETWORKS
             }
         );
     }
 
-    process(network) {
-        return eoslime.init(network);
+    process(optionValue) {
+        if (optionValue) {
+            return eoslime.init(network);
+        }
     }
 }
 

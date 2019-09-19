@@ -16,7 +16,7 @@ let deploy = async function (eoslime, deployer) {
             1. Instantiated eoslime
             2. deployer -> eoslime.Account
     */
-    let tokenContract = await eoslime.AccountDeployer.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH, deployer);
+    let tokenContract = await eoslime.Contract.deployWithAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, deployer);
 }
 
 module.exports = deploy;

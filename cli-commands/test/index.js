@@ -16,6 +16,7 @@ class TestCommand extends Command {
     async execute(args, TestFramework) {
         try {
             args.eoslime = eoslime.init();
+
             args.testFramework = new TestFramework();
 
             await super.processOptions(args);
