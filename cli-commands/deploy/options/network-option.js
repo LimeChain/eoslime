@@ -15,7 +15,7 @@ class NetworkOption extends Option {
 
     process(optionValue) {
         if (optionValue) {
-            return eoslime.init(network);
+            return eoslime.init(optionValue);
         }
     }
 }

@@ -21,11 +21,11 @@ class DeployCommand extends Command {
     }
 }
 
-const runDeploymentScripts = async function (deploymentScripts, networkProvider, deployer) {
+const runDeploymentScripts = async function (deploymentScripts, ...configuration) {
     for (let i = 0; i < deploymentScripts.length; i++) {
         const deploymentScript = deploymentScripts[i];
         try {
-            await deploymentScript.deploy(networkProvider, deployer);
+            await deploymentScript.deploy(...configuration);
             commandMessages.SuccessfulDeploymentOfScript(deploymentScript.fileName);
         } catch (error) {
             commandMessages.UnsuccessfulDeploymentOfScript(deploymentScript.fileName, error);
