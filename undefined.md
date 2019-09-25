@@ -1,21 +1,20 @@
-[![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) 
-[![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
+# Readme
 
-eoslime.js
-============
+[![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) [![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
+
+## eoslime.js
 
 EOS development and deployment framework based on eosjs.js. The framework's main purpose is to make the process of unit testing, deployment and compilation much simpler and much easier.
 
-You can join us on telegram - https://t.me/eoslime
+You can join us on telegram - [https://t.me/eoslime](https://t.me/eoslime)
 
-## Installing 
----
+### Installing
 
-```
+```text
 npm install eoslime
 ```
 
-***Simple usage***
+_**Simple usage**_
 
 ```javascript
 /* 
@@ -42,7 +41,8 @@ await tokenContract.create(tokensIssuer.name, '100 SYS');
 await tokenContract.issue(tokensHolder.name, '10 SYS', 'memo', { from: tokensIssuer });
 ```
 
-***Simple tests***
+_**Simple tests**_
+
 ```javascript
 const assert = require('assert');
 const eoslime = require('./../../').init();
@@ -135,20 +135,23 @@ describe('EOSIO Token', function () {
 });
 ```
 
-## Eoslime initialization
----
-***Parameters:***
-* network name - **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] [ kylin ] or  { url: 'custom url', chainId: 'custom id' }**
----
+### Eoslime initialization
 
-##### Initialization with default parameters:
+_**Parameters:**_
+
+* network name - **\[ local \] \[ jungle \] \[ bos \] \[ worbli \] \[ main \] \[ kylin \] or  { url: 'custom url', chainId: 'custom id' }**
+
+**Initialization with default parameters:**
+
 ```javascript
 const eoslime = require('eoslime').init();
 ```
 
-***Defaults***:
+_**Defaults**_:
+
 * network name - **local**   
-On local network, eoslime.provider.defaultAccount is set automatically to **eosio**
+
+  On local network, eoslime.provider.defaultAccount is set automatically to **eosio**
 
 ```javascript
 const eoslime = require('eoslime').init();
@@ -174,120 +177,142 @@ eoslime.provider.defaultAccount =>
 ```
 
 **Important ! Only local network comes with preset `provider's default account`. If you connect to another network you should set provider's default account manually**
-##### Initialization on supported network
+
+**Initialization on supported network**
+
 ```javascript
 const eoslime = require('eoslime').init('jungle');
 ```
 
-##### Initialization on unsupported network
+**Initialization on unsupported network**
+
 ```javascript
 const eoslime = require('eoslime').init({ url: 'Your network', chainId: 'Your chainId' });
 ```
-## Account
----
+
+### Account
+
 Account is a class that provides an easy access to blockchain account endpoint.
 
-#### 1. Instantiate
+**1. Instantiate**
+
 ```javascript
     const eoslime = require('eoslime').init();
-    
+
     // Load existing network account
     let account = eoslime.Account.load('name', 'privateKey', 'permission');
 ```
 
-***Parameters:***
+_**Parameters:**_
+
 * **name** - account name
 * **privateKey** - private key of the account.   
-If you provide 'custom' permission, the privateKey should be the relevant for that permission
-* **permission ( Optional )** - the account's permission. Default -> `active`  
-Permission per account. If you want to operate with another account's permission you should load the same account with the second permission.
 
-#### 2. Instantiated account
-##### 2.1 Properties
+  If you provide 'custom' permission, the privateKey should be the relevant for that permission
+
+* **permission \( Optional \)** - the account's permission. Default -&gt; `active`  
+
+  Permission per account. If you want to operate with another account's permission you should load the same account with the second permission.
+
+**2. Instantiated account**
+
+**2.1 Properties**
+
 * name
 * publicKey
 * privateKey
 * provider - The network provider that the account is connected to
 * executiveAuthority - transactions authority
-```javascript
+
+  ```javascript
         {
             actor: '', permission: '' }
         }
-```
----
-##### 2.2 Functions
-* **buyRam (bytes, payer)** - buy ram for this account
-```javascript
+  ```
+
+**2.2 Functions**
+
+* **buyRam \(bytes, payer\)** - buy ram for this account
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let payer = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     let account2 = eoslime.Account.load('myAcc2', 'myPrivateKey2');
-    
+
     // Payer will buy ram for account2
     await account2.buyRam(1000,  payer);
-```
-*Defaults:*
-    
+  ```
+
+  _Defaults:_
+
 * `payer` - current account
 
 ```javascript
     const eoslime = require('eoslime').init();
-    
+
     // Existing account on local network
     let account = eoslime.Account.load('myAcc', 'myPrivateKey');
-    
+
     // The account will buy ram by self for 10000 bytes
     await account.buyRam(10000);
-```    
+```
 
+* **buyBandwidth \(cpu, net, payer\)** - buy cpu and network for this account
 
-* **buyBandwidth (cpu, net, payer)** - buy cpu and network for this account
-```javascript
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let payer = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     let account2 = eoslime.Account.load('myAcc2', 'myPrivateKey2');
-    
+
     // Payer will buy cpu and network for account2 for 100 EOS 
     await account2.buyBandwidth('100.0000 EOS', '100.0000 EOS', payer);
-```
-*Defaults:*
+  ```
+
+  _Defaults:_
+
 * `payer` - current account
-```javascript
+
+  ```javascript
     const eoslime = require('eoslime').init();
-    
+
     // Existing account on local network
     let account = eoslime.Account.load('myAcc', 'myPrivateKey');
-    
+
     // The account will buy cpu and net by self for 10 EOS
     await account.buyBandwidth('10.0000 EOS', '10.0000 EOS');
-```
+  ```
 
-* **send (receiver, amount, symbol)** - send EOS tokens to another account
-```javascript
+* **send \(receiver, amount, symbol\)** - send EOS tokens to another account
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let sender = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     let receiver = eoslime.Account.load('myAcc2', 'myPrivateKey2');
-    
+
     // The sender will send 100 EOS tokens to receiver
     await sender.send(receiver, `100.0000`, 'EOS');
-```
+  ```
 
-*Defaults:*
+_Defaults:_
+
 * `symbol` - EOS
-```javascript
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let sender = eoslime.Account.load('myAcc1', 'myPrivateKey1');
     let receiver = eoslime.Account.load('myAcc2', 'myPrivateKey2');
-    
+
     // The sender will send 100 EOS tokens to receiver
     await sender.send(receiver, `100.0000`);
-```
+  ```
 
-* **createAuthority (authorityName)** - Creates a new authority. Behind the scene it will generate a new private/public keys pair for the authority
-```javascript
+* **createAuthority \(authorityName\)** - Creates a new authority. Behind the scene it will generate a new private/public keys pair for the authority
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing account on local network
     let activeAccount = eoslime.Account.load('myAcc1', 'myPrivateKey1', 'active');
@@ -301,10 +326,11 @@ Permission per account. If you want to operate with another account's permission
         }
         contractsAccount.pubKey != activeAccount.pubKey
     */
-```
+  ```
 
-* **addPermission (permName, actor)** - Adds a new permission in the account's authority
-```javascript
+* **addPermission \(permName, actor\)** - Adds a new permission in the account's authority
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing accounts on local network
     let account = eoslime.Account.load('myaccount', 'myPrivateKey', 'active');
@@ -318,30 +344,34 @@ Permission per account. If you want to operate with another account's permission
 
     */
     await account.addPermission('eosio.code', tokenFactoryAccount.name);
-```
+  ```
 
-*Defaults:*
+_Defaults:_
+
 * `actor` - current account name
-```javascript
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing account on local network
     let account = eoslime.Account.load('myAcc1', 'myPrivateKey1', 'active');
 
     // It will add eosio.code permission in the active authority
     await account.addPermission('eosio.code');
-```
+  ```
 
-* **getBalance (symbol, code)** - get the account balance for token with symbol
-```javascript
+* **getBalance \(symbol, code\)** - get the account balance for token with symbol
+
+  ```javascript
     const eoslime = require('eoslime').init();
     // Existing account on local network
     let account = eoslime.Account.load('myAcc1', 'myPrivateKey1');
-    
+
     // custom.token is a contract account with a token deployed on it
     await account.getBalance('CUSTOM', custom.token);
-```
+  ```
 
-*Defaults:*
+_Defaults:_
+
 * `symbol` - EOS
 * `code` - eosio.token
 
@@ -349,103 +379,111 @@ Permission per account. If you want to operate with another account's permission
     const eoslime = require('eoslime').init();
     // Existing account on local network
     let account = eoslime.Account.load('myAcc1', 'myPrivateKey1');
-    
+
     await account.getBalance();
 ```
 
+**3. Static account properties**
 
-#### 3. Static account properties
+_**Important! Keep in mind the following points which are applicable for each create-account function:**_ 1. It buys ram for 8192 bytes 2. It executes blockchain create-account transaction
 
-***Important! Keep in mind the following points which are applicable for each create-account function:***
-1. It buys ram for 8192 bytes
-2. It executes blockchain create-account transaction
-3. It sets the executive authority to `active`
----
-* **createFromName (name, accountCreator)** - Creates a fresh new account for a given name
+1. It sets the executive authority to `active`
 
-    **Important!** Keep in mind that this name may already exists on the network
+* **createFromName \(name, accountCreator\)** - Creates a fresh new account for a given name
 
-    ```javascript
+  **Important!** Keep in mind that this name may already exists on the network
+
+  ```javascript
         const eoslime = require('eoslime').init();
 
         // Existing account on local network
         let accountCreator = eoslime.Account.load('myAcc', 'myPrivateKey');
-        
+
         // accountCreator will create account2 on the network, a.k.a accountCreator.provider.network
         let account2 = await eoslime.Account.createFromName('name', accountCreator);
-    ```
-    *Defaults:*
-    * `accountCreator` - provider's default account
-    ```javascript
-        const eoslime = require('eoslime').init();
-        
-        // Provider’s default account will create this account on local network
-        let account = await eoslime.Account.createFromName('name');
-    ```
+  ```
 
-* **createRandom (accountCreator)** - Creates new random account
+  _Defaults:_
+
+  * `accountCreator` - provider's default account
 
     ```javascript
+      const eoslime = require('eoslime').init();
+
+      // Provider’s default account will create this account on local network
+      let account = await eoslime.Account.createFromName('name');
+    ```
+
+* **createRandom \(accountCreator\)** - Creates new random account
+
+  ```javascript
         const eoslime = require('eoslime').init();
 
         // Existing account on local network
         let accountCreator = eoslime.Account.load('myAcc', 'myPrivateKey');
-        
+
         // accountCreator will create account2 on the network, a.k.a accountCreator.provider.network
         let account2 = await eoslime.Account.createRandom(accountCreator);
-    ```
-    *Defaults:*
-    * `accountCreator` - provider's default account
-    ```javascript
-        const eoslime = require('eoslime').init();
-        
-        // Provider's default account account will create this account on local network
-        let account = await eoslime.Account.createRandom();
-    ```
+  ```
 
-* **createRandoms (accountsCount, accountCreator)** - Creates new random accounts
+  _Defaults:_
+
+  * `accountCreator` - provider's default account
 
     ```javascript
+      const eoslime = require('eoslime').init();
+
+      // Provider's default account account will create this account on local network
+      let account = await eoslime.Account.createRandom();
+    ```
+
+* **createRandoms \(accountsCount, accountCreator\)** - Creates new random accounts
+
+  ```javascript
         const eoslime = require('eoslime').init();
 
         // Existing account on local network
         let accountsCreator = eoslime.Account.load('myAcc', 'myPrivateKey');
-        
+
         // accountsCreator will create random accounts on the network, a.k.a accountsCreator.provider.network
         const accountsCount = 2;
         let accounts = await eoslime.Account.createRandoms(accountsCount, accountsCreator);
-    ```
-    *Defaults:*
-    * `accountCreator` - provider's default account
-    ```javascript
-        const eoslime = require('eoslime').init;
-        
-        // Provider's default account will create this accounts on local network
-        const accountsCount = 2;
-        let accounts = await eoslime.Account.createRandoms(accountsCount);
-    ```
+  ```
 
-* **createEncrypted (password, accountCreator)** - Creates fresh new account and returns the encrypted json format of it  
-How it works: Creates a fresh new random account. Created account's data is hashed and a **cipherText** is derived by encrypting **privateKey::dataHash**
+  _Defaults:_
+
+  * `accountCreator` - provider's default account
 
     ```javascript
+      const eoslime = require('eoslime').init;
+
+      // Provider's default account will create this accounts on local network
+      const accountsCount = 2;
+      let accounts = await eoslime.Account.createRandoms(accountsCount);
+    ```
+
+* **createEncrypted \(password, accountCreator\)** - Creates fresh new account and returns the encrypted json format of it  
+  How it works: Creates a fresh new random account. Created account's data is hashed and a **cipherText** is derived by encrypting **privateKey::dataHash**
+
+  ```javascript
     // Account data for hashing
     { 
         name: account.name, 
         network: account.provider.network, 
         privateKey: account.privateKey 
     }
-    ```
-    ```javascript
+  ```
+
+  ```javascript
         const eoslime = require('eoslime').init();
 
         // Existing account on local network
         let accountCreator = new eoslime.Account('myAcc', 'myPrivateKey');
-        
+
         // accountCreator will create encrypted JSON account on the network, a.k.a accountCreator.provider.network  
         const password = 'secret password';
         let encryptedJSONAccount = await eoslime.Account.createEncrypted(password, accountCreator);
-        
+
         /*
         Encrypted JSON account => {
                 "name": "random generated",
@@ -457,40 +495,44 @@ How it works: Creates a fresh new random account. Created account's data is hash
                 "ciphertext": "encrypted private key + dataHash"
             }
         */
-    ```
-    *Defaults:*
-    * `accountCreator` - provider's default account
-    ```javascript
-        const eoslime = require('eoslime').init;
+  ```
 
-        // Provider's default account will create this account on local network
-        const password = 'secret password';
-        let encryptedJSONAccount = await eoslime.Account.createEncrypted(password);
-    ```
+  _Defaults:_
 
-* **fromEncrypted (encryptedAccount, password)** - Decrypt an encrypted account   
-How it works: Decrypts **cipherText** and gets it's parts (privateKey and dataHash). The PrivateKey is merged with the other **encryptedAccount** properties into an object which after the merging is hashed. This hash is validated against the **dataHash** for correctness.
+  * `accountCreator` - provider's default account
 
     ```javascript
+      const eoslime = require('eoslime').init;
+
+      // Provider's default account will create this account on local network
+      const password = 'secret password';
+      let encryptedJSONAccount = await eoslime.Account.createEncrypted(password);
+    ```
+
+* **fromEncrypted \(encryptedAccount, password\)** - Decrypt an encrypted account  
+  How it works: Decrypts **cipherText** and gets it's parts \(privateKey and dataHash\). The PrivateKey is merged with the other **encryptedAccount** properties into an object which after the merging is hashed. This hash is validated against the **dataHash** for correctness.
+
+  ```javascript
         const eoslime = require('eoslime').init();
 
         // Existing account on local network
         let accountCreator = new eoslime.Account('myAcc', 'myPrivateKey');
-        
+
         // accountCreator will create encrypted JSON account on the network, a.k.a accountCreator.provider.network
         const password = 'secret password';
         let encryptedJSONAccount = await eoslime.Account.createEncrypted(password, accountCreator);
-        
-        let decryptedAccount = eoslime.Account.fromEncrypted(encryptedJSONAccount, password);
-    ```
 
-#### 4. Default account
-Default account or main account is the account which executes blockchain transactions if none is provided. Most of the functions have executor in the form of **payer** | **accountCreator** | **contractExecutor**. 
-For example:
-When you are on local network **eosio** account is preset automatically for you as default/main account. You are able to do 
+        let decryptedAccount = eoslime.Account.fromEncrypted(encryptedJSONAccount, password);
+  ```
+
+**4. Default account**
+
+Default account or main account is the account which executes blockchain transactions if none is provided. Most of the functions have executor in the form of **payer** \| **accountCreator** \| **contractExecutor**. For example: When you are on local network **eosio** account is preset automatically for you as default/main account. You are able to do
+
 ```javascript
 await Account.createFromName('some name')
 ```
+
 without the need of specifying the **accountCreator** every time.
 
 If you are on another network, you can set the default/main account as follow:
@@ -504,31 +546,35 @@ eoslime.Provider.defaultAccount = jungleMainAccount;
 
 In this way **jungleMainAccount** will execute every blockchain transaction whenever the execution account is needed but none was provided.
 
-## Providers
----
-Providers are the blockchain connectors. A provider is instantiated internally based on the network name provided on initialization: **[ local ] [ jungle ] [ bos ] [ worbli ] [ main ] or  { url: 'custom url', chainId: 'custom id' }**   
-   
-Depending on what network you want to connect to, the following providers are available:
-**[ LocalProvider ] [ JungleProvider ] [ BosProvider ] [ WorbliProvider ] [ KylinProvider ] [ MainProvider ] [ CustomProvider ]** : 
-``` javascript
+### Providers
+
+Providers are the blockchain connectors. A provider is instantiated internally based on the network name provided on initialization: **\[ local \] \[ jungle \] \[ bos \] \[ worbli \] \[ main \] or { url: 'custom url', chainId: 'custom id' }**
+
+Depending on what network you want to connect to, the following providers are available: **\[ LocalProvider \] \[ JungleProvider \] \[ BosProvider \] \[ WorbliProvider \] \[ KylinProvider \] \[ MainProvider \] \[ CustomProvider \]** :
+
+```javascript
 const eoslime = require('eoslime').init('jungle') -> JungleProvider
 ```
-    
-#### 1. Properties:
+
+**1. Properties:**
+
 * network
-``` javascript
-{
+
+  ```javascript
+  {
     name: '',
     url: '',
     chainId: ''
-}
-```
+  }
+  ```
+
 * defaultAccount - The default/main account from which the blockchain transactions are executed
 * eos - **eosjs** instance that serves as a bridge with the blockchain
 
-## Deployers
----
-### Account Deployer
+### Deployers
+
+#### Account Deployer
+
 Account Deployer is used when you already have an account on which you want to deploy a new contract or when you have an account with already deployed contract and you want to upgrade it.
 
 ```javascript
@@ -541,21 +587,21 @@ let contractAccount = eoslime.Account.load('name', 'privateKey');
 
 let contract = await eoslime.AccountDeployer.deploy(WASM_PATH, ABI_PATH, contractAccount);
 ```
----
+
 1. Options: 
-* inline - If true, contract account's active authority obtains 'eosio.code' permission. In this way the contract has the ability to do inline actions (call another contract)
-```javascript
-const eoslime = require('eoslime').init();
+2. inline - If true, contract account's active authority obtains 'eosio.code' permission. In this way the contract has the ability to do inline actions \(call another contract\)
 
-const WASM_PATH = './contract/contract.wasm';
-const ABI_PATH = './contract/contract.abi';
+   \`\`\`javascript
 
-let contractAccount = eoslime.Account.load('name', 'privateKey');
+   const eoslime = require\('eoslime'\).init\(\);
 
-// contract account's active authority obtains `eosio.code` permission
-let contract = await eoslime.AccountDeployer.deploy(WASM_PATH, ABI_PATH, contractAccount, { inline: true });
-```
+const WASM\_PATH = './contract/contract.wasm'; const ABI\_PATH = './contract/contract.abi';
 
+let contractAccount = eoslime.Account.load\('name', 'privateKey'\);
+
+// contract account's active authority obtains `eosio.code` permission let contract = await eoslime.AccountDeployer.deploy\(WASM\_PATH, ABI\_PATH, contractAccount, { inline: true }\);
+
+```text
 The `deploy` function returns a ready to use [instance](#contract) of the deployed contract.
 
 ### Clean Deployer
@@ -572,19 +618,19 @@ const ABI_PATH = './contract/contract.abi';
 
 let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
 ```
----
+
 1. Options: 
-* inline - If true, contract account's active authority obtains 'eosio.code' permission. In this way the contract has the ability to do inline actions (call another contract)
-```javascript
-const eoslime = require('eoslime').init();
+2. inline - If true, contract account's active authority obtains 'eosio.code' permission. In this way the contract has the ability to do inline actions \(call another contract\)
 
-const WASM_PATH = './contract/contract.wasm';
-const ABI_PATH = './contract/contract.abi';
+   \`\`\`javascript
 
-// contract account's active authority obtains `eosio.code` permission
-let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH, { inline: true });
-```
+   const eoslime = require\('eoslime'\).init\(\);
 
+const WASM\_PATH = './contract/contract.wasm'; const ABI\_PATH = './contract/contract.abi';
+
+// contract account's active authority obtains `eosio.code` permission let contract = await eoslime.CleanDeployer.deploy\(WASM\_PATH, ABI\_PATH, { inline: true }\);
+
+```text
 The `deploy` function returns a ready to use [instance](#contract) of the deployed contract.
 
 ## Contract
@@ -603,105 +649,112 @@ const ABI_PATH = './contract/contract.abi';
 
 let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_EXECUTOR);
 ```
-**Note! If you don't provide `CONTRACT_EXECUTOR` the provider's default account will be applied as executor**
-**Important! eoslime is based on eosjs and when we are calling a contract method, eosjs options `{ broadcast: true, sign: true }` are always set to true**
 
-#### Properties
+**Note! If you don't provide `CONTRACT_EXECUTOR` the provider's default account will be applied as executor** **Important! eoslime is based on eosjs and when we are calling a contract method, eosjs options `{ broadcast: true, sign: true }` are always set to true**
+
+**Properties**
+
 * name - For convenience you have accsess to the contract name
 * provider - For convenience you have accsess to the network provider
-* executor - The account which will execute contract methods (**transactions**) on the blockchain
+* executor - The account which will execute contract methods \(**transactions**\) on the blockchain
 
-#### Functions
-* ##### contract methods
-    **Each contract method has the following optionals**
-    
-     **from** - If you want to call a contract method from another account(executor) you can do
-    ```javascript
+**Functions**
+
+* **contract methods**
+
+  **Each contract method has the following optionals**
+
+  **from** - If you want to call a contract method from another account\(executor\) you can do
+
+  ```javascript
     // Local network initialization
     const eoslime = require('eoslime').init();
-    
+
     const CONTRACT_NAME = 'mycontract';
     const ABI_PATH = './contract/contract.abi';
-    
+
     // Pre-created local network accounts
     const EXECUTOR_1 = eoslime.Account.load('myacc1', 'privateKey1');
     const EXECUTOR_2 = eoslime.Account.load('myacc2', 'privateKey2');
-    
+
     let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, EXECUTOR_1);
-    
+
     // EXECUTOR_1 will execute `doSmth` transaction on the blockchain
     await contract.doSmth('Something'); 
-    
+
     // EXECUTOR_2 will execute `doSmth` transaction on the blockchain
     await contract.doSmth('Something', { from: EXECUTOR_2 });
-    
+
     // EXECUTOR_1 will execute `doSmth` transaction on the blockchain
     await contract.doSmth('Something');
-    ```
-     **unique** - Nonce action support. Solve the `duplicate transaction` error
-    ```javascript
+  ```
+
+  **unique** - Nonce action support. Solve the `duplicate transaction` error
+
+  ```javascript
     // Local network initialization
     const eoslime = require('eoslime').init();
-    
+
     const CONTRACT_NAME = 'mycontract';
     const ABI_PATH = './contract/contract.abi';
-    
+
     // Pre-created local network accounts
     const EXECUTOR_1 = eoslime.Account.load('myacc1', 'privateKey1');
-    
+
     let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, EXECUTOR_1);
-    
+
     await contract.doSmth('Something'); 
     // Execute `doSmth` one more time with same parameters
     await contract.doSmth('Something', { unique: true });
-    ```
-   
-* ##### makeInline() - It adds 'eosio.code' permission to the contracts account's authority. It allows contract to do inline actions/call another contract's methods
-    ```javascript
+  ```
+
+* **makeInline\(\) - It adds 'eosio.code' permission to the contracts account's authority. It allows contract to do inline actions/call another contract's methods**
+
+  ```javascript
     let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_ACCOUNT);
-    
+
     // CONTRACT_ACCOUNT will obtains 'eosio.code' permission
     await contract.makeInline();
-    ```
-    
-#### Table getters
-In order to search in a contract tables in an easier way there are default table getters 
-**Each table getter is constructed such as**
-```
+  ```
+
+**Table getters**
+
+In order to search in a contract tables in an easier way there are default table getters **Each table getter is constructed such as**
+
+```text
 get + table name but with uppered first letter
 Example:
     table = admins
     default getter = getAdmins
 ```
 
-When you are using table getters, you should provide some query parameters
-***Default:  { equal: null, lower: null, upper: null, index: 1, index_type: "i64", limit: 100 }***
+When you are using table getters, you should provide some query parameters _**Default: { equal: null, lower: null, upper: null, index: 1, index\_type: "i64", limit: 100 }**_
+
 * **equal** - Search for records which are equal to
 * **lower/upper** - Search for records in range
 * **index** - Search for records by table index
-* **index_type** - Search for records and specify their index data type
+* **index\_type** - Search for records and specify their index data type
 * **limit** - Limit the resulted records. If the limit is set to 1 you will get directly the resulted record instead of an array with one element
-```javascript
-const withdrawer = await eoslime.Account.createRandom();
-const faucetAccount = await eoslime.Account.createRandom();
-const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
 
-// faucetAccount is the executor
-await faucetContract.produce(withdrawer.name, "100.0000 TKNS");
+  \`\`\`javascript
 
-// With equal criteria
-const equalResult = await faucetContract.getWithdrawers({ equal: withdrawer.name });
+  const withdrawer = await eoslime.Account.createRandom\(\);
 
-// With range criteria
-const rangeResult = await faucetContract.getWithdrawers({ lower: 0, upper: 1001.0000, index: 2 });
+  const faucetAccount = await eoslime.Account.createRandom\(\);
 
-// With limit
-const allWithdrawers = await faucetContract.getWithdrawers({ limit: 10 });
+  const faucetContract = eoslime.Contract\(FAUCET\_ABI\_PATH, faucetAccount.name, faucetAccount\);
 
-// With different index (By Quantity)
-const balanceWithdrawers = await faucetContract.getWithdrawers({ equal: 100.0000, index: 2 });
-```
+// faucetAccount is the executor await faucetContract.produce\(withdrawer.name, "100.0000 TKNS"\);
 
+// With equal criteria const equalResult = await faucetContract.getWithdrawers\({ equal: withdrawer.name }\);
+
+// With range criteria const rangeResult = await faucetContract.getWithdrawers\({ lower: 0, upper: 1001.0000, index: 2 }\);
+
+// With limit const allWithdrawers = await faucetContract.getWithdrawers\({ limit: 10 }\);
+
+// With different index \(By Quantity\) const balanceWithdrawers = await faucetContract.getWithdrawers\({ equal: 100.0000, index: 2 }\);
+
+```text
 ## Utils
 ---
 ### Test
@@ -717,7 +770,7 @@ describe('Test Contract', function () {
     it('Should throw', async () => {
         let wrongParameter = 'Wrong Parameter';
         let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
-        
+
         await eoslime.utils.test.expectAssert(
             contract.doSmth(wrongParameter)
         );
@@ -725,27 +778,29 @@ describe('Test Contract', function () {
 }
 ```
 
-* ##### `eoslime.utils.test.expectMissingAuthority`
- ```javascript
-const eoslime = require('eoslime').init();
+* **eoslime.utils.test.expectMissingAuthority**
 
-const WASM_PATH = './contract/contract.wasm';
-const ABI_PATH = './contract/contract.abi';
+  \`\`\`javascript
 
-describe('Test Contract', function () {
-    it('Should throw', async () => {
-        let maliciousAccount = await eoslime.Account.createRandom();
-        
-        let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
-        
-        await eoslime.utils.test.expectMissingAuthority(
-            // doSmth could be called only from contract account
-            contract.doSmth({ from: maliciousAccount })
-        );
-    });
-}
+  const eoslime = require\('eoslime'\).init\(\);
+
+const WASM\_PATH = './contract/contract.wasm'; const ABI\_PATH = './contract/contract.abi';
+
+describe\('Test Contract', function \(\) { it\('Should throw', async \(\) =&gt; { let maliciousAccount = await eoslime.Account.createRandom\(\);
+
+```text
+    let contract = await eoslime.CleanDeployer.deploy(WASM_PATH, ABI_PATH);
+
+    await eoslime.utils.test.expectMissingAuthority(
+        // doSmth could be called only from contract account
+        contract.doSmth({ from: maliciousAccount })
+    );
+});
 ```
 
+}
+
+```text
 ## Example (eosio.token)
 ---
 
@@ -755,17 +810,18 @@ You must:
 * Run nodoes locally
 * Start example with:
 ```
+
 npm run start
-```
 
-## Roadmap
----
+\`\`\`
 
-* ***cli***
+### Roadmap
 
-## Donations
----
+* _**cli**_
 
-This is a free time project. We do it, because we want to help EOS world to reach more developers. If you want to buy us some beers in order to relax, we won't say no :P 
+### Donations
+
+This is a free time project. We do it, because we want to help EOS world to reach more developers. If you want to buy us some beers in order to relax, we won't say no :P
 
 `Account: gqytgmrtgage`
+
