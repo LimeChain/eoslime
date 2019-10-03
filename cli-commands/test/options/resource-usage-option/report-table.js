@@ -2,7 +2,7 @@ const chalk = require('chalk').default;
 const CLITable = require('cli-table');
 
 const TABLE_HEAD = {
-    head: ['', 'Contract', 'Action', 'Transaction ID', 'CPU', 'NET', 'RAM']
+    head: ['', 'Contract', 'Action', 'CPU ( MIN | MAX )', 'NET ( MIN | MAX )', 'RAM ( MIN | MAX )', 'Calls']
 }
 
 class ReportTable {
@@ -11,19 +11,18 @@ class ReportTable {
     }
 
     addRow(rowData) {
-        rowData[4] = `${rowData[4]} μs`;
-        rowData[5] = `${rowData[5]} Bytes`;
-        rowData[6] = `${rowData[6]} Bytes`;
         this.table.push(rowData);
     }
 
     addSection(sectionName, sectionRows) {
-        this.table.push({ [chalk.cyanBright(sectionName)]: [] });
+        this.table.push({ [chalk.cyanBright(sectionName)]: ['', '', '', '', '', ''] });
 
-        for (let i = 0; i < sectionRows.length; i++) {
-            const sectionRow = sectionRows[i];
-            sectionRow.unshift('');
-            this.addRow(sectionRow);
+        if (sectionRows) {
+            for (let i = 0; i < sectionRows.length; i++) {
+                const sectionRow = sectionRows[i];
+                sectionRow.unshift('');
+                this.addRow(sectionRow);
+            }
         }
     }
 
