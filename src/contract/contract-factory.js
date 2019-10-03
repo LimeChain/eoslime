@@ -2,7 +2,6 @@ const Contract = require('./contract');
 const Account = require('./../account/account');
 const AccountFactory = require('./../account/account-factory');
 const ContractDeployer = require('./contract-deployer');
-// const EventClass = require('./../helpers/event-class');
 
 const is = require('./../helpers/is');
 const contractFilesReader = require('./..//helpers/contract-files-reader');
