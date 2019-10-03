@@ -4,7 +4,7 @@ const ReportTable = require('./report-table');
 class ResourceReportOption extends Option {
     constructor() {
         super(
-            'resource-report',
+            'resource-usage',
             {
                 "describe": "Provides you RAM and Bandwidth report for a contract.",
                 "type": "string",

@@ -7,15 +7,6 @@ let deploy = async function (eoslime, deployer) {
         deployer = await eoslime.Account.createRandom();
     }
 
-    /*
-        Deploy command example:
-            
-            eoslime deploy ./deployment/example-deploy.js network='local' account="{name:\"myAcc\", privateKey:\"myPrivateKey\"}" 
-            
-        Will provide to the deploy function:
-            1. Instantiated eoslime
-            2. deployer -> eoslime.Account
-    */
     let tokenContract = await eoslime.Contract.deployWithAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, deployer);
 }
 

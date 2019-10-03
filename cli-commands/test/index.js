@@ -5,7 +5,7 @@ const eoslime = require('./../../index');
 
 const testUtils = require('./utils');
 
-// eoslime test --path --network --resource-report=
+// eoslime test --path --network --resource-usage=
 
 class TestCommand extends Command {
 
