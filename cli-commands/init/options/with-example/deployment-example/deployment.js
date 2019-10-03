@@ -7,7 +7,7 @@ let deploy = async function (eoslime, deployer) {
         deployer = await eoslime.Account.createRandom();
     }
 
-    let tokenContract = await eoslime.Contract.deployWithAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, deployer);
+    let tokenContract = await eoslime.Contract.deployOnAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, deployer);
 }
 
 module.exports = deploy;

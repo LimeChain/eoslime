@@ -73,7 +73,7 @@ describe('Account', function () {
         // Creates eosio.token account if you don't have it
         try {
             const tokenAccount = await Account.createFromName('eosio.token');
-            const tokenContract = await eoslimeTool.Contract.deployWithAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
+            const tokenContract = await eoslimeTool.Contract.deployOnAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
             await tokenContract.create(tokenAccount.name, TOTAL_SUPPLY);
             await tokenContract.issue(ACCOUNT_NAME, TOTAL_SUPPLY, 'memo');
         } catch (error) {

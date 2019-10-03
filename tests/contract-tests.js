@@ -28,7 +28,7 @@ describe("Contract", function () {
         // Deploy a token contract
         try {
             const tokenAccount = await eoslime.Account.createRandom();
-            tokenContract = await eoslime.Contract.deployWithAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
+            tokenContract = await eoslime.Contract.deployOnAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
             await tokenContract.create(faucetAccount.name, TOTAL_SUPPLY);
         } catch (error) {
             console.log(error);
@@ -39,7 +39,7 @@ describe("Contract", function () {
         // Deploy a faucet contract
         try {
             faucetAccount = await eoslime.Account.createRandom();
-            await eoslime.Contract.deployWithAccount(FAUCET_WASM_PATH, FAUCET_ABI_PATH, faucetAccount);
+            await eoslime.Contract.deployOnAccount(FAUCET_WASM_PATH, FAUCET_ABI_PATH, faucetAccount);
         } catch (error) {
             console.log(error);
         }
@@ -62,18 +62,6 @@ describe("Contract", function () {
 
             assert(typeof faucetContract.produce == "function");
             assert(typeof faucetContract.withdraw == "function");
-
-            assert(faucetContract.name == faucetAccount.name);
-            assert(JSON.stringify(faucetContract.executor) == JSON.stringify(faucetAccount));
-            assert(JSON.stringify(faucetContract.provider.network) == JSON.stringify(CONTRACT_NETWORK));
-        });
-
-        it("Should not modify the contract properties directly", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
-
-            faucetContract.name = "Random Name";
-            faucetContract.executor = "Random Executor";
-            faucetContract.provider = "Random Provider";
 
             assert(faucetContract.name == faucetAccount.name);
             assert(JSON.stringify(faucetContract.executor) == JSON.stringify(faucetAccount));

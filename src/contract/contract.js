@@ -1,13 +1,10 @@
 const ContractFunction = require('./contract-function');
-const defineImmutableProperties = require("./../helpers/immutable-properties").defineImmutableProperties;
 
 class Contract {
     constructor(provider, abi, contractName, contractExecutorAccount) {
-        defineImmutableProperties(this, [
-            { name: "provider", value: provider },
-            { name: "name", value: contractName },
-            { name: "executor", value: contractExecutorAccount }
-        ]);
+        this.provider = provider;
+        this.name = contractName;
+        this.executor = contractExecutorAccount;
 
         declareFunctionsFromABI.call(this, abi);
         declareTableGetters.call(this, abi);
