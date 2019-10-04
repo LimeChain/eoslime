@@ -6,6 +6,8 @@ eoslime.js
 
 EOS development and deployment framework based on eosjs.js. The framework's main purpose is to make the process of unit testing, deployment and compilation much simpler and much easier.
 
+You can join us on telegram - https://t.me/eoslime
+
 ## Installing 
 ---
 
@@ -601,60 +603,103 @@ const ABI_PATH = './contract/contract.abi';
 
 let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_EXECUTOR);
 ```
-
 **Note! If you don't provide `CONTRACT_EXECUTOR` the provider's default account will be applied as executor**
-
-If you want to call a contract method from another account(executor) you can do:
-```javascript
-// Local network initialization
-const eoslime = require('eoslime').init();
-
-const CONTRACT_NAME = 'mycontract';
-const ABI_PATH = './contract/contract.abi';
-
-// Pre-created local network accounts
-const EXECUTOR_1 = eoslime.Account.load('myacc1', 'privateKey1');
-const EXECUTOR_2 = eoslime.Account.load('myacc2', 'privateKey2');
-
-let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, EXECUTOR_1);
-
-// EXECUTOR_1 will execute `doSmth` transaction on the blockchain
-await contract.doSmth('Something'); 
-
-// EXECUTOR_2 will execute `doSmth` transaction on the blockchain
-await contract.doSmth('Something', { from: EXECUTOR_2 });
-
-// EXECUTOR_1 will execute `doSmth` transaction on the blockchain
-await contract.doSmth('Something');
-```
-
 **Important! eoslime is based on eosjs and when we are calling a contract method, eosjs options `{ broadcast: true, sign: true }` are always set to true**
 
-#### 1. Properties
+#### Properties
 * name - For convenience you have accsess to the contract name
 * provider - For convenience you have accsess to the network provider
-This is helpful when you want, for example, to read a table
-```javascript
-let tableResults = await contract.provider.eos.getTableRows({
-                code: contract.name,
-                scope: contract.name,
-                table: tableName,
-                limit: limit,
-                lower_bound: l_bound,
-                upper_bound: u_bound,
-                json: true
-            });
-```
 * executor - The account which will execute contract methods (**transactions**) on the blockchain
 
-#### 1. Functions
-* contract methods
-* makeInline () - It adds 'eosio.code' permission to the contracts account's authority. It allows contract to do inline actions/call another contract's methods
-```javascript
-let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_ACCOUNT);
+#### Functions
+* ##### contract methods
+    **Each contract method has the following optionals**
+    
+     **from** - If you want to call a contract method from another account(executor) you can do
+    ```javascript
+    // Local network initialization
+    const eoslime = require('eoslime').init();
+    
+    const CONTRACT_NAME = 'mycontract';
+    const ABI_PATH = './contract/contract.abi';
+    
+    // Pre-created local network accounts
+    const EXECUTOR_1 = eoslime.Account.load('myacc1', 'privateKey1');
+    const EXECUTOR_2 = eoslime.Account.load('myacc2', 'privateKey2');
+    
+    let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, EXECUTOR_1);
+    
+    // EXECUTOR_1 will execute `doSmth` transaction on the blockchain
+    await contract.doSmth('Something'); 
+    
+    // EXECUTOR_2 will execute `doSmth` transaction on the blockchain
+    await contract.doSmth('Something', { from: EXECUTOR_2 });
+    
+    // EXECUTOR_1 will execute `doSmth` transaction on the blockchain
+    await contract.doSmth('Something');
+    ```
+     **unique** - Nonce action support. Solve the `duplicate transaction` error
+    ```javascript
+    // Local network initialization
+    const eoslime = require('eoslime').init();
+    
+    const CONTRACT_NAME = 'mycontract';
+    const ABI_PATH = './contract/contract.abi';
+    
+    // Pre-created local network accounts
+    const EXECUTOR_1 = eoslime.Account.load('myacc1', 'privateKey1');
+    
+    let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, EXECUTOR_1);
+    
+    await contract.doSmth('Something'); 
+    // Execute `doSmth` one more time with same parameters
+    await contract.doSmth('Something', { unique: true });
+    ```
+   
+* ##### makeInline() - It adds 'eosio.code' permission to the contracts account's authority. It allows contract to do inline actions/call another contract's methods
+    ```javascript
+    let contract = eoslime.Contract(ABI_PATH, CONTRACT_NAME, CONTRACT_ACCOUNT);
+    
+    // CONTRACT_ACCOUNT will obtains 'eosio.code' permission
+    await contract.makeInline();
+    ```
+    
+#### Table getters
+In order to search in a contract tables in an easier way there are default table getters 
+**Each table getter is constructed such as**
+```
+get + table name but with uppered first letter
+Example:
+    table = admins
+    default getter = getAdmins
+```
 
-// CONTRACT_ACCOUNT will obtains 'eosio.code' permission
-await contract.makeInline();
+When you are using table getters, you should provide some query parameters
+***Default:  { equal: null, lower: null, upper: null, index: 1, index_type: "i64", limit: 100 }***
+* **equal** - Search for records which are equal to
+* **lower/upper** - Search for records in range
+* **index** - Search for records by table index
+* **index_type** - Search for records and specify their index data type
+* **limit** - Limit the resulted records. If the limit is set to 1 you will get directly the resulted record instead of an array with one element
+```javascript
+const withdrawer = await eoslime.Account.createRandom();
+const faucetAccount = await eoslime.Account.createRandom();
+const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+
+// faucetAccount is the executor
+await faucetContract.produce(withdrawer.name, "100.0000 TKNS");
+
+// With equal criteria
+const equalResult = await faucetContract.getWithdrawers({ equal: withdrawer.name });
+
+// With range criteria
+const rangeResult = await faucetContract.getWithdrawers({ lower: 0, upper: 1001.0000, index: 2 });
+
+// With limit
+const allWithdrawers = await faucetContract.getWithdrawers({ limit: 10 });
+
+// With different index (By Quantity)
+const balanceWithdrawers = await faucetContract.getWithdrawers({ equal: 100.0000, index: 2 });
 ```
 
 ## Utils

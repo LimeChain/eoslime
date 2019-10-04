@@ -1,5 +1,3 @@
-const path = require('path');
-
 const contractFilesReader = require('./../helpers/contract-files-reader');
 const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
 
@@ -20,25 +18,28 @@ class EOSDeployer {
     constructor(provider, contractFactory) {
         defineImmutableProperties(this, [
             {
-                name: '__deploy',
+                name: 'deploy',
                 value: async function (wasmPath, abiPath, contractAccount, options = defaultDeployOptions) {
-                    let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
-                    let wasm = contractFilesReader.readWASMFromFile(path.resolve(wasmPath));
+                    let abi = contractFilesReader.readABIFromFile(abiPath);
+                    let wasm = contractFilesReader.readWASMFromFile(wasmPath);
 
-                    await provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
-                    await provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
+                    const setCodeTxReceipt = await provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
+                    const setAbiTxReceipt = await provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
 
-                    let contract = contractFactory.buildExisting(abi, contractAccount.name, contractAccount);
+                    let contract = contractFactory.at(abi, contractAccount.name, contractAccount);
 
                     options = Object.assign(defaultDeployOptions, options);
-                    await executeOptions(contract, options, this.__deploy.options);
+                    await executeOptions(contract, options, this.deploy.options);
 
-                    return contract;
+                    return {
+                        contract,
+                        txReceipts: [setCodeTxReceipt, setAbiTxReceipt]
+                    };
                 }
             },
         ]);
 
-        this.__deploy.options = deployOptionsActions;
+        this.deploy.options = deployOptionsActions;
     }
 }
 
