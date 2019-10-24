@@ -58,7 +58,7 @@ describe("Contract", function () {
         };
 
         it("Should instantiate correct instance of Contract", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
 
             assert(typeof faucetContract.produce == "function");
             assert(typeof faucetContract.withdraw == "function");
@@ -69,7 +69,7 @@ describe("Contract", function () {
         });
 
         it("Should set default account as executor if none is provided", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name);
 
             // In local network -> eosio is the preset default account
             assert(JSON.stringify(faucetContract.executor) == JSON.stringify(faucetContract.provider.defaultAccount));
@@ -77,7 +77,7 @@ describe("Contract", function () {
 
         it("Should throw if one provide incorrect account as a contract executor", async () => {
             try {
-                eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
+                eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
 
                 assert(false, "Should throw");
             } catch (error) {
@@ -88,7 +88,7 @@ describe("Contract", function () {
 
     describe("Blockchain methods", function () {
         it("Should execute a blockchain method from the provided executor", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
@@ -101,7 +101,7 @@ describe("Contract", function () {
         });
 
         it("Should execute a blockchain method from another executor", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
 
@@ -112,7 +112,7 @@ describe("Contract", function () {
         });
 
         it('Should process nonce-action', async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
 
@@ -122,7 +122,7 @@ describe("Contract", function () {
         });
 
         it('Should throw without nonce-action', async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
 
@@ -138,14 +138,14 @@ describe("Contract", function () {
     describe("Blockchain tables", function () {
 
         it("Should have a default table getter", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
 
             // withdrawers is a table in the contract
             assert(faucetContract.getWithdrawers);
         });
 
         it("Should apply the default query params if none provided", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
@@ -158,7 +158,7 @@ describe("Contract", function () {
         });
 
         it("Should query a table", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
@@ -188,7 +188,7 @@ describe("Contract", function () {
         });
 
         it('Should return the resulted record in case of query parameter -> limit = 1', async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
@@ -203,7 +203,7 @@ describe("Contract", function () {
 
     describe("Inline a contract", function () {
         it("Should execute a blockchain method which makes inline transaction to another contract", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             await faucetContract.makeInline();
 
             const tokensHolder = await eoslime.Account.createRandom();
@@ -222,7 +222,7 @@ describe("Contract", function () {
         it("Should throw if one tries to inline a contract, but the contract's executor is not the account on which the contract has been deployed", async () => {
             try {
                 const contractExecutor = await eoslime.Account.createRandom();
-                const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, contractExecutor);
+                const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, contractExecutor);
 
                 await faucetContract.makeInline();
 

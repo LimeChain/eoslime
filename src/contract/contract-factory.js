@@ -17,7 +17,7 @@ class ContractFactory extends ContractDeployer {
         Object.assign(this.events, EVENTS);
     }
 
-    at(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
+    fromFile(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
         is(contractExecutorAccount).instanceOf(Account);
 
         let abiInterface = abi;
@@ -25,9 +25,19 @@ class ContractFactory extends ContractDeployer {
             abiInterface = contractFilesReader.readABIFromFile(abi);
         }
 
-        let contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
+        const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
         this.emit(EVENTS.init, contract);
 
+        return contract;
+    }
+
+    async at(contractName, contractExecutorAccount = this.provider.defaultAccount) {
+        is(contractExecutorAccount).instanceOf(Account);
+
+        const abiInterface = (await this.provider.eos.getAbi(contractName)).abi;
+        const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
+
+        this.emit(EVENTS.init, contract);
         return contract;
     }
 

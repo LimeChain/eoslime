@@ -1,4 +1,4 @@
-const ContractFunction = require('./contract-function');
+const FunctionsFactory = require('./contract-function/functions-factory');
 
 class Contract {
     constructor(provider, abi, contractName, contractExecutorAccount) {
@@ -22,14 +22,12 @@ class Contract {
 module.exports = Contract;
 
 let declareFunctionsFromABI = function (abi) {
-    let contractActions = abi.actions;
-    let contractStructs = Object.assign({}, ...abi.structs.map(struct => ({ [struct["name"]]: struct })));
+    const contractActions = abi.actions;
+    const contractStructs = Object.assign({}, ...abi.structs.map(struct => ({ [struct["name"]]: struct })));
 
     for (let i = 0; i < contractActions.length; i++) {
-        let functionName = contractActions[i].name;
-
-        this[functionName] = new ContractFunction(this, functionName, contractStructs);
-        this[functionName].isTransactional = true;
+        const functionName = contractActions[i].name;
+        this[functionName] = FunctionsFactory.createFunction(this, functionName, contractStructs)
     }
 };
 

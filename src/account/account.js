@@ -53,54 +53,115 @@ class Account {
         );
     }
 
-    async createAuthority(authorityName) {
-        const authPrivateKey = await eosECC.randomKey();
+    async createAuthority(authorityName, threshold = 1) {
+        const authorization = {
+            threshold,
+            keys: [{ key: this.publicKey, weight: threshold }]
+        }
+        await setAuthority.call(this, authorityName, this.executiveAuthority.permission, authorization);
 
-        await this.provider.eos.transaction(tr => {
-            tr.updateauth({
-                account: this.name,
-                permission: authorityName,
-                parent: this.executiveAuthority.permission,
-                auth: eosECC.PrivateKey.fromString(authPrivateKey).toPublic().toString()
-            }, { authorization: [this.executiveAuthority] });
-
-        }, { broadcast: true, sign: true, keyProvider: this.privateKey });
-
-        return new Account(this.name, authPrivateKey, this.provider, authorityName);
+        return new Account(this.name, this.privateKey, this.provider, authorityName);
     }
 
-    async addPermission(permName, actor = this.name) {
+    async setAuthorityAbilities(authorityName, abilities) {
+        is(abilities).instanceOf(Array);
+
+        /*
+            abilities => 
+                [
+                    action,
+                    contract
+                ]
+            
+        */
+
+        await this.provider.eos.transaction(tr => {
+            for (let i = 0; i < abilities.length; i++) {
+                const ability = abilities[i];
+                tr.linkauth({
+                    account: this.name,
+                    code: ability.contract,
+                    type: ability.action,
+                    requirement: authorityName
+                }, { authorization: [this.executiveAuthority] });
+            }
+        }, { broadcast: true, sign: true, keyProvider: this.privateKey });
+    }
+
+    // Todo: Think about increase/decrease Threshold
+    async setThreshold(threshold) {
+        const authorityInfo = await this.getAuthorityInfo();
+        authorityInfo.required_auth.threshold = threshold;
+
+        return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
+    }
+
+    async getAuthorityInfo() {
         const accountInfo = await this.provider.eos.getAccount(this.name);
-        const authority = accountInfo.permissions.find((permission) => {
+        const authorityInfo = accountInfo.permissions.find((permission) => {
             return this.executiveAuthority.permission == permission.perm_name;
         });
 
-        if (!authority) {
-            throw new Error('Could not add permission to non-existing authority');
+        if (!authorityInfo) {
+            throw new Error('Could not find such authority on chain');
         }
 
-        const hasAlreadyPermission = authority.required_auth.accounts.find((account) => {
-            return account.permission.permission == permName;
+        return authorityInfo;
+    }
+
+    async addPermission(authorityName, weight = 1) {
+        return this.addOnBehalfAccount(this.name, authorityName, weight);
+    }
+
+    async addOnBehalfAccount(accountName, authority = 'active', weight = 1) {
+        const authorityInfo = await this.getAuthorityInfo();
+        const hasAlreadyAccount = authorityInfo.required_auth.accounts.find((account) => {
+            return account.permission.actor == accountName;
         });
 
-        if (!hasAlreadyPermission) {
-            authority.required_auth.accounts.push({ permission: { actor: actor, permission: permName }, weight: 1 });
+        if (!hasAlreadyAccount) {
+            authorityInfo.required_auth.accounts.push({ permission: { actor: accountName, permission: authority }, weight });
 
-            return this.provider.eos.transaction(tr => {
-                tr.updateauth({
-                    account: this.name,
-                    permission: authority.perm_name,
-                    parent: authority.parent,
-                    auth: authority.required_auth
-                }, { authorization: [this.executiveAuthority] });
-
-            }, { broadcast: true, sign: true, keyProvider: this.privateKey });
+            return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
         }
     }
+
+    async addAuthorityKey(publicKey, weight = 1) {
+        if (!eosECC.isValidPublic(publicKey)) {
+            throw new Error('Provided public key is not a valid one');
+        }
+
+        const authorityInfo = await this.getAuthorityInfo();
+        const hasAlreadyKey = authorityInfo.required_auth.keys.find((keyData) => {
+            return keyData.key == publicKey;
+        });
+
+        if (!hasAlreadyKey) {
+            authorityInfo.required_auth.keys.push({ key: publicKey, weight });
+            return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
+        }
+    }
+
+    // Todo: Implement it
+    async setWeight() { }
 
     async getBalance(symbol = 'EOS', code = 'eosio.token') {
         return this.provider.eos.getCurrencyBalance(code, this.name, symbol);
     }
+}
+
+// Private methods
+const setAuthority = async function (authorityName, parent, auth) {
+    await this.provider.eos.transaction(tr => {
+        tr.updateauth({
+            account: this.name,
+            permission: authorityName,
+            parent: parent,
+            auth: auth
+        }, { authorization: [this.executiveAuthority] });
+
+    }, { broadcast: true, sign: true, keyProvider: this.privateKey });
+
 }
 
 module.exports = Account;

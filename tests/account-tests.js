@@ -247,39 +247,32 @@ describe('Account', function () {
             });
         });
 
-        describe('Create permission for authority', function () {
-            const AUTHORITY = 'active';
+        describe('Add permission to authority', function () {
             const PERMISSION = 'eosio.code';
 
             it('Should create permission for active authority', async () => {
                 let account = await Account.createRandom();
-                let authority = await getAuthorityForAccount(AUTHORITY, account.name);
+                let authority = await account.getAuthorityInfo();
 
                 assert(authority.required_auth.accounts.length == 0);
 
                 await account.addPermission(PERMISSION);
 
-                authority = await getAuthorityForAccount(AUTHORITY, account.name);
-
+                authority = await account.getAuthorityInfo();
                 assert(authority.required_auth.accounts[0].permission.actor == account.name);
-                assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
+                assert(authority.required_auth.accounts[0].permission.permission == PERMISSION);
             });
 
-            it('Should allow another account to act on behalf', async () => {
-                let accounts = await Account.createRandoms(2);
-                let child = accounts[0];
-                let parent = accounts[1];
+            it('Should add permission with weight', async () => {
+                const WEIGHT = 2;
+                const accounts = await Account.createRandoms(2);
+                const child = accounts[0];
 
-                let authority = await getAuthorityForAccount(AUTHORITY, child.name);
+                await child.addPermission(PERMISSION, WEIGHT);
+                const authorityInfo = await child.getAuthorityInfo();
 
-                assert(authority.required_auth.accounts.length == 0);
-
-                await child.addPermission(PERMISSION, parent.name);
-
-                authority = await getAuthorityForAccount(AUTHORITY, child.name);
-
-                assert(authority.required_auth.accounts[0].permission.actor == parent.name);
-                assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
+                assert(authorityInfo.required_auth.accounts.length == 1);
+                assert(authorityInfo.required_auth.accounts[0].weight == 2);
             });
 
             it('Should throw if one try to create a permission for non-existing authority', async () => {
@@ -291,7 +284,7 @@ describe('Account', function () {
 
                     assert(false, 'Should throw');
                 } catch (error) {
-                    assert(error.message.includes('Could not add permission to non-existing authority'));
+                    assert(error.message.includes('Could not find such authority on chain'));
                 }
             });
 
@@ -300,11 +293,199 @@ describe('Account', function () {
                 await account.addPermission(PERMISSION);
                 await account.addPermission(PERMISSION);
 
-                authority = await getAuthorityForAccount(AUTHORITY, account.name);
+                authority = await account.getAuthorityInfo();
 
                 assert(authority.required_auth.accounts.length == 1);
                 assert(authority.required_auth.accounts[0].permission.actor == account.name);
                 assert(authority.required_auth.accounts[0].permission.permission = PERMISSION);
+            });
+        });
+
+        describe('Add authority key', function () {
+
+            it('Should allow another a keys pair to act on behalf', async () => {
+                const account = await Account.createRandom();
+                let authorityInfo = await account.getAuthorityInfo();
+
+                // There is at least 1 key - the account' creation key
+                assert(authorityInfo.required_auth.keys.length == 1);
+
+                const keysPair = await eoslime.utils.generateKeys();
+                await account.addAuthorityKey(keysPair.publicKey);
+
+                authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.keys.find((keyData) => { return keyData.key == keysPair.publicKey }));
+            });
+
+            it('Should add keys pair with weight', async () => {
+                const WEIGHT = 2;
+                const account = await Account.createRandom();
+                let authorityInfo = await account.getAuthorityInfo();
+
+                assert(authorityInfo.required_auth.keys.length == 1);
+                assert(authorityInfo.required_auth.keys[0].weight == 1);
+
+                const keysPair = await eoslime.utils.generateKeys();
+                await account.addAuthorityKey(keysPair.publicKey, WEIGHT);
+
+                authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.keys.find((key) => { return key.weight == WEIGHT }));
+            });
+
+            it('Should not duplicate the key if it already exists', async () => {
+                const account = await Account.createRandom();
+
+                let authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.keys.length == 1);
+
+                const keysPair = await eoslime.utils.generateKeys();
+                await account.addAuthorityKey(keysPair.publicKey);
+                await account.addAuthorityKey(keysPair.publicKey);
+
+                authorityInfo = await account.getAuthorityInfo();
+
+                assert(authorityInfo.required_auth.keys.length == 2);
+                assert(authorityInfo.required_auth.keys.find((keyData) => { return keyData.key == keysPair.publicKey }));
+            });
+        });
+
+        describe('Add authority account', function () {
+
+            const AUTHORITY = 'active';
+
+            it('Should allow another account to act on behalf', async () => {
+                const accounts = await Account.createRandoms(2);
+                const child = accounts[0];
+                const parent = accounts[1];
+
+                let authorityInfo = await child.getAuthorityInfo();
+
+                assert(authorityInfo.required_auth.accounts.length == 0);
+
+                await child.addOnBehalfAccount(parent.name, AUTHORITY);
+
+                authorityInfo = await child.getAuthorityInfo();
+
+                assert(authorityInfo.required_auth.accounts[0].permission.actor == parent.name);
+                assert(authorityInfo.required_auth.accounts[0].permission.permission == AUTHORITY);
+            });
+
+            it('Should add authority account with weight', async () => {
+                const WEIGHT = 2;
+                const accounts = await Account.createRandoms(2);
+                const child = accounts[0];
+                const parent = accounts[1];
+
+                await child.addOnBehalfAccount(parent.name, AUTHORITY, WEIGHT);
+                const authorityInfo = await child.getAuthorityInfo();
+
+                assert(authorityInfo.required_auth.accounts[0].weight == 2);
+            });
+
+            it('Should not duplicate the account permission if it already exists', async () => {
+                const accounts = await Account.createRandoms(2);
+                const child = accounts[0];
+                const parent = accounts[1];
+
+                await child.addOnBehalfAccount(parent.name, AUTHORITY);
+                await child.addOnBehalfAccount(parent.name, AUTHORITY);
+
+                const authorityInfo = await child.getAuthorityInfo();
+
+                assert(authorityInfo.required_auth.accounts.length == 1);
+                assert(authorityInfo.required_auth.accounts[0].permission.actor == parent.name);
+                assert(authorityInfo.required_auth.accounts[0].permission.permission = AUTHORITY);
+            });
+        });
+
+        describe('Set threshold', function () {
+            it('Should increase authority threshold', async () => {
+                const THRESHOLD = 2;
+                const account = await Account.createRandom();
+
+                let authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.threshold == 1);
+
+                const keysPair = await eoslime.utils.generateKeys();
+                await account.addAuthorityKey(keysPair.publicKey);
+                await account.setThreshold(THRESHOLD);
+
+                authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.threshold == THRESHOLD);
+            });
+
+            it('Should throw if threshold is increased but there is not enough weight', async () => {
+                /*
+                    If we have threshold = 2 
+                    and one key with weight = 1
+    
+                    In the above case the account will never execute a transaction
+                    because it has not enough weight
+
+                    Threshold maximum value - the sum of all authority's accounts and keys weight 
+                */
+
+                try {
+                    const THRESHOLD = 2;
+                    const account = await Account.createRandom();
+                    await account.setThreshold(THRESHOLD);
+
+                    assert(false);
+                } catch (error) {
+                    assert(error.includes('Invalid authority'));
+                }
+            });
+
+            xit('Should decrease authority threshold', async () => {
+                const INCREASED_THRESHOLD = 2;
+                const DECREASED_THRESHOLD = 1;
+                const eosio = Account.load('eosio', '5HyUvmZGkmzZ1Uwaq3BLnjKZs4jhen9uPR1SmzUgXzas7MHiTLb');
+                const account = await Account.createRandom(eosio);
+
+                let authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.threshold == 1);
+
+                const keysPair = await eoslime.utils.generateKeys();
+                const keysPairAccount = eoslimeTool.Account.load(account.name, keysPair.privateKey);
+                await account.addAuthorityKey(keysPair.publicKey, 1);
+                await account.setThreshold(INCREASED_THRESHOLD);
+
+                authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.threshold == INCREASED_THRESHOLD);
+
+                console.log(eoslimeTool.Provider.eos)
+                await account.setThreshold(DECREASED_THRESHOLD);
+                // await keysPairAccount.setThreshold(DECREASED_THRESHOLD);
+                console.log(await account.getAuthorityInfo())
+
+                authorityInfo = await account.getAuthorityInfo();
+                assert(authorityInfo.required_auth.threshold == 1);
+            });
+        });
+
+        describe('Set authority abilities', function () {
+            it('Should set authority abilities', async () => {
+                const THRESHOLD = 2;
+                const account = await Account.createRandom();
+
+                const customAccount = await account.createAuthority('custom');
+                await customAccount.setAuthorityAbilities([
+                    {
+                        action: 'minttokens',
+                        contract: 'faucetcontra'
+                        // contract: faucetContract.name
+                    }
+                ]);
+
+                console.log(await eoslimeTool.Provider.eos.getAccount(account.name));
+            });
+
+            it('Should execute an action from custom authority', async () => {
+
+            });
+
+            it('Should throw if one does not provide array as abilities', async () => {
+
             });
         });
 

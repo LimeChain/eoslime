@@ -36,7 +36,7 @@ class ContractDeployer extends EventClass {
         const setCodeTxReceipt = await this.provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
         const setAbiTxReceipt = await this.provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
 
-        const contract = this.at(abi, contractAccount.name, contractAccount);
+        const contract = this.fromFile(abi, contractAccount.name, contractAccount);
 
         options = Object.assign(defaultDeployOptions, options);
         await executeOptions(contract, options);

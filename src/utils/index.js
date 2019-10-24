@@ -8,13 +8,20 @@ module.exports = {
     toName: function (encodedName) {
         return decodeName(encodedName, false);
     },
-    generateName: async function () {
+    randomName: async function () {
         const privateKey = await eosECC.randomKey();
         const publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
         return createAccountNameFromPublicKey(publicKey);
     },
+    nameFromPrivateKey: async function (privateKey) {
+        const publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
+        return createAccountNameFromPublicKey(publicKey);
+    },
+    randomPrivateKey: async function () {
+        return eosECC.randomKey();
+    },
     generateKeys: async function () {
-        const privateKey = await eosECC.randomKey();
+        const privateKey = await this.randomPrivateKey();
         const publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
 
         return {
