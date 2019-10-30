@@ -17,9 +17,9 @@ describe("Contract", function () {
     // Faucet account is the account on which the faucet contract is going to be deployed
     let faucetAccount;
     let tokenContract;
+    const TOKEN_PRECISION = Math.pow(10, 4);
     const TOTAL_SUPPLY = "1000000000.0000 TKNS";
     const PRODUCED_TOKENS_AMOUNT = "100.0000 TKNS";
-    const TOKEN_PRECISION = Math.pow(10, 4);
 
     /*
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
@@ -94,10 +94,10 @@ describe("Contract", function () {
             // faucetAccount is the executor
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
-            const result = await faucetContract.getWithdrawers({ limit: 1, equal: tokensHolder.name });
+            const result = await faucetContract.withdrawers.limit(1).equal(tokensHolder.name).find();
 
-            assert(result.quantity == PRODUCED_TOKENS_AMOUNT);
-            assert(result.token_name == tokenContract.name);
+            assert(result[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(result[0].token_name == tokenContract.name);
         });
 
         it("Should execute a blockchain method from another executor", async () => {
@@ -141,7 +141,7 @@ describe("Contract", function () {
             const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
 
             // withdrawers is a table in the contract
-            assert(faucetContract.getWithdrawers);
+            assert(faucetContract.withdrawers);
         });
 
         it("Should apply the default query params if none provided", async () => {
@@ -151,7 +151,7 @@ describe("Contract", function () {
             // faucetAccount is the executor
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
-            const allWithdrawers = await faucetContract.getWithdrawers();
+            const allWithdrawers = await faucetContract.withdrawers.find();
 
             assert(allWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(allWithdrawers[0].token_name == tokenContract.name);
@@ -165,39 +165,26 @@ describe("Contract", function () {
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
             // With equal criteria
-            const equalResult = await faucetContract.getWithdrawers({ equal: tokensHolder.name });
+            const equalResult = await faucetContract.withdrawers.equal(tokensHolder.name).find();
             assert(equalResult[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(equalResult[0].token_name == tokenContract.name);
 
             // With range criteria
-            const rangeResult = await faucetContract.getWithdrawers({ lower: 0, upper: 100 * TOKEN_PRECISION, index: 2 });
+            const rangeResult = await faucetContract.withdrawers.range(0, 100 * TOKEN_PRECISION).index(2).find();
             assert(rangeResult[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(rangeResult[0].token_name == tokenContract.name);
 
             // With limit
             // There is only one withdrawer
-            const allWithdrawers = await faucetContract.getWithdrawers({ limit: 10 });
+            const allWithdrawers = await faucetContract.withdrawers.limit(10).find();
             assert(allWithdrawers.length == 1);
             assert(allWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(allWithdrawers[0].token_name == tokenContract.name);
 
             // With different index (By Balance)
-            const balanceWithdrawers = await faucetContract.getWithdrawers({ equal: 100 * TOKEN_PRECISION, index: 2 });
+            const balanceWithdrawers = await faucetContract.withdrawers.equal(100 * TOKEN_PRECISION).index(2).find();
             assert(balanceWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(balanceWithdrawers[0].token_name == tokenContract.name);
-        });
-
-        it('Should return the resulted record in case of query parameter -> limit = 1', async () => {
-            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
-            const tokensHolder = await eoslime.Account.createRandom();
-
-            // faucetAccount is the executor
-            await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
-
-            const firstWithdrawer = await faucetContract.getWithdrawers({ limit: 1 });
-
-            assert(firstWithdrawer.quantity == PRODUCED_TOKENS_AMOUNT);
-            assert(firstWithdrawer.token_name == tokenContract.name);
         });
     });
 

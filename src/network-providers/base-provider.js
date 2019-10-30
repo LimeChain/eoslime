@@ -1,5 +1,6 @@
 const EOS = require('eosjs');
 const Account = require('./../account/account');
+const TableReader = require('./../table-reader/table-reader');
 
 const is = require('./../helpers/is');
 
@@ -22,9 +23,9 @@ class BaseProvider {
         })
     }
 
-    reset(newProvider) {
-        is(newProvider).instanceOf(BaseProvider);
-        Object.assign(this, newProvider);
+    select(table) {
+        const tableReader = new TableReader(this.eos);
+        return tableReader.select(table);
     }
 }
 

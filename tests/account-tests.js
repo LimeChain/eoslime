@@ -464,20 +464,16 @@ describe('Account', function () {
         });
 
         describe('Set authority abilities', function () {
-            it('Should set authority abilities', async () => {
-                const THRESHOLD = 2;
+            xit('Should set authority abilities', async () => {
                 const account = await Account.createRandom();
 
-                const customAccount = await account.createAuthority('custom');
-                await customAccount.setAuthorityAbilities([
+                const customAuthorityAccount = await account.createAuthority('custom');
+                await customAuthorityAccount.setAuthorityAbilities('multisig', [
                     {
-                        action: 'minttokens',
-                        contract: 'faucetcontra'
-                        // contract: faucetContract.name
+                        action: 'produce',
+                        contract: faucetContract.name
                     }
                 ]);
-
-                console.log(await eoslimeTool.Provider.eos.getAccount(account.name));
             });
 
             it('Should execute an action from custom authority', async () => {

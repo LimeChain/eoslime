@@ -690,16 +690,16 @@ const faucetContract = eoslime.Contract(FAUCET_ABI_PATH, faucetAccount.name, fau
 await faucetContract.produce(withdrawer.name, "100.0000 TKNS");
 
 // With equal criteria
-const equalResult = await faucetContract.getWithdrawers({ equal: withdrawer.name });
+const equalResult = await faucetContract.withdrawers.equal(withdrawer.name).find();
 
 // With range criteria
-const rangeResult = await faucetContract.getWithdrawers({ lower: 0, upper: 1001.0000, index: 2 });
+const rangeResult = await faucetContract.withdrawers.range(0, 1001.0000).index(2).find();
 
 // With limit
-const allWithdrawers = await faucetContract.getWithdrawers({ limit: 10 });
+const allWithdrawers = await faucetContract.withdrawers.limit(10).find();
 
 // With different index (By Quantity)
-const balanceWithdrawers = await faucetContract.getWithdrawers({ equal: 100.0000, index: 2 });
+const balanceWithdrawers = await faucetContract.withdrawers.equal(100.0000).index(2).find();
 ```
 
 ## Utils

@@ -7,8 +7,9 @@ const utils = require('./src/utils');
 
 module.exports = (function () {
 
-    let init = function (network = 'local') {
-        let provider = new Provider(network)
+    const init = function (network = 'local') {
+        const providerFactory = new Provider(network);
+        const provider = providerFactory.instance;
 
         const accountFactory = new AccountFactory(provider);
         const contractFactory = new ContractFactory(provider);

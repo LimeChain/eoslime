@@ -96,19 +96,6 @@ class Account {
         return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
     }
 
-    async getAuthorityInfo() {
-        const accountInfo = await this.provider.eos.getAccount(this.name);
-        const authorityInfo = accountInfo.permissions.find((permission) => {
-            return this.executiveAuthority.permission == permission.perm_name;
-        });
-
-        if (!authorityInfo) {
-            throw new Error('Could not find such authority on chain');
-        }
-
-        return authorityInfo;
-    }
-
     async addPermission(authorityName, weight = 1) {
         return this.addOnBehalfAccount(this.name, authorityName, weight);
     }
@@ -121,7 +108,6 @@ class Account {
 
         if (!hasAlreadyAccount) {
             authorityInfo.required_auth.accounts.push({ permission: { actor: accountName, permission: authority }, weight });
-
             return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
         }
     }
@@ -143,7 +129,22 @@ class Account {
     }
 
     // Todo: Implement it
-    async setWeight() { }
+    async setWeight() {
+
+    }
+
+    async getAuthorityInfo() {
+        const accountInfo = await this.provider.eos.getAccount(this.name);
+        const authorityInfo = accountInfo.permissions.find((permission) => {
+            return this.executiveAuthority.permission == permission.perm_name;
+        });
+
+        if (!authorityInfo) {
+            throw new Error('Could not find such authority on chain');
+        }
+
+        return authorityInfo;
+    }
 
     async getBalance(symbol = 'EOS', code = 'eosio.token') {
         return this.provider.eos.getCurrencyBalance(code, this.name, symbol);
