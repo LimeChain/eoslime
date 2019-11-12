@@ -1,14 +1,10 @@
 const assert = require('assert');
 const eoslime = require('./../').init();
 
-
 describe('Multi signature account', function () {
 
     // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
-
-    const ACCOUNT_NAME = 'eosio';
-    const ACCOUNT_PRIVATE_KEY = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
 
     const FAUCET_ABI_PATH = "./tests/testing-contracts/compiled/faucet.abi";
     const FAUCET_WASM_PATH = "./tests/testing-contracts/compiled/faucet.wasm";
@@ -19,48 +15,6 @@ describe('Multi signature account', function () {
         faucetContract = await eoslime.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
     });
 
-    xdescribe('Buy ram', function () {
-        it('Should buy ram [payer]', async () => {
-            const account = await eoslime.Account.createRandom();
-            const accounts = await eoslime.Account.createRandoms(2);
-
-            await account.addOnBehalfAccount(accounts[0].name);
-            await account.addOnBehalfAccount(accounts[1].name);
-            await account.setThreshold(2);
-
-            const multiSigAccount = eoslime.Account.loadMultisig(account.name, account.privateKey);
-            multiSigAccount.loadAccounts(accounts);
-
-            const payer = eoslime.Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-
-            const tx = await multiSigAccount.buyRam(1000);
-            assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
-        });
-
-        it('Should buy ram by self', async () => {
-            let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-            let account = await Account.createRandom();
-
-            // Send 10 EOS to the account in order to have enough balance to pay for his ram
-            await eosAccount.send(account, '10.0000', 'SYS');
-
-            let tx = await account.buyRam(1000);
-            assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
-        });
-
-        it('Should throw if one provide incorrect account as ram payer', async () => {
-            try {
-                let eosAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
-                await eosAccount.buyRam(1000, 'Fake account');
-
-                assert(false, 'Should throw');
-            } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
-            }
-        });
-
-    });
-
     describe('Multi signature transaction', function () {
         it('Should be signed by multiple accounts and be processed', async () => {
             const account = await eoslime.Account.createRandom();
@@ -68,16 +22,18 @@ describe('Multi signature account', function () {
 
             await account.addOnBehalfAccount(accounts[0].name);
             await account.addOnBehalfAccount(accounts[1].name);
-            await account.setThreshold(2);
+            await account.increaseThreshold(2);
 
-            const multiSigAccount = eoslime.Account.loadMultisig(account.name, account.privateKey);
+            const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
             multiSigAccount.loadAccounts(accounts);
 
             const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-            await multiSigAccount.approve(multiSigAccount.accounts[0], proposalId)
+            await multiSigAccount.approve(multiSigAccount.accounts[0], proposalId);
             await multiSigAccount.processProposal(proposalId);
 
-            console.log(await faucetContract.withdrawers.find());
+            const withdrawers = (await faucetContract.withdrawers.find())[0];
+            assert(eoslime.utils.toName(withdrawers.account) == account.name);
+            assert(withdrawers.quantity == "100.0000 TKNS");
         });
 
         it('Should be signed by multiple keys and be processed', async () => {
@@ -88,27 +44,204 @@ describe('Multi signature account', function () {
                 await eoslime.utils.generateKeys()
             ]
 
-            const multiSigAuth = await account.createAuthority('multisig');
-            await multiSigAuth.addAuthorityKey(keys[0].publicKey)
-            await multiSigAuth.addAuthorityKey(keys[1].publicKey)
-            await multiSigAuth.setThreshold(2);
+            await account.addAuthorityKey(keys[0].publicKey)
+            await account.addAuthorityKey(keys[1].publicKey)
+            await account.increaseThreshold(2);
 
-            await account.setAuthorityAbilities('multisig', [
-                {
-                    action: 'produce',
-                    contract: faucetContract.name
-                }
-            ]);
-
-            const multiSigAccount = eoslime.Account.loadMultisig(multiSigAuth.name, multiSigAuth.privateKey, 'multisig')
+            const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
             multiSigAccount.loadKeys(keys.map((key) => { return key.privateKey }));
 
             const proposalId = await multiSigAccount.propose(faucetContract.produce, [multiSigAccount.name, "100.0000 TKNS", multiSigAccount.name, "memo"])
-
-            await multiSigAccount.approve(multiSigAccount.accounts[0], proposalId)
+            await multiSigAccount.approve(multiSigAccount.accounts[1], proposalId)
             await multiSigAccount.processProposal(proposalId);
 
-            console.log(await faucetContract.withdrawers.find());
+            const withdrawers = (await faucetContract.withdrawers.find())[0];
+            assert(eoslime.utils.toName(withdrawers.account) == account.name);
+            assert(withdrawers.quantity == "100.0000 TKNS");
+        });
+
+        it('Should be approved by all approvers at once', async () => {
+            const account = await eoslime.Account.createRandom();
+            const accounts = await eoslime.Account.createRandoms(2);
+
+            await account.addOnBehalfAccount(accounts[0].name);
+            await account.addOnBehalfAccount(accounts[1].name);
+            await account.increaseThreshold(3);
+
+            const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+            multiSigAccount.loadAccounts(accounts);
+
+            const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+            await multiSigAccount.approveAll(proposalId);
+
+            assert(multiSigAccount.proposals[proposalId].signatures.length == 3);
+
+            await multiSigAccount.processProposal(proposalId);
+
+            const withdrawers = (await faucetContract.withdrawers.find())[0];
+            assert(eoslime.utils.toName(withdrawers.account) == account.name);
+            assert(withdrawers.quantity == "100.0000 TKNS");
+        });
+    });
+
+    describe('Propose', function () {
+        it('Should should throw if one try to propose an action which is not instance of ContractFunction', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const accounts = await eoslime.Account.createRandoms(2);
+
+                await account.addOnBehalfAccount(accounts[0].name);
+                await account.addOnBehalfAccount(accounts[1].name);
+                await account.increaseThreshold(3);
+
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(accounts);
+
+                const proposalId = await multiSigAccount.propose('Fake function', [account.name, "100.0000 TKNS", account.name, "memo"]);
+            } catch (error) {
+                assert(error.message.includes('String is not an instance of ContractFunction'))
+            }
+        });
+    });
+
+    describe('Approve', function () {
+        it('Should throw if approver is not an instance of account', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const accounts = await eoslime.Account.createRandoms(2);
+
+                await account.addOnBehalfAccount(accounts[0].name);
+                await account.addOnBehalfAccount(accounts[1].name);
+                await account.increaseThreshold(2);
+
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(accounts);
+
+                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.approve('Fake account', proposalId);
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('String is not an instance of BaseAccount'));
+            }
+        });
+
+        it('Should throw if the proposal does not exists', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const accounts = await eoslime.Account.createRandoms(2);
+
+                await account.addOnBehalfAccount(accounts[0].name);
+                await account.addOnBehalfAccount(accounts[1].name);
+                await account.increaseThreshold(2);
+
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(accounts);
+
+                await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.approve(multiSigAccount.accounts[0], 'Fake proposal');
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Such proposal does not exists'));
+            }
+        });
+    });
+
+    describe('Process proposal', function () {
+
+        it('Should throw if the proposal does not exists', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const accounts = await eoslime.Account.createRandoms(2);
+
+                await account.addOnBehalfAccount(accounts[0].name);
+                await account.addOnBehalfAccount(accounts[1].name);
+                await account.increaseThreshold(2);
+
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(accounts);
+
+                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.approve(multiSigAccount.accounts[0], proposalId);
+
+                await multiSigAccount.processProposal('Fake proposal');
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Such proposal does not exists'));
+            }
+        });
+
+        it('Should throw if the proposal is over approved', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const accounts = await eoslime.Account.createRandoms(2);
+
+                await account.addOnBehalfAccount(accounts[0].name);
+                await account.addOnBehalfAccount(accounts[1].name);
+                await account.increaseThreshold(2);
+
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(accounts);
+
+                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.approveAll(proposalId);
+
+                await multiSigAccount.processProposal(proposalId);
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Proposal should be approved 1 times, but it is approved 2 times. Consider updating the account threshold'));
+            }
+        });
+
+        it('Should throw if the proposal is under approved', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const accounts = await eoslime.Account.createRandoms(2);
+
+                await account.addOnBehalfAccount(accounts[0].name);
+                await account.addOnBehalfAccount(accounts[1].name);
+                await account.increaseThreshold(2);
+
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(accounts);
+
+                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.processProposal(proposalId);
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Proposal should be approved 1 times, but it is approved 0 times. Consider updating the account threshold'));
+            }
+        });
+    });
+
+    describe('Load functionality', function () {
+        it('Should throw if one provide a broken private key on loadKeys', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+
+                multiSigAccount.loadKeys(['Fake private key']);
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Non-base58 character'))
+            }
+        });
+
+        it('Should throw if one provide a broken account on loadAccounts', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
+                multiSigAccount.loadAccounts(['Fake account']);
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('String is not an instance of BaseAccount'));
+            }
         });
     });
 });

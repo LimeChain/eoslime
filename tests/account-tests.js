@@ -5,8 +5,6 @@ const eoslimeTool = eoslime.init();
 const Account = eoslimeTool.Account;
 const Provider = eoslimeTool.Provider;
 
-const createAccountNameFromPublicKey = require('./../src/account/public-key-name-generator').createAccountNameFromPublicKey;
-
 /*
     You should have running local nodeos in order to run tests
 */
@@ -66,8 +64,8 @@ describe('Account', function () {
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
     */
     async function createEOSToken() {
-        const TOKEN_ABI_PATH = './example/eosio-token/contract/eosio.token.abi';
-        const TOKEN_WASM_PATH = './example/eosio-token/contract/eosio.token.wasm';
+        const TOKEN_ABI_PATH = './tests/testing-contracts/compiled/eosio.token.abi';
+        const TOKEN_WASM_PATH = './tests/testing-contracts/compiled/eosio.token.wasm';
         const TOTAL_SUPPLY = '1000000000.0000 SYS';
 
         // Creates eosio.token account if you don't have it
@@ -157,7 +155,7 @@ describe('Account', function () {
 
                     assert(false, 'Should throw');
                 } catch (error) {
-                    assert(error.message.includes('Provided String is not an instance of Account'));
+                    assert(error.message.includes('Provided String is not an instance of BaseAccount'));
                 }
             });
         });
@@ -168,6 +166,7 @@ describe('Account', function () {
                 let account = await Account.createRandom();
 
                 let tx = await account.buyRam(1000, payer);
+
                 assert(tx.transaction.transaction.actions[0].name == 'buyrambytes', 'Incorrect buy ram transaction');
             });
 
@@ -189,7 +188,7 @@ describe('Account', function () {
 
                     assert(false, 'Should throw');
                 } catch (error) {
-                    assert(error.message.includes('Provided String is not an instance of Account'));
+                    assert(error.message.includes('Provided String is not an instance of BaseAccount'));
                 }
             });
 
@@ -222,7 +221,7 @@ describe('Account', function () {
 
                     assert(false, 'Should throw');
                 } catch (error) {
-                    assert(error.message.includes('Provided String is not an instance of Account'));
+                    assert(error.message.includes('Provided String is not an instance of BaseAccount'));
                 }
             });
         });
@@ -301,7 +300,7 @@ describe('Account', function () {
             });
         });
 
-        describe('Add authority key', function () {
+        describe('Add key to authority', function () {
 
             it('Should allow another a keys pair to act on behalf', async () => {
                 const account = await Account.createRandom();
@@ -349,7 +348,7 @@ describe('Account', function () {
             });
         });
 
-        describe('Add authority account', function () {
+        describe('Add account to authority', function () {
 
             const AUTHORITY = 'active';
 
@@ -398,7 +397,7 @@ describe('Account', function () {
             });
         });
 
-        describe('Set threshold', function () {
+        describe('Increase threshold', function () {
             it('Should increase authority threshold', async () => {
                 const THRESHOLD = 2;
                 const account = await Account.createRandom();
@@ -408,7 +407,7 @@ describe('Account', function () {
 
                 const keysPair = await eoslime.utils.generateKeys();
                 await account.addAuthorityKey(keysPair.publicKey);
-                await account.setThreshold(THRESHOLD);
+                await account.increaseThreshold(THRESHOLD);
 
                 authorityInfo = await account.getAuthorityInfo();
                 assert(authorityInfo.required_auth.threshold == THRESHOLD);
@@ -428,60 +427,83 @@ describe('Account', function () {
                 try {
                     const THRESHOLD = 2;
                     const account = await Account.createRandom();
-                    await account.setThreshold(THRESHOLD);
+                    await account.increaseThreshold(THRESHOLD);
 
                     assert(false);
                 } catch (error) {
                     assert(error.includes('Invalid authority'));
                 }
             });
+        });
 
-            xit('Should decrease authority threshold', async () => {
-                const INCREASED_THRESHOLD = 2;
-                const DECREASED_THRESHOLD = 1;
-                const eosio = Account.load('eosio', '5HyUvmZGkmzZ1Uwaq3BLnjKZs4jhen9uPR1SmzUgXzas7MHiTLb');
-                const account = await Account.createRandom(eosio);
+        describe('Set weight', function () {
+            it('Should set weight correctly authority threshold', async () => {
+                const WEIGHT = 2;
+                const account = await Account.createRandom();
 
                 let authorityInfo = await account.getAuthorityInfo();
-                assert(authorityInfo.required_auth.threshold == 1);
+                assert(authorityInfo.required_auth.keys[0].weight == 1);
 
-                const keysPair = await eoslime.utils.generateKeys();
-                const keysPairAccount = eoslimeTool.Account.load(account.name, keysPair.privateKey);
-                await account.addAuthorityKey(keysPair.publicKey, 1);
-                await account.setThreshold(INCREASED_THRESHOLD);
+                await account.setWeight(WEIGHT);
 
                 authorityInfo = await account.getAuthorityInfo();
-                assert(authorityInfo.required_auth.threshold == INCREASED_THRESHOLD);
-
-                console.log(eoslimeTool.Provider.eos)
-                await account.setThreshold(DECREASED_THRESHOLD);
-                // await keysPairAccount.setThreshold(DECREASED_THRESHOLD);
-                console.log(await account.getAuthorityInfo())
-
-                authorityInfo = await account.getAuthorityInfo();
-                assert(authorityInfo.required_auth.threshold == 1);
+                assert(authorityInfo.required_auth.keys[0].weight == WEIGHT);
             });
         });
 
         describe('Set authority abilities', function () {
-            xit('Should set authority abilities', async () => {
-                const account = await Account.createRandom();
 
-                const customAuthorityAccount = await account.createAuthority('custom');
-                await customAuthorityAccount.setAuthorityAbilities('multisig', [
+            it('Should set authority abilities and execute a granted action', async () => {
+                const FAUCET_ABI_PATH = "./tests/testing-contracts/compiled/faucet.abi";
+                const FAUCET_WASM_PATH = "./tests/testing-contracts/compiled/faucet.wasm";
+                const faucetContract = await eoslimeTool.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+
+                const account = await eoslimeTool.Account.createRandom();
+                const accountRandomAuth = await account.createAuthority('random');
+
+                try {
+                    await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
+                } catch (error) {
+                    assert(error.includes('action declares irrelevant authority'));
+                }
+
+                await account.setAuthorityAbilities('random', [
                     {
                         action: 'produce',
                         contract: faucetContract.name
                     }
                 ]);
-            });
 
-            it('Should execute an action from custom authority', async () => {
-
+                await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
             });
 
             it('Should throw if one does not provide array as abilities', async () => {
+                try {
+                    const account = await eoslimeTool.Account.createRandom();
+                    await account.createAuthority('random');
 
+                    await account.setAuthorityAbilities('random', 'Fake ability');
+
+                    assert(false);
+                } catch (error) {
+                    assert(error.message.includes('Provided String is not an instance of Array'));
+                }
+            });
+
+            it('Should throw if one provides abilities for non-existent authority ', async () => {
+                try {
+                    const account = await eoslimeTool.Account.createRandom();
+                    await account.setAuthorityAbilities('random', [
+                        {
+                            action: 'transfer',
+                            contract: 'eosio.token'
+                        }
+                    ]);
+
+                    assert(false);
+                } catch (error) {
+                    assert(error.message.includes('Could not find such authority on chain'))
+                }
             });
         });
 
@@ -501,7 +523,7 @@ describe('Account', function () {
             let creatorAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
 
             // We are using Date.now() in order name to be 'unique'
-            let accountName = createAccountNameFromPublicKey(Date.now());
+            let accountName = await eoslime.utils.randomName();
             await Account.createFromName(accountName, creatorAccount);
 
             assert(await Provider.eos.getAccount(accountName), 'Account is not created on blockchain');
@@ -509,7 +531,7 @@ describe('Account', function () {
 
         it('Should create account from name [default account]', async () => {
             // We are using Date.now() in order name to be 'unique'
-            let accountName = createAccountNameFromPublicKey(Date.now());
+            let accountName = await eoslime.utils.randomName();
             await Account.createFromName(accountName);
 
             assert(await Provider.eos.getAccount(accountName), 'Account is not created on blockchain');
@@ -527,12 +549,11 @@ describe('Account', function () {
         it('Should throw if one provide incorrect account as account creator', async () => {
             try {
                 // We are using Date.now() in order name to be 'unique'
-                let accountName = createAccountNameFromPublicKey(Date.now());
-
+                let accountName = await eoslime.utils.randomName();
                 await Account.createFromName(accountName, 'Fake account');
                 assert(false, 'Should throw');
             } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of BaseAccount'));
             }
         });
     });
@@ -556,7 +577,7 @@ describe('Account', function () {
                 assert(false, 'Should throw');
 
             } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of BaseAccount'));
             }
         });
     });
@@ -587,7 +608,7 @@ describe('Account', function () {
                 await Account.createRandoms(2, 'Fake account');
                 assert(false, 'Should throw');
             } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of BaseAccount'));
             }
         });
     });
@@ -623,7 +644,7 @@ describe('Account', function () {
                 await Account.createEncrypted(PASSWORD, 'Fake account');
                 assert(false, 'Should throw');
             } catch (error) {
-                assert(error.message.includes('Provided String is not an instance of Account'));
+                assert(error.message.includes('Provided String is not an instance of BaseAccount'));
             }
         });
     });

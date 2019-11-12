@@ -1,6 +1,6 @@
 const Contract = require('./contract');
-const Account = require('./../account/account');
-const AccountFactory = require('./../account/account-factory');
+const AccountFactory = require('../account/normal-account/account-factory');
+
 const ContractDeployer = require('./contract-deployer');
 
 const is = require('./../helpers/is');
@@ -18,7 +18,7 @@ class ContractFactory extends ContractDeployer {
     }
 
     fromFile(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        is(contractExecutorAccount).instanceOf(Account);
+        is(contractExecutorAccount).instanceOf('BaseAccount');
 
         let abiInterface = abi;
         if (contractFilesReader.doesAbiExists(abi)) {
@@ -32,7 +32,7 @@ class ContractFactory extends ContractDeployer {
     }
 
     async at(contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        is(contractExecutorAccount).instanceOf(Account);
+        is(contractExecutorAccount).instanceOf('BaseAccount');
 
         const abiInterface = (await this.provider.eos.getAbi(contractName)).abi;
         const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);

@@ -1,3 +1,4 @@
+const is = require('../../helpers/is');
 const EventClass = require('../../helpers/event-class');
 const optionalsFunctions = require("./function-optionals");
 
@@ -49,11 +50,9 @@ class ContractFunction extends EventClass {
     }
 
     async sign(signer, ...params) {
-        return this.signOnBehalf(signer, signer, ...params);
-    }
+        is(signer).instanceOf('BaseAccount');
 
-    async signOnBehalf(signer, behalfAccount, ...params) {
-        const functionRawTxData = buildFunctionRawTxData.call(this, behalfAccount, params);
+        const functionRawTxData = buildFunctionRawTxData.call(this, signer, params);
         const rawTransaction = await executeFunction(
             this.contract.provider.eos,
             functionRawTxData,
@@ -96,7 +95,7 @@ const structureParamsToExpectedLook = function (params, expectedParamsLook) {
     return structuredParams;
 };
 
-const executeFunction = function (eos, functionRawTx, options) {
+const executeFunction = async function (eos, functionRawTx, options) {
     return eos.transaction(
         {
             actions: functionRawTx.actions

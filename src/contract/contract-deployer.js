@@ -1,7 +1,6 @@
 const is = require('./../helpers/is');
 const contractFilesReader = require('./../helpers/contract-files-reader');
 
-const Account = require('./../account/account');
 const EventClass = require('./../helpers/event-class');
 
 const defaultDeployOptions = {
@@ -28,7 +27,7 @@ class ContractDeployer extends EventClass {
     }
 
     async deployOnAccount(wasmPath, abiPath, contractAccount, options = defaultDeployOptions) {
-        is(contractAccount).instanceOf(Account);
+        is(contractAccount).instanceOf('BaseAccount');
 
         const abi = contractFilesReader.readABIFromFile(abiPath);
         const wasm = contractFilesReader.readWASMFromFile(wasmPath);

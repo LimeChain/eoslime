@@ -81,7 +81,7 @@ describe("Contract", function () {
 
                 assert(false, "Should throw");
             } catch (error) {
-                assert(error.message.includes("Provided String is not an instance of Account"));
+                assert(error.message.includes("Provided String is not an instance of BaseAccount"));
             }
         });
     });
@@ -121,7 +121,7 @@ describe("Contract", function () {
             assert(true);
         });
 
-        it('Should throw without nonce-action', async () => {
+        it('Should throw with duplicate transaction error', async () => {
             const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
@@ -131,6 +131,58 @@ describe("Contract", function () {
                 await faucetContract.produce(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo', { from: executor });
             } catch (error) {
                 assert(error.includes('duplicate transaction'));
+            }
+        });
+
+        it('Should get the raw transaction from the action', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            const rawActionTx = await faucetContract.produce.getRawTransaction(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo');
+            assert(rawActionTx.expiration != undefined);
+            assert(rawActionTx.ref_block_num != undefined);
+            assert(rawActionTx.ref_block_prefix != undefined);
+            assert(rawActionTx.max_net_usage_words != undefined);
+            assert(rawActionTx.max_cpu_usage_ms != undefined);
+            assert(rawActionTx.delay_sec != undefined);
+            assert(rawActionTx.context_free_actions != undefined);
+            assert(rawActionTx.actions != undefined);
+            assert(rawActionTx.actions[0].name == 'produce');
+            assert(rawActionTx.actions[0].account == faucetContract.name);
+            assert(rawActionTx.actions[0].data != undefined);
+            assert(rawActionTx.actions[0].authorization != undefined);
+        });
+
+        it('Should sign the action without broadcasting it', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+            const signer = await eoslime.Account.createRandom();
+
+            const signedActionTx = await faucetContract.produce.sign(signer, tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo');
+
+            assert(signedActionTx.signatures.length == 1);
+            assert(signedActionTx.transaction.expiration != undefined);
+            assert(signedActionTx.transaction.ref_block_num != undefined);
+            assert(signedActionTx.transaction.ref_block_prefix != undefined);
+            assert(signedActionTx.transaction.max_net_usage_words != undefined);
+            assert(signedActionTx.transaction.max_cpu_usage_ms != undefined);
+            assert(signedActionTx.transaction.delay_sec != undefined);
+            assert(signedActionTx.transaction.context_free_actions != undefined);
+            assert(signedActionTx.transaction.actions != undefined);
+            assert(signedActionTx.transaction.actions[0].name == 'produce');
+            assert(signedActionTx.transaction.actions[0].account == faucetContract.name);
+            assert(signedActionTx.transaction.actions[0].data != undefined);
+            assert(signedActionTx.transaction.actions[0].authorization != undefined);
+        });
+
+        it('Should throw if trying to sign the action with an invalid signer', async () => {
+            try {
+                const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+                const tokensHolder = await eoslime.Account.createRandom();
+
+                await faucetContract.produce.sign('Fake signer', tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo');
+            } catch (error) {
+                assert(error.message.includes('String is not an instance of BaseAccount'));
             }
         });
     });

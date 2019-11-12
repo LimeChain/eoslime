@@ -1,9 +1,8 @@
 const Account = require('./account');
-const MultiSignatureAccount = require('./multi-signature-account');
 
-const is = require('./../helpers/is')
-const crypto = require('./../helpers/crypto');
-const utils = require('./../utils');
+const is = require('../../helpers/is')
+const crypto = require('../../helpers/crypto');
+const utils = require('../../utils');
 
 const DEFAULT_AUTHORITY = 'active';
 
@@ -20,16 +19,8 @@ class AccountFactory {
         }
     }
 
-    loadMultisig(name, privateKey, authorityName = DEFAULT_AUTHORITY) {
-        try {
-            return new MultiSignatureAccount(name, privateKey, this.provider, authorityName);
-        } catch (error) {
-            throw new Error('Invalid private key. Invalid checksum');
-        }
-    }
-
     async createFromName(accountName, accountCreator = this.provider.defaultAccount) {
-        is(accountCreator).instanceOf(Account);
+        is(accountCreator).instanceOf('BaseAccount');
 
         const accountPrivateKey = await utils.randomPrivateKey();
         const newAccount = new Account(accountName, accountPrivateKey, this.provider, DEFAULT_AUTHORITY);
@@ -40,7 +31,7 @@ class AccountFactory {
     }
 
     async createRandom(accountCreator = this.provider.defaultAccount) {
-        is(accountCreator).instanceOf(Account);
+        is(accountCreator).instanceOf('BaseAccount');
 
         const privateKey = await utils.randomPrivateKey();
         const name = await utils.nameFromPrivateKey(privateKey);

@@ -2,7 +2,6 @@ const eosjs = require('eosjs');
 const eosECC = eosjs.modules.ecc;
 const decodeName = eosjs.modules.format.decodeName;
 
-const createAccountNameFromPublicKey = require('./../account/public-key-name-generator').createAccountNameFromPublicKey;
 
 module.exports = {
     toName: function (encodedName) {
@@ -29,4 +28,31 @@ module.exports = {
             publicKey
         }
     }
+}
+
+
+const digitMapping = {
+    '0': '1',
+    '6': '2',
+    '7': '3',
+    '8': '4',
+    '9': '5',
+}
+
+const createAccountNameFromPublicKey = function (pubKey) {
+    const accountHashedName = eosECC.sha256(`${pubKey}${Date.now()}`);
+    return mapAccountName(`l${accountHashedName.substring(0, 11)}`);
+}
+
+const mapAccountName = function (accountName) {
+    let mappedName = '';
+    for (let i = 0; i < accountName.length; i++) {
+        if (digitMapping[accountName[i]]) {
+            mappedName += digitMapping[accountName[i]];
+        } else {
+            mappedName += accountName[i];
+        }
+    }
+
+    return mappedName;
 }

@@ -1,5 +1,4 @@
 const is = require('../helpers/is');
-const BaseProvider = require('./base-provider');
 
 const BosProvider = require('./bos-provider');
 const MainProvider = require('./main-provider');
@@ -41,7 +40,7 @@ class Provider {
     }
 
     reset(newProvider) {
-        is(newProvider).instanceOf(BaseProvider);
+        is(newProvider).instanceOf('BaseProvider');
         Object.assign(this.__provider, newProvider);
     }
 

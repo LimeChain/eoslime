@@ -1,22 +1,15 @@
-const is = require('../helpers/is')
+const is = require('../../helpers/is')
 const eosECC = require('eosjs').modules.ecc;
+const BaseAccount = require('../base-account');
 
-class Account {
+class Account extends BaseAccount {
 
     constructor(name, privateKey, provider, permission) {
-        this.name = name;
-        this.provider = provider;
-        this.executiveAuthority = {
-            actor: name,
-            permission: permission
-        }
-
-        this.privateKey = privateKey;
-        this.publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
+        super(name, privateKey, provider, permission);
     }
 
     async buyRam(bytes, payer = this) {
-        is(payer).instanceOf(Account);
+        is(payer).instanceOf('BaseAccount');
 
         return this.provider.eos.transaction(tr => {
             tr.buyrambytes({
@@ -28,7 +21,7 @@ class Account {
     }
 
     async buyBandwidth(cpu, net, payer = this) {
-        is(payer).instanceOf(Account);
+        is(payer).instanceOf('BaseAccount');
 
         return this.provider.eos.transaction(tr => {
             tr.delegatebw({
@@ -42,7 +35,7 @@ class Account {
     }
 
     async send(receiver, amount, symbol = 'EOS') {
-        is(receiver).instanceOf(Account);
+        is(receiver).instanceOf('BaseAccount');
 
         return this.provider.eos.transfer(
             this.name,
@@ -58,22 +51,15 @@ class Account {
             threshold,
             keys: [{ key: this.publicKey, weight: threshold }]
         }
-        await setAuthority.call(this, authorityName, this.executiveAuthority.permission, authorization);
 
+        await updateAuthority.call(this, authorityName, this.executiveAuthority.permission, authorization);
         return new Account(this.name, this.privateKey, this.provider, authorityName);
     }
 
     async setAuthorityAbilities(authorityName, abilities) {
-        is(abilities).instanceOf(Array);
-
-        /*
-            abilities => 
-                [
-                    action,
-                    contract
-                ]
-            
-        */
+        is(abilities).instanceOf('Array');
+        await super.getAuthorityInfo(authorityName);
+        // await getAuthorityData.call(this, authorityName);
 
         await this.provider.eos.transaction(tr => {
             for (let i = 0; i < abilities.length; i++) {
@@ -88,12 +74,11 @@ class Account {
         }, { broadcast: true, sign: true, keyProvider: this.privateKey });
     }
 
-    // Todo: Think about increase/decrease Threshold
-    async setThreshold(threshold) {
+    async increaseThreshold(threshold) {
         const authorityInfo = await this.getAuthorityInfo();
         authorityInfo.required_auth.threshold = threshold;
 
-        return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
+        return updateAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
     }
 
     async addPermission(authorityName, weight = 1) {
@@ -108,7 +93,7 @@ class Account {
 
         if (!hasAlreadyAccount) {
             authorityInfo.required_auth.accounts.push({ permission: { actor: accountName, permission: authority }, weight });
-            return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
+            return updateAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
         }
     }
 
@@ -124,26 +109,19 @@ class Account {
 
         if (!hasAlreadyKey) {
             authorityInfo.required_auth.keys.push({ key: publicKey, weight });
-            return setAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
+            return updateAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
         }
     }
 
-    // Todo: Implement it
-    async setWeight() {
-
-    }
-
-    async getAuthorityInfo() {
-        const accountInfo = await this.provider.eos.getAccount(this.name);
-        const authorityInfo = accountInfo.permissions.find((permission) => {
-            return this.executiveAuthority.permission == permission.perm_name;
+    async setWeight(weight) {
+        const authorityInfo = await this.getAuthorityInfo();
+        authorityInfo.required_auth.keys.map(authorityKey => {
+            if (authorityKey.key == this.publicKey) {
+                authorityKey.weight = weight;
+            }
         });
 
-        if (!authorityInfo) {
-            throw new Error('Could not find such authority on chain');
-        }
-
-        return authorityInfo;
+        return updateAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
     }
 
     async getBalance(symbol = 'EOS', code = 'eosio.token') {
@@ -152,7 +130,7 @@ class Account {
 }
 
 // Private methods
-const setAuthority = async function (authorityName, parent, auth) {
+const updateAuthority = async function (authorityName, parent, auth) {
     await this.provider.eos.transaction(tr => {
         tr.updateauth({
             account: this.name,
