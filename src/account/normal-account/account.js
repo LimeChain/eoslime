@@ -1,6 +1,7 @@
 const is = require('../../helpers/is')
 const eosECC = require('eosjs').modules.ecc;
 const BaseAccount = require('../base-account');
+const AuthorityAccount = require('../authority-account/account');
 
 class Account extends BaseAccount {
 
@@ -46,32 +47,16 @@ class Account extends BaseAccount {
         );
     }
 
-    async createAuthority(authorityName, threshold = 1) {
+    async createSubAuthority(authorityName, threshold = 1) {
         const authorization = {
             threshold,
             keys: [{ key: this.publicKey, weight: threshold }]
         }
 
         await updateAuthority.call(this, authorityName, this.executiveAuthority.permission, authorization);
-        return new Account(this.name, this.privateKey, this.provider, authorityName);
-    }
+        const authorityAccount = new Account(this.name, this.privateKey, this.provider, authorityName);
 
-    async setAuthorityAbilities(authorityName, abilities) {
-        is(abilities).instanceOf('Array');
-        await super.getAuthorityInfo(authorityName);
-        // await getAuthorityData.call(this, authorityName);
-
-        await this.provider.eos.transaction(tr => {
-            for (let i = 0; i < abilities.length; i++) {
-                const ability = abilities[i];
-                tr.linkauth({
-                    account: this.name,
-                    code: ability.contract,
-                    type: ability.action,
-                    requirement: authorityName
-                }, { authorization: [this.executiveAuthority] });
-            }
-        }, { broadcast: true, sign: true, keyProvider: this.privateKey });
+        return AuthorityAccount.construct(authorityAccount, this.executiveAuthority.permission);
     }
 
     async increaseThreshold(threshold) {
@@ -129,7 +114,6 @@ class Account extends BaseAccount {
     }
 }
 
-// Private methods
 const updateAuthority = async function (authorityName, parent, auth) {
     await this.provider.eos.transaction(tr => {
         tr.updateauth({

@@ -8,7 +8,6 @@ class MultiSignatureAccount extends BaseAccount {
 
         this.accounts = [];
         this.proposals = {};
-        this.proposalsActions = {};
     }
 
     loadKeys(privateKeys) {
@@ -31,13 +30,12 @@ class MultiSignatureAccount extends BaseAccount {
         const proposalId = Date.now();
 
         this.proposals[proposalId] = actionTx;
-        this.proposalsActions[proposalId] = { action: contractAction, data: actionData };
-
         return proposalId;
     }
 
-    async approve(approver, proposalId) {
-        is(approver).instanceOf('BaseAccount');
+    async approve(publicKey, proposalId) {
+        const approver = this.accounts.find((account) => { return account.publicKey == publicKey });
+        requireExistingApprover(approver);
         requireExistingProposal(this.proposals, proposalId);
 
         const proposalTx = this.proposals[proposalId];
@@ -49,21 +47,20 @@ class MultiSignatureAccount extends BaseAccount {
         proposalTx.signatures.push(approverSignedTx.transaction.signatures[0]);
     }
 
-    async approveAll(proposalId) {
-        for (let i = 0; i < this.accounts.length; i++) {
-            await this.approve(this.accounts[i], proposalId);
-        }
-    }
-
     async processProposal(proposalId) {
         requireExistingProposal(this.proposals, proposalId);
         await requireEnoughApprovals(this, this.proposals[proposalId]);
 
         const proposalTx = this.proposals[proposalId];
         delete this.proposals[proposalId];
-        delete this.proposalsActions[proposalId]
 
         return this.provider.eos.pushTransaction(proposalTx);
+    }
+}
+
+const requireExistingApprover = function (approver) {
+    if (!approver) {
+        throw new Error('Such approver was not loaded');
     }
 }
 

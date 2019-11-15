@@ -236,7 +236,7 @@ describe('Account', function () {
 
                 assert(authority == undefined);
 
-                const newAuthorityAccount = await account.createAuthority(AUTHORITY);
+                const newAuthorityAccount = await account.createSubAuthority(AUTHORITY);
                 assert(newAuthorityAccount.name == account.name);
                 assert(newAuthorityAccount.executiveAuthority.actor == newAuthorityAccount.name);
                 assert(newAuthorityAccount.executiveAuthority.permission == AUTHORITY);
@@ -459,7 +459,7 @@ describe('Account', function () {
                 const faucetContract = await eoslimeTool.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
                 const account = await eoslimeTool.Account.createRandom();
-                const accountRandomAuth = await account.createAuthority('random');
+                const accountRandomAuth = await account.createSubAuthority('random');
 
                 try {
                     await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
@@ -467,7 +467,7 @@ describe('Account', function () {
                     assert(error.includes('action declares irrelevant authority'));
                 }
 
-                await account.setAuthorityAbilities('random', [
+                await accountRandomAuth.setAuthorityAbilities([
                     {
                         action: 'produce',
                         contract: faucetContract.name
@@ -480,29 +480,13 @@ describe('Account', function () {
             it('Should throw if one does not provide array as abilities', async () => {
                 try {
                     const account = await eoslimeTool.Account.createRandom();
-                    await account.createAuthority('random');
+                    const authorityAccount = await account.createSubAuthority('random');
 
-                    await account.setAuthorityAbilities('random', 'Fake ability');
+                    await authorityAccount.setAuthorityAbilities('Fake ability');
 
                     assert(false);
                 } catch (error) {
                     assert(error.message.includes('Provided String is not an instance of Array'));
-                }
-            });
-
-            it('Should throw if one provides abilities for non-existent authority ', async () => {
-                try {
-                    const account = await eoslimeTool.Account.createRandom();
-                    await account.setAuthorityAbilities('random', [
-                        {
-                            action: 'transfer',
-                            contract: 'eosio.token'
-                        }
-                    ]);
-
-                    assert(false);
-                } catch (error) {
-                    assert(error.message.includes('Could not find such authority on chain'))
                 }
             });
         });

@@ -28,7 +28,7 @@ describe('Multi signature account', function () {
             multiSigAccount.loadAccounts(accounts);
 
             const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-            await multiSigAccount.approve(multiSigAccount.accounts[0], proposalId);
+            await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, proposalId);
             await multiSigAccount.processProposal(proposalId);
 
             const withdrawers = (await faucetContract.withdrawers.find())[0];
@@ -52,7 +52,7 @@ describe('Multi signature account', function () {
             multiSigAccount.loadKeys(keys.map((key) => { return key.privateKey }));
 
             const proposalId = await multiSigAccount.propose(faucetContract.produce, [multiSigAccount.name, "100.0000 TKNS", multiSigAccount.name, "memo"])
-            await multiSigAccount.approve(multiSigAccount.accounts[1], proposalId)
+            await multiSigAccount.approve(multiSigAccount.accounts[1].publicKey, proposalId)
             await multiSigAccount.processProposal(proposalId);
 
             const withdrawers = (await faucetContract.withdrawers.find())[0];
@@ -72,7 +72,9 @@ describe('Multi signature account', function () {
             multiSigAccount.loadAccounts(accounts);
 
             const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-            await multiSigAccount.approveAll(proposalId);
+            for (let i = 0; i < accounts.length; i++) {
+                await multiSigAccount.approve(accounts[i].publicKey, proposalId);
+            }
 
             assert(multiSigAccount.proposals[proposalId].signatures.length == 3);
 
@@ -105,7 +107,7 @@ describe('Multi signature account', function () {
     });
 
     describe('Approve', function () {
-        it('Should throw if approver is not an instance of account', async () => {
+        it('Should throw if approver was not loaded', async () => {
             try {
                 const account = await eoslime.Account.createRandom();
                 const accounts = await eoslime.Account.createRandoms(2);
@@ -122,7 +124,7 @@ describe('Multi signature account', function () {
 
                 assert(false);
             } catch (error) {
-                assert(error.message.includes('String is not an instance of BaseAccount'));
+                assert(error.message.includes('Such approver was not loaded'));
             }
         });
 
@@ -139,7 +141,7 @@ describe('Multi signature account', function () {
                 multiSigAccount.loadAccounts(accounts);
 
                 await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-                await multiSigAccount.approve(multiSigAccount.accounts[0], 'Fake proposal');
+                await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, 'Fake proposal');
 
                 assert(false);
             } catch (error) {
@@ -163,7 +165,7 @@ describe('Multi signature account', function () {
                 multiSigAccount.loadAccounts(accounts);
 
                 const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-                await multiSigAccount.approve(multiSigAccount.accounts[0], proposalId);
+                await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, proposalId);
 
                 await multiSigAccount.processProposal('Fake proposal');
 
@@ -186,7 +188,9 @@ describe('Multi signature account', function () {
                 multiSigAccount.loadAccounts(accounts);
 
                 const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-                await multiSigAccount.approveAll(proposalId);
+                for (let i = 0; i < accounts.length; i++) {
+                    await multiSigAccount.approve(accounts[i].publicKey, proposalId);
+                }
 
                 await multiSigAccount.processProposal(proposalId);
 
