@@ -1,22 +1,51 @@
 const Contract = require('./contract');
+const AccountFactory = require('../account/normal-account/account-factory');
+
+const ContractDeployer = require('./contract-deployer');
+
 const is = require('./../helpers/is');
-const Account = require('./../account/account');
+const contractFilesReader = require('./..//helpers/contract-files-reader');
 
-const defineImmutableProperties = require('./../helpers/immutable-properties').defineImmutableProperties;
+const EVENTS = {
+    'init': 'init',
+}
 
-class ContractFactory {
+class ContractFactory extends ContractDeployer {
 
     constructor(provider) {
-        defineImmutableProperties(this, [
-            { name: 'provider', value: provider }
-        ]);
+        super(provider);
+        Object.assign(this.events, EVENTS);
     }
 
-    buildExisting(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        is(contractExecutorAccount).instanceOf(Account);
+    fromFile(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
+        is(contractExecutorAccount).instanceOf('BaseAccount');
 
-        let contract = new Contract(this.provider, abi, contractName, contractExecutorAccount);
+        let abiInterface = abi;
+        if (contractFilesReader.doesAbiExists(abi)) {
+            abiInterface = contractFilesReader.readABIFromFile(abi);
+        }
+
+        const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
+        this.emit(EVENTS.init, contract);
+
         return contract;
+    }
+
+    async at(contractName, contractExecutorAccount = this.provider.defaultAccount) {
+        is(contractExecutorAccount).instanceOf('BaseAccount');
+
+        const abiInterface = (await this.provider.eos.getAbi(contractName)).abi;
+        const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
+
+        this.emit(EVENTS.init, contract);
+        return contract;
+    }
+
+    async deploy(wasmPath, abiPath, options) {
+        const accountFactory = new AccountFactory(this.provider);
+        const newContractAccount = await accountFactory.createRandom();
+
+        return super.deployOnAccount(wasmPath, abiPath, newContractAccount, options);
     }
 }
 

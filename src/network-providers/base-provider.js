@@ -1,5 +1,5 @@
 const EOS = require('eosjs');
-const Account = require('./../account/account');
+const TableReader = require('./../table-reader/table-reader');
 
 const is = require('./../helpers/is');
 
@@ -16,10 +16,15 @@ class BaseProvider {
         Object.defineProperty(this, 'defaultAccount', {
             get: () => { return defaultAccount },
             set: (account) => {
-                is(account).instanceOf(Account);
+                is(account).instanceOf('BaseAccount');
                 defaultAccount = account;
             }
         })
+    }
+
+    select(table) {
+        const tableReader = new TableReader(this.eos);
+        return tableReader.select(table);
     }
 }
 

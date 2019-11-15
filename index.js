@@ -1,42 +1,35 @@
-const path = require('path');
-
 const Provider = require('./src/network-providers/provider');
-
-const AccountFactory = require('./src/account/account-factory');
 const ContractFactory = require('./src/contract/contract-factory');
 
-const CleanDeployer = require('./src/deployers/clean-deployer');
-const AccountDeployer = require('./src/deployers/account-deployer');
+const AccountFactory = require('./src/account/normal-account/account-factory');
+const MultiSignatureFactory = require('./src/account/multi-signature-account/multi-signature-factory');
 
 const utils = require('./src/utils');
-const contractFilesReader = require('./src/helpers/contract-files-reader');
-
 
 module.exports = (function () {
 
-    let init = function (network = 'local') {
-        let provider = new Provider(network)
+    const init = function (network = 'local') {
+        const providerFactory = new Provider(network);
+        const provider = providerFactory.instance;
 
-        let accountFactory = new AccountFactory(provider);
-        let contractFactory = new ContractFactory(provider);
+        const contractFactory = new ContractFactory(provider);
 
-        let accountDeployer = new AccountDeployer(provider, contractFactory);
-        let cleanDeployer = new CleanDeployer(provider, contractFactory, accountFactory);
+        const accountFactory = new AccountFactory(provider);
+        const multiSignatureFactory = new MultiSignatureFactory(provider);
 
         return {
+            utils: utils,
             Provider: provider,
+            Contract: contractFactory,
             Account: accountFactory,
-            CleanDeployer: cleanDeployer,
-            AccountDeployer: accountDeployer,
-            Contract: function (abiPath, contractName, contractExecutorAccount) {
-                let abi = contractFilesReader.readABIFromFile(path.resolve(abiPath));
-                return contractFactory.buildExisting(abi, contractName, contractExecutorAccount);
-            },
-            utils
+            MultiSigAccount: multiSignatureFactory,
         };
     }
 
     return {
-        init: init
+        init: init,
+        utils: utils,
+        NETWORKS: Provider.availableNetworks().all
     };
 })();
+
