@@ -1,4 +1,4 @@
-const Account = require("./../../../account/account");
+const Account = require("./../../../account/normal-account/account");
 
 const fromOption = function (optionals, rawTransaction) {
     if (optionals && optionals.from instanceof Account) {

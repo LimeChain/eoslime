@@ -1,4 +1,4 @@
-const uniqueOptional = async function (optionals, rawTransaction) {
+const uniqueOptional = function (optionals, rawTransaction) {
     if (optionals && optionals.unique) {
         rawTransaction.actions.push({
             account: "eosio.null",

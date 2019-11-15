@@ -1,5 +1,4 @@
 const Option = require('./../../option');
-const Provider = require('./../../../src/network-providers/provider');
 
 class NetworkOption extends Option {
     constructor() {
@@ -14,11 +13,14 @@ class NetworkOption extends Option {
     }
 
     process(optionValue, args) {
+        let provider;
         if (optionValue) {
-            args.eoslime.Provider.reset(new Provider(optionValue));
+            provider = new args.eoslime.Provider(optionValue);
         } else {
-            args.eoslime.Provider.reset(new Provider('local'));
+            provider = new args.eoslime.Provider('local');
         }
+
+        args.eoslime.Provider.reset(provider);
     }
 }
 

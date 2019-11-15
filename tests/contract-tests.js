@@ -17,9 +17,9 @@ describe("Contract", function () {
     // Faucet account is the account on which the faucet contract is going to be deployed
     let faucetAccount;
     let tokenContract;
+    const TOKEN_PRECISION = Math.pow(10, 4);
     const TOTAL_SUPPLY = "1000000000.0000 TKNS";
     const PRODUCED_TOKENS_AMOUNT = "100.0000 TKNS";
-    const TOKEN_PRECISION = Math.pow(10, 4);
 
     /*
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
@@ -58,7 +58,7 @@ describe("Contract", function () {
         };
 
         it("Should instantiate correct instance of Contract", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
 
             assert(typeof faucetContract.produce == "function");
             assert(typeof faucetContract.withdraw == "function");
@@ -69,7 +69,7 @@ describe("Contract", function () {
         });
 
         it("Should set default account as executor if none is provided", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name);
 
             // In local network -> eosio is the preset default account
             assert(JSON.stringify(faucetContract.executor) == JSON.stringify(faucetContract.provider.defaultAccount));
@@ -77,31 +77,31 @@ describe("Contract", function () {
 
         it("Should throw if one provide incorrect account as a contract executor", async () => {
             try {
-                eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
+                eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
 
                 assert(false, "Should throw");
             } catch (error) {
-                assert(error.message.includes("Provided String is not an instance of Account"));
+                assert(error.message.includes("Provided String is not an instance of BaseAccount"));
             }
         });
     });
 
     describe("Blockchain methods", function () {
         it("Should execute a blockchain method from the provided executor", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
-            const result = await faucetContract.getWithdrawers({ limit: 1, equal: tokensHolder.name });
+            const result = await faucetContract.withdrawers.limit(1).equal(tokensHolder.name).find();
 
-            assert(result.quantity == PRODUCED_TOKENS_AMOUNT);
-            assert(result.token_name == tokenContract.name);
+            assert(result[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(result[0].token_name == tokenContract.name);
         });
 
         it("Should execute a blockchain method from another executor", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
 
@@ -112,7 +112,7 @@ describe("Contract", function () {
         });
 
         it('Should process nonce-action', async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
 
@@ -121,8 +121,8 @@ describe("Contract", function () {
             assert(true);
         });
 
-        it('Should throw without nonce-action', async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+        it('Should throw with duplicate transaction error', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const executor = await eoslime.Account.createRandom();
 
@@ -133,77 +133,116 @@ describe("Contract", function () {
                 assert(error.includes('duplicate transaction'));
             }
         });
+
+        it('Should get the raw transaction from the action', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            const rawActionTx = await faucetContract.produce.getRawTransaction(tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo');
+            assert(rawActionTx.expiration != undefined);
+            assert(rawActionTx.ref_block_num != undefined);
+            assert(rawActionTx.ref_block_prefix != undefined);
+            assert(rawActionTx.max_net_usage_words != undefined);
+            assert(rawActionTx.max_cpu_usage_ms != undefined);
+            assert(rawActionTx.delay_sec != undefined);
+            assert(rawActionTx.context_free_actions != undefined);
+            assert(rawActionTx.actions != undefined);
+            assert(rawActionTx.actions[0].name == 'produce');
+            assert(rawActionTx.actions[0].account == faucetContract.name);
+            assert(rawActionTx.actions[0].data != undefined);
+            assert(rawActionTx.actions[0].authorization != undefined);
+        });
+
+        it('Should sign the action without broadcasting it', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+            const signer = await eoslime.Account.createRandom();
+
+            const signedActionTx = await faucetContract.produce.sign(signer, tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo');
+
+            assert(signedActionTx.signatures.length == 1);
+            assert(signedActionTx.transaction.expiration != undefined);
+            assert(signedActionTx.transaction.ref_block_num != undefined);
+            assert(signedActionTx.transaction.ref_block_prefix != undefined);
+            assert(signedActionTx.transaction.max_net_usage_words != undefined);
+            assert(signedActionTx.transaction.max_cpu_usage_ms != undefined);
+            assert(signedActionTx.transaction.delay_sec != undefined);
+            assert(signedActionTx.transaction.context_free_actions != undefined);
+            assert(signedActionTx.transaction.actions != undefined);
+            assert(signedActionTx.transaction.actions[0].name == 'produce');
+            assert(signedActionTx.transaction.actions[0].account == faucetContract.name);
+            assert(signedActionTx.transaction.actions[0].data != undefined);
+            assert(signedActionTx.transaction.actions[0].authorization != undefined);
+        });
+
+        it('Should throw if trying to sign the action with an invalid signer', async () => {
+            try {
+                const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+                const tokensHolder = await eoslime.Account.createRandom();
+
+                await faucetContract.produce.sign('Fake signer', tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo');
+            } catch (error) {
+                assert(error.message.includes('String is not an instance of BaseAccount'));
+            }
+        });
     });
 
     describe("Blockchain tables", function () {
 
         it("Should have a default table getter", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
 
             // withdrawers is a table in the contract
-            assert(faucetContract.getWithdrawers);
+            assert(faucetContract.withdrawers);
         });
 
         it("Should apply the default query params if none provided", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
-            const allWithdrawers = await faucetContract.getWithdrawers();
+            const allWithdrawers = await faucetContract.withdrawers.find();
 
             assert(allWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(allWithdrawers[0].token_name == tokenContract.name);
         });
 
         it("Should query a table", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
             await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
             // With equal criteria
-            const equalResult = await faucetContract.getWithdrawers({ equal: tokensHolder.name });
+            const equalResult = await faucetContract.withdrawers.equal(tokensHolder.name).find();
             assert(equalResult[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(equalResult[0].token_name == tokenContract.name);
 
             // With range criteria
-            const rangeResult = await faucetContract.getWithdrawers({ lower: 0, upper: 100 * TOKEN_PRECISION, index: 2 });
+            const rangeResult = await faucetContract.withdrawers.range(0, 100 * TOKEN_PRECISION).index(2).find();
             assert(rangeResult[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(rangeResult[0].token_name == tokenContract.name);
 
             // With limit
             // There is only one withdrawer
-            const allWithdrawers = await faucetContract.getWithdrawers({ limit: 10 });
+            const allWithdrawers = await faucetContract.withdrawers.limit(10).find();
             assert(allWithdrawers.length == 1);
             assert(allWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(allWithdrawers[0].token_name == tokenContract.name);
 
             // With different index (By Balance)
-            const balanceWithdrawers = await faucetContract.getWithdrawers({ equal: 100 * TOKEN_PRECISION, index: 2 });
+            const balanceWithdrawers = await faucetContract.withdrawers.equal(100 * TOKEN_PRECISION).index(2).find();
             assert(balanceWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(balanceWithdrawers[0].token_name == tokenContract.name);
-        });
-
-        it('Should return the resulted record in case of query parameter -> limit = 1', async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
-            const tokensHolder = await eoslime.Account.createRandom();
-
-            // faucetAccount is the executor
-            await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
-
-            const firstWithdrawer = await faucetContract.getWithdrawers({ limit: 1 });
-
-            assert(firstWithdrawer.quantity == PRODUCED_TOKENS_AMOUNT);
-            assert(firstWithdrawer.token_name == tokenContract.name);
         });
     });
 
     describe("Inline a contract", function () {
         it("Should execute a blockchain method which makes inline transaction to another contract", async () => {
-            const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             await faucetContract.makeInline();
 
             const tokensHolder = await eoslime.Account.createRandom();
@@ -222,7 +261,7 @@ describe("Contract", function () {
         it("Should throw if one tries to inline a contract, but the contract's executor is not the account on which the contract has been deployed", async () => {
             try {
                 const contractExecutor = await eoslime.Account.createRandom();
-                const faucetContract = eoslime.Contract.at(FAUCET_ABI_PATH, faucetAccount.name, contractExecutor);
+                const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, contractExecutor);
 
                 await faucetContract.makeInline();
 
