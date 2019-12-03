@@ -145,6 +145,12 @@ describe('Providers', function () {
             const balanceWithdrawers = await Provider.select('withdrawers').from(faucetContract.name).equal(100 * TOKEN_PRECISION).index(2).find();
             assert(balanceWithdrawers[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(balanceWithdrawers[0].token_name == tokenContract.name);
+
+            // With scope
+            const allWithdrawersInScope = await Provider.select('withdrawers').from(faucetContract.name).scope(faucetContract.name).find();
+            assert(allWithdrawersInScope.length == 1);
+            assert(allWithdrawersInScope[0].quantity == PRODUCED_TOKENS_AMOUNT);
+            assert(allWithdrawersInScope[0].token_name == tokenContract.name);
         });
     });
 });

@@ -22,17 +22,19 @@ const generateQueriesChain = function (readerAddon) {
         limitQuery: new Queries.LimitQuery(),
         indexQuery: new Queries.IndexQuery(),
         equalQuery: new Queries.EqualQuery(),
+        scopeQuery: new Queries.ScopeQuery(),
         selectQuery: new Queries.SelectQuery(),
     }
 
     const queryProcessor = buildQueryProcessor(readerAddon.provider, readerAddon.allQueries);
 
     readerAddon.allQueries.selectQuery.push([readerAddon.allQueries.fromQuery]);
-    readerAddon.allQueries.fromQuery.push([readerAddon.allQueries.indexQuery, readerAddon.allQueries.limitQuery, readerAddon.allQueries.rangeQuery, readerAddon.allQueries.equalQuery, queryProcessor]);
+    readerAddon.allQueries.fromQuery.push([readerAddon.allQueries.scopeQuery, readerAddon.allQueries.indexQuery, readerAddon.allQueries.limitQuery, readerAddon.allQueries.rangeQuery, readerAddon.allQueries.equalQuery, queryProcessor]);
     readerAddon.allQueries.limitQuery.push([readerAddon.allQueries.indexQuery, readerAddon.allQueries.rangeQuery, readerAddon.allQueries.equalQuery, queryProcessor]);
     readerAddon.allQueries.indexQuery.push([readerAddon.allQueries.limitQuery, readerAddon.allQueries.rangeQuery, readerAddon.allQueries.equalQuery, queryProcessor]);
     readerAddon.allQueries.rangeQuery.push([readerAddon.allQueries.indexQuery, readerAddon.allQueries.limitQuery, queryProcessor]);
     readerAddon.allQueries.equalQuery.push([readerAddon.allQueries.indexQuery, readerAddon.allQueries.limitQuery, queryProcessor]);
+    readerAddon.allQueries.scopeQuery.push([readerAddon.allQueries.indexQuery, readerAddon.allQueries.limitQuery, readerAddon.allQueries.rangeQuery, readerAddon.allQueries.equalQuery, queryProcessor]);
 
     return readerAddon.allQueries.selectQuery
 }
