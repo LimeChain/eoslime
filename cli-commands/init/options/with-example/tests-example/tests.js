@@ -23,13 +23,11 @@ describe("EOSIO Token", function (eoslime) {
 
     beforeEach(async () => {
         /*
-            CleanDeployer creates for you a new account behind the scene
-            on which the contract code is deployed
- 
-            Note! CleanDeployer always deploy the contract code on a new fresh account
- 
-            You can access the contract account as -> tokenContract.executor
-        */
+           `deploy` creates for you a new account behind the scene
+           on which the contract code is deployed
+
+           You can access the contract account as -> tokenContract.executor
+       */
         tokenContract = await eoslime.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
     });
 
@@ -37,21 +35,9 @@ describe("EOSIO Token", function (eoslime) {
         await tokenContract.create(tokensIssuer.name, TOTAL_SUPPLY);
 
         /*
-            You have access to the EOS(eosjs) instance as -> contract.provider.eos
-            This gives us flexibility and convenience
- 
-                For example when you want to read a table -> 
- 
-                await contract.provider.eos.getTableRows({
-                    code: code,
-                    scope: scope,
-                    table: table,
-                    limit: limit,
-                    lower_bound: l_bound,
-                    upper_bound: u_bound,
-                    json: true
-                });
-        */
+             You have access to the EOS(eosjs) instance:
+                 eoslime.Provider.eos
+         */
         let tokenInitialization = await tokenContract.provider.eos.getCurrencyStats(tokenContract.name, "SYS");
 
         assert.equal(tokenInitialization.SYS.max_supply, TOTAL_SUPPLY, "Incorrect tokens supply");
