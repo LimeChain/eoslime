@@ -12,7 +12,6 @@ class ScopeQuery extends QueryProp {
             throw new Error('You should provide scope argument');
         }
 
-        console.log(accountName)
         this.props.scope = accountName;
         this.props.default = false;
 
