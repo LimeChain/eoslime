@@ -34,7 +34,7 @@ class ContractFunction extends EventClass {
             { broadcast: true, sign: true, keyProvider: functionRawTxData.defaultExecutor.privateKey }
         );
 
-        this.emit(EVENTS.processed, txReceipt);
+        this.emit(EVENTS.processed, txReceipt, functionParams);
         return txReceipt;
     }
 
