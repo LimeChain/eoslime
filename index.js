@@ -1,4 +1,4 @@
-const Provider = require('./src/network-providers/provider');
+const ProviderFactory = require('./src/network-providers/provider-factory');
 const ContractFactory = require('./src/contract/contract-factory');
 
 const AccountFactory = require('./src/account/normal-account/account-factory');
@@ -8,10 +8,30 @@ const utils = require('./src/utils');
 
 module.exports = (function () {
 
-    const init = function (network = 'local') {
-        const providerFactory = new Provider(network);
+    let init = function (network = 'local') {
+        const providerFactory = new ProviderFactory(network);
         const provider = providerFactory.instance;
 
+        return build(provider);
+    }
+
+    let initFromProvider = function () {
+        const availableProviders = {};
+
+        const providersNames = Object.keys(ProviderFactory.providers());
+        for (let index = 0; index < providersNames.length; index++) {
+            const providerName = providersNames[index];
+
+            availableProviders[providerName] = function (networkConfig) {
+                const provider = ProviderFactory.providers()[providerName](networkConfig);
+                return build(provider);
+            }
+        }
+
+        return availableProviders;
+    }
+
+    const build = function (provider) {
         const contractFactory = new ContractFactory(provider);
 
         const accountFactory = new AccountFactory(provider);
@@ -27,9 +47,9 @@ module.exports = (function () {
     }
 
     return {
-        init: init,
+        init: Object.assign(init, initFromProvider()),
         utils: utils,
-        NETWORKS: Provider.availableNetworks().all
+        NETWORKS: ProviderFactory.availableNetworks()
     };
 })();
 

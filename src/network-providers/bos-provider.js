@@ -7,8 +7,8 @@ const BosNetworkConfig = {
 }
 
 class BosProvider extends BaseProvider {
-    constructor() {
-        super(BosNetworkConfig)
+    constructor(networkConfig) {
+        super(Object.assign(BosNetworkConfig, networkConfig))
     }
 }
 

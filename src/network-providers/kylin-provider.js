@@ -9,7 +9,7 @@ const KylinNetworkConfig = {
 
 class KylinProvider extends BaseProvider {
     constructor() {
-        super(KylinNetworkConfig)
+        super(Object.assign(KylinNetworkConfig, networkConfig))
     }
 }
 

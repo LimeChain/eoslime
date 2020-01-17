@@ -1,8 +1,9 @@
 module.exports = function (data) {
     return {
-        instanceOf: function (ofObject) {
+        instanceOf: function (ofObject, errorMessage) {
             if (data == null || data == undefined) {
-                throw new Error(`Not an instance of ${ofObject}`);
+                errorMessage = errorMessage || `Not an instance of ${ofObject}`;
+                throw new Error(errorMessage);
             }
 
             recursivelyCheckIfInstance(data, ofObject);

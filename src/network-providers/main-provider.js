@@ -9,7 +9,7 @@ const MainNetworkProvider = {
 
 class MainProvider extends BaseProvider {
     constructor() {
-        super(MainNetworkProvider)
+        super(Object.assign(MainNetworkProvider, networkConfig))
     }
 }
 

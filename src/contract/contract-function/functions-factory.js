@@ -2,8 +2,8 @@ const ContractFunction = require('./contract-function');
 
 class FunctionsFactory {
 
-    static createFunction(contract, functionName, contractStructs) {
-        const contractFunction = new ContractFunction(contract, functionName, contractStructs);
+    static createFunction(contract, functionName, functionFields) {
+        const contractFunction = new ContractFunction(contract, functionName, functionFields);
 
         const proxyHandler = {
             get: (obj, value) => {

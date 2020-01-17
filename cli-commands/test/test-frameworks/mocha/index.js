@@ -30,11 +30,25 @@ class MochaFramework {
     async setDescribeArgs(...args) {
         this.instance.suite.on('pre-require', function (context) {
             const origDescribe = context.describe;
-            context.describe = function (name, impl) {
+
+            const proxyHandler = {
+                get: (obj, value) => {
+                    if (!obj.hasOwnProperty(value) && typeof origDescribe[value] == 'function') {
+                        const origSubFunction = origDescribe[value];
+                        return function (name, impl) {
+                            return origSubFunction(name, function () {
+                                return impl.call(this, ...args);
+                            });
+                        }
+                    }
+                }
+            }
+
+            context.describe = new Proxy(function (name, impl) {
                 return origDescribe(name, function () {
                     return impl.call(this, ...args);
                 });
-            };
+            }, proxyHandler);
         });
     }
 

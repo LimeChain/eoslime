@@ -8,17 +8,17 @@ const JungleProvider = require('./jungle-provider');
 const WorbliProvider = require('./worbli-provider');
 const CustomProvider = require('./custom-provider');
 
-const NETWORKS = {
-    bos: () => { return new BosProvider() },
-    main: () => { return new MainProvider() },
-    kylin: () => { return new KylinProvider() },
-    local: () => { return new LocalProvider() },
-    jungle: () => { return new JungleProvider() },
-    worbli: () => { return new WorbliProvider() },
-    custom: (networkConfig) => { return new CustomProvider(networkConfig) }
+const PROVIDERS = {
+    Bos: (networkConfig) => { return new BosProvider(networkConfig) },
+    Main: (networkConfig) => { return new MainProvider(networkConfig) },
+    Kylin: (networkConfig) => { return new KylinProvider(networkConfig) },
+    Local: (networkConfig) => { return new LocalProvider(networkConfig) },
+    Jungle: (networkConfig) => { return new JungleProvider(networkConfig) },
+    Worbli: (networkConfig) => { return new WorbliProvider(networkConfig) },
+    Custom: (networkConfig) => { return new CustomProvider(networkConfig) }
 }
 
-class Provider {
+class ProviderFactory {
 
     constructor(network) {
         this.__provider = constructProvider(network);
@@ -45,22 +45,28 @@ class Provider {
     }
 
     static availableNetworks() {
-        const networks = {};
-        Object.keys(NETWORKS).forEach(networkName => {
-            networks[networkName.toUpperCase] = networkName;
+        const networks = [];
+        Object.keys(PROVIDERS).forEach(providerName => {
+            networks.push(providerName.toLowerCase);
         });
 
-        networks.all = Object.keys(NETWORKS);
         return networks;
+    }
+
+    static providers() {
+        return PROVIDERS;
     }
 }
 
 const constructProvider = function (network) {
-    if (NETWORKS[network]) {
-        return NETWORKS[network]();
+    let provider = `${network}`;
+    provider = provider.charAt(0).toUpperCase() + provider.slice(1);
+
+    if (PROVIDERS[provider]) {
+        return PROVIDERS[provider]();
     }
 
-    return NETWORKS.custom(network);
+    return PROVIDERS.Custom(provider);
 }
 
-module.exports = Provider;
+module.exports = ProviderFactory;

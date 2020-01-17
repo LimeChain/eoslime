@@ -1,3 +1,4 @@
+const is = require('./../helpers/is');
 const FunctionsFactory = require('./contract-function/functions-factory');
 
 class Contract {
@@ -11,6 +12,8 @@ class Contract {
     }
 
     async makeInline() {
+        is(this.executor).instanceOf('BaseAccount', 'executor is missing');
+
         if (this.name != this.executor.name) {
             throw new Error("In order to make a contract inline one, the contract executor should be the account, on which the contract is deployed");
         }
@@ -27,7 +30,8 @@ let declareFunctionsFromABI = function (abi) {
 
     for (let i = 0; i < contractActions.length; i++) {
         const functionName = contractActions[i].name;
-        this[functionName] = FunctionsFactory.createFunction(this, functionName, contractStructs)
+        const functionType = contractActions[i].type;
+        this[functionName] = FunctionsFactory.createFunction(this, functionName, contractStructs[functionType].fields)
     }
 };
 
