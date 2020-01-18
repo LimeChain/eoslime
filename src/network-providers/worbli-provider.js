@@ -7,7 +7,7 @@ const WorbliNetworkProvider = {
 }
 
 class WorbliProvider extends BaseProvider {
-    constructor() {
+    constructor(networkConfig) {
         super(Object.assign(WorbliNetworkProvider, networkConfig))
     }
 }
