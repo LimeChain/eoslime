@@ -56,9 +56,8 @@ describe('Providers', function () {
     // Increase mocha(testing framework) time, otherwise tests fails
     this.timeout(15000);
 
-    describe('Instantiation', function () {
-        it('Should instantiate correct instance of Provider', async () => {
-
+    describe('Instantiation eoslime', function () {
+        it('Should instantiate eoslime with a correct Provider from connection', async () => {
             // Local
             const localProvider = eoslime.init().Provider;
             assert(JSON.stringify(localProvider.network) == JSON.stringify(Networks.local));
@@ -86,6 +85,119 @@ describe('Providers', function () {
             // Custom
             const customProvider = eoslime.init({ url: Networks.custom.url, chainId: Networks.custom.chainId }).Provider;
             assert(JSON.stringify(customProvider.network) == JSON.stringify(Networks.custom));
+        });
+
+        it('Should instantiate eoslime with a correct Provider from provided connection', async () => {
+
+            // Local
+            const localProvider = eoslime.init('local', { url: Networks.custom.url }).Provider;
+            assert(JSON.stringify(localProvider.network.name) == JSON.stringify(Networks.local.name));
+            assert(JSON.stringify(localProvider.network.chainId) == JSON.stringify(Networks.local.chainId));
+            assert(JSON.stringify(localProvider.network.url) == JSON.stringify(Networks.custom.url));
+
+            // Jungle
+            const jungleProvider = eoslime.init('jungle', { chainId: Networks.custom.chainId }).Provider;
+            assert(JSON.stringify(jungleProvider.network.name) == JSON.stringify(Networks.jungle.name));
+            assert(JSON.stringify(jungleProvider.network.url) == JSON.stringify(Networks.jungle.url));
+            assert(jungleProvider.network.chainId == Networks.custom.chainId);
+
+            // Worbli
+            const worbliProvider = eoslime.init('worbli', { url: Networks.custom.url }).Provider;
+            assert(JSON.stringify(worbliProvider.network.name) == JSON.stringify(Networks.worbli.name));
+            assert(JSON.stringify(worbliProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(worbliProvider.network.chainId) == JSON.stringify(Networks.worbli.chainId));
+
+            // Main
+            const mainProvider = eoslime.init('main', { url: Networks.custom.url }).Provider;
+            assert(JSON.stringify(mainProvider.network.name) == JSON.stringify(Networks.main.name));
+            assert(JSON.stringify(mainProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(mainProvider.network.chainId) == JSON.stringify(Networks.main.chainId));
+
+            // Bos
+            const bosProvider = eoslime.init('bos', { url: Networks.custom.url }).Provider;
+            assert(JSON.stringify(bosProvider.network.name) == JSON.stringify(Networks.bos.name));
+            assert(JSON.stringify(bosProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(bosProvider.network.chainId) == JSON.stringify(Networks.bos.chainId));
+
+            // Kylin
+            const kylinProvider = eoslime.init('kylin', { url: Networks.custom.url }).Provider;
+            assert(JSON.stringify(kylinProvider.network.name) == JSON.stringify(Networks.kylin.name));
+            assert(JSON.stringify(kylinProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(kylinProvider.network.chainId) == JSON.stringify(Networks.kylin.chainId));
+        });
+    });
+
+    describe('Create Provider', function () {
+        it('Should be able to create a new Provider with default connection', async () => {
+            const eoslimeInstance = eoslime.init();
+
+            // Local
+            const localProvider = new eoslimeInstance.Provider('local');
+            assert(JSON.stringify(localProvider.network) == JSON.stringify(Networks.local));
+
+            // Jungle
+            const jungleProvider = new eoslimeInstance.Provider('jungle');
+            assert(JSON.stringify(jungleProvider.network) == JSON.stringify(Networks.jungle));
+
+            // Worbli
+            const worbliProvider = new eoslimeInstance.Provider('worbli');
+            assert(JSON.stringify(worbliProvider.network) == JSON.stringify(Networks.worbli));
+
+            // Main
+            const mainProvider = new eoslimeInstance.Provider('main');
+            assert(JSON.stringify(mainProvider.network) == JSON.stringify(Networks.main));
+
+            // Bos
+            const bosProvider = new eoslimeInstance.Provider('bos');
+            assert(JSON.stringify(bosProvider.network) == JSON.stringify(Networks.bos));
+
+            // Kylin
+            const kylinProvider = new eoslimeInstance.Provider('kylin');
+            assert(JSON.stringify(kylinProvider.network) == JSON.stringify(Networks.kylin));
+
+            // Custom
+            const customProvider = new eoslimeInstance.Provider({ url: Networks.custom.url, chainId: Networks.custom.chainId });
+            assert(JSON.stringify(customProvider.network) == JSON.stringify(Networks.custom));
+        });
+
+        it('Should be able to create a new Provider from connection', async () => {
+            const eoslimeInstance = eoslime.init();
+
+            // Local
+            const localProvider = new eoslimeInstance.Provider('local', { url: Networks.custom.url });
+            assert(JSON.stringify(localProvider.network.name) == JSON.stringify(Networks.local.name));
+            assert(JSON.stringify(localProvider.network.chainId) == JSON.stringify(Networks.local.chainId));
+            assert(JSON.stringify(localProvider.network.url) == JSON.stringify(Networks.custom.url));
+
+            // Jungle
+            const jungleProvider = new eoslimeInstance.Provider('jungle', { chainId: Networks.custom.chainId });
+            assert(JSON.stringify(jungleProvider.network.name) == JSON.stringify(Networks.jungle.name));
+            assert(JSON.stringify(jungleProvider.network.url) == JSON.stringify(Networks.jungle.url));
+            assert(jungleProvider.network.chainId == Networks.custom.chainId);
+
+            // Worbli
+            const worbliProvider = new eoslimeInstance.Provider('worbli', { url: Networks.custom.url });
+            assert(JSON.stringify(worbliProvider.network.name) == JSON.stringify(Networks.worbli.name));
+            assert(JSON.stringify(worbliProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(worbliProvider.network.chainId) == JSON.stringify(Networks.worbli.chainId));
+
+            // Main
+            const mainProvider = new eoslimeInstance.Provider('main', { url: Networks.custom.url });
+            assert(JSON.stringify(mainProvider.network.name) == JSON.stringify(Networks.main.name));
+            assert(JSON.stringify(mainProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(mainProvider.network.chainId) == JSON.stringify(Networks.main.chainId));
+
+            // Bos
+            const bosProvider = new eoslimeInstance.Provider('bos', { url: Networks.custom.url });
+            assert(JSON.stringify(bosProvider.network.name) == JSON.stringify(Networks.bos.name));
+            assert(JSON.stringify(bosProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(bosProvider.network.chainId) == JSON.stringify(Networks.bos.chainId));
+
+            // Kylin
+            const kylinProvider = new eoslimeInstance.Provider('kylin', { url: Networks.custom.url });
+            assert(JSON.stringify(kylinProvider.network.name) == JSON.stringify(Networks.kylin.name));
+            assert(JSON.stringify(kylinProvider.network.url) == JSON.stringify(Networks.custom.url));
+            assert(JSON.stringify(kylinProvider.network.chainId) == JSON.stringify(Networks.kylin.chainId));
         });
     });
 

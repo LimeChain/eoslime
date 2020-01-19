@@ -1,12 +1,12 @@
-const is = require('../../helpers/is');
+const is = require('../helpers/is');
 
-const BosProvider = require('../bos-provider');
-const MainProvider = require('../main-provider');
-const KylinProvider = require('../kylin-provider');
-const LocalProvider = require('../local-provider');
-const JungleProvider = require('../jungle-provider');
-const WorbliProvider = require('../worbli-provider');
-const CustomProvider = require('../custom-provider');
+const BosProvider = require('./bos-provider');
+const MainProvider = require('./main-provider');
+const KylinProvider = require('./kylin-provider');
+const LocalProvider = require('./local-provider');
+const JungleProvider = require('./jungle-provider');
+const WorbliProvider = require('./worbli-provider');
+const CustomProvider = require('./custom-provider');
 
 const PROVIDERS = {
     bos: (networkConfig) => { return new BosProvider(networkConfig) },
@@ -18,10 +18,10 @@ const PROVIDERS = {
     custom: (networkConfig) => { return new CustomProvider(networkConfig) }
 }
 
-class BaseProviderFactory {
+class ProviderFactory {
 
-    constructor(provider, providerFactory) {
-        this.__provider = provider;
+    constructor(network, config) {
+        this.__provider = constructProvider(network, config);
 
         const providerProxyHandler = {
             get: (obj, value) => {
@@ -31,8 +31,8 @@ class BaseProviderFactory {
 
                 return this[value];
             },
-            construct: (target, network) => {
-                return new providerFactory(network);
+            construct: (target, networkConfig) => {
+                return constructProvider(networkConfig[0], networkConfig[1]);
             }
         }
 
@@ -52,10 +52,14 @@ class BaseProviderFactory {
 
         return networks;
     }
-
-    static providers() {
-        return PROVIDERS;
-    }
 }
 
-module.exports = BaseProviderFactory;
+const constructProvider = function (network, config) {
+    if (PROVIDERS[network]) {
+        return PROVIDERS[network](config);
+    }
+
+    return PROVIDERS.custom(network);
+}
+
+module.exports = ProviderFactory;	

@@ -8,7 +8,7 @@ const JungleNetworkConfig = {
 
 class JungleProvider extends BaseProvider {
     constructor(networkConfig) {
-        super(Object.assign(JungleNetworkConfig, networkConfig))
+        super(Object.assign({}, JungleNetworkConfig, networkConfig))
     }
 }
 

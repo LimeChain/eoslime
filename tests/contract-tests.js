@@ -77,7 +77,11 @@ describe("Contract", function () {
 
         it("Should throw if one provide incorrect account as a contract executor", async () => {
             try {
-                eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
+                const tokensHolder = await eoslime.Account.createRandom();
+                const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
+
+                eoslime.Provider.defaultAccount = '';
+                await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
                 assert(false, "Should throw");
             } catch (error) {
