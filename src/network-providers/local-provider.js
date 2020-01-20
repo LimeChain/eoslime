@@ -8,9 +8,8 @@ const LocalNetworkConfig = {
 }
 
 class LocalProvider extends BaseProvider {
-
-    constructor() {
-        super(LocalNetworkConfig)
+    constructor(networkConfig) {
+        super(Object.assign({}, LocalNetworkConfig, networkConfig))
         this.defaultAccount = LOCAL_DEFATULT_ACCOUNT
         this.defaultAccount.provider = this;
     }

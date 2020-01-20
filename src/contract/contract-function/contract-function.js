@@ -8,16 +8,18 @@ const EVENTS = {
 
 class ContractFunction extends EventClass {
 
-    constructor(contract, functionName, contractStructs) {
+    constructor(contract, functionName, functionFields) {
         super(EVENTS);
         this.contract = contract;
         this.functionName = functionName;
-        this.contractStructs = contractStructs;
+        this.functionFields = functionFields;
         this.isTransactional = true;
     }
 
     async broadcast(...params) {
-        const functionParamsCount = this.contractStructs[this.functionName].fields.length;
+        is(this.contract.executor).instanceOf('BaseAccount', 'executor is missing');
+
+        const functionParamsCount = this.functionFields.length;
         const functionParams = params.slice(0, functionParamsCount);
         const functionRawTxData = buildFunctionRawTxData.call(this, this.contract.executor, functionParams);
 
@@ -34,7 +36,7 @@ class ContractFunction extends EventClass {
             { broadcast: true, sign: true, keyProvider: functionRawTxData.defaultExecutor.privateKey }
         );
 
-        this.emit(EVENTS.processed, txReceipt);
+        this.emit(EVENTS.processed, txReceipt, functionParams);
         return txReceipt;
     }
 
@@ -64,7 +66,7 @@ class ContractFunction extends EventClass {
 }
 
 const buildFunctionRawTxData = function (authorizer, params) {
-    const structuredParams = structureParamsToExpectedLook(params, this.contractStructs[this.functionName].fields);
+    const structuredParams = structureParamsToExpectedLook(params, this.functionFields);
     const functionTx = buildMainFunctionTx(this.contract.name, this.functionName, structuredParams, authorizer);
 
     return functionTx;

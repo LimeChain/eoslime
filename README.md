@@ -9,6 +9,27 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
+<<<<<<< HEAD
+# Version 1.0.2 change log
+
+* **Fix ABI Parsing** - https://github.com/LimeChain/eoslime/issues/37
+* **Fix describe.only** - mocha describe.only behaviour has broken with `eoslime test` 
+* **Add more flexibility in eoslime initialization**
+EOSLIME was able to be initialized only with pre-configured providers connections. Now you can connect eoslime to your chain and keep the pre-configured functionality as the **default account on local network**
+    ```javascript
+    // New local flexible initialization
+    const eoslime = require('eoslime').init('local', { url: 'Your url', chainId: 'Your chainId' });
+    const eoslime = require('eoslime').init('jungle', { url: 'Your url', chainId: 'Your chainId' });
+    const eoslime = require('eoslime').init('bos', { url: 'Your url', chainId: 'Your chainId' });
+    // ... any other supported netwok ...
+    ```
+* **Allow read-only contracts** - You are able now to instantiate a contract withouth a signer/executor and read the contract's tables
+* **Add Tutorial section in the documentation**
+* **Describe how examples in the documentation could be run**
+* **Increase the code coverage from 46% to 90+ %**
+
+=======
+>>>>>>> 0b1d6e3dd38e1f4f9553dd0f5705a108b00daebc
 # Version 1.0.1 change log
 
 * **Token** option was added

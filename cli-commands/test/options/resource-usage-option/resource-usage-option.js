@@ -86,7 +86,7 @@ const fillFunctionsResources = function (eoslime, contractsResources) {
                 const contractFunction = contract[functionName];
 
                 if (contractFunction.isTransactional) {
-                    contractFunction.on('processed', (txReceipt) => {
+                    contractFunction.on('processed', (txReceipt, inputParams) => {
                         const usedResources = extractResourcesCostsFromReceipt(txReceipt);
                         if (!contractsResources[contract.name]) {
                             contractsResources[contract.name] = {

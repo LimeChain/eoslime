@@ -57,8 +57,19 @@ describe("Contract", function () {
             chainId: "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f"
         };
 
-        it("Should instantiate correct instance of Contract", async () => {
+        it("Should instantiate correct instance of Contract from ABI file", async () => {
             const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+
+            assert(typeof faucetContract.produce == "function");
+            assert(typeof faucetContract.withdraw == "function");
+
+            assert(faucetContract.name == faucetAccount.name);
+            assert(JSON.stringify(faucetContract.executor) == JSON.stringify(faucetAccount));
+            assert(JSON.stringify(faucetContract.provider.network) == JSON.stringify(CONTRACT_NETWORK));
+        });
+
+        it("Should instantiate correct instance of Contract from blockchain account name", async () => {
+            const faucetContract = await eoslime.Contract.at(faucetAccount.name, faucetAccount);
 
             assert(typeof faucetContract.produce == "function");
             assert(typeof faucetContract.withdraw == "function");
@@ -77,7 +88,11 @@ describe("Contract", function () {
 
         it("Should throw if one provide incorrect account as a contract executor", async () => {
             try {
-                eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
+                const tokensHolder = await eoslime.Account.createRandom();
+                const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, "INVALID");
+
+                eoslime.Provider.defaultAccount = '';
+                await faucetContract.produce(tokensHolder.name, "100.0000 TKNS", tokenContract.name, "memo");
 
                 assert(false, "Should throw");
             } catch (error) {
