@@ -57,8 +57,19 @@ describe("Contract", function () {
             chainId: "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f"
         };
 
-        it("Should instantiate correct instance of Contract", async () => {
+        it("Should instantiate correct instance of Contract from ABI file", async () => {
             const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+
+            assert(typeof faucetContract.produce == "function");
+            assert(typeof faucetContract.withdraw == "function");
+
+            assert(faucetContract.name == faucetAccount.name);
+            assert(JSON.stringify(faucetContract.executor) == JSON.stringify(faucetAccount));
+            assert(JSON.stringify(faucetContract.provider.network) == JSON.stringify(CONTRACT_NETWORK));
+        });
+
+        it("Should instantiate correct instance of Contract from blockchain account name", async () => {
+            const faucetContract = await eoslime.Contract.at(faucetAccount.name, faucetAccount);
 
             assert(typeof faucetContract.produce == "function");
             assert(typeof faucetContract.withdraw == "function");

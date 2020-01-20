@@ -57,7 +57,7 @@ describe('Providers', function () {
     this.timeout(15000);
 
     describe('Instantiation eoslime', function () {
-        it('Should instantiate eoslime with a correct Provider from connection', async () => {
+        it('Should instantiate with a correct Provider from connection', async () => {
             // Local
             const localProvider = eoslime.init().Provider;
             assert(JSON.stringify(localProvider.network) == JSON.stringify(Networks.local));
@@ -87,7 +87,7 @@ describe('Providers', function () {
             assert(JSON.stringify(customProvider.network) == JSON.stringify(Networks.custom));
         });
 
-        it('Should instantiate eoslime with a correct Provider from provided connection', async () => {
+        it('Should instantiate with a correct Provider from provided connection', async () => {
 
             // Local
             const localProvider = eoslime.init('local', { url: Networks.custom.url }).Provider;
@@ -124,6 +124,14 @@ describe('Providers', function () {
             assert(JSON.stringify(kylinProvider.network.name) == JSON.stringify(Networks.kylin.name));
             assert(JSON.stringify(kylinProvider.network.url) == JSON.stringify(Networks.custom.url));
             assert(JSON.stringify(kylinProvider.network.chainId) == JSON.stringify(Networks.kylin.chainId));
+        });
+
+        it('Should throw if one tries to instantiate with invalid custom Provider', async () => {
+            try {
+                eoslime.init({ customUrl: 'Invalid parameter', chainId: 'Invalid chain id' }).Provider;
+            } catch (error) {
+                assert(error.message.includes('Invalid network. Custom network should have { url: "Your network", chainId: "Your chainId'))
+            }
         });
     });
 
@@ -263,6 +271,60 @@ describe('Providers', function () {
             assert(allWithdrawersInScope.length == 1);
             assert(allWithdrawersInScope[0].quantity == PRODUCED_TOKENS_AMOUNT);
             assert(allWithdrawersInScope[0].token_name == tokenContract.name);
+        });
+
+        it('Should throw if one does not provide "select" argument', async () => {
+            try {
+                const eoslimeInstance = eoslime.init();
+                const Provider = eoslimeInstance.Provider;
+
+                const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
+                const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+
+                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                const tokensHolder = await eoslimeInstance.Account.createRandom();
+                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+
+                await Provider.select().find();
+            } catch (error) {
+                assert(error.message.includes('You should provide select argument'));
+            }
+        });
+
+        it('Should throw if one does not provide "from" argument', async () => {
+            try {
+                const eoslimeInstance = eoslime.init();
+                const Provider = eoslimeInstance.Provider;
+
+                const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
+                const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+
+                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                const tokensHolder = await eoslimeInstance.Account.createRandom();
+                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+
+                await Provider.select('withdrawers').from().find();
+            } catch (error) {
+                assert(error.message.includes('You should provide from argument'));
+            }
+        });
+
+        it('Should throw if one does not provide "scope" argument', async () => {
+            try {
+                const eoslimeInstance = eoslime.init();
+                const Provider = eoslimeInstance.Provider;
+
+                const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
+                const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+
+                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                const tokensHolder = await eoslimeInstance.Account.createRandom();
+                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+
+                await Provider.select('withdrawers').from(faucetContract.name).scope().find();
+            } catch (error) {
+                assert(error.message.includes('You should provide scope argument'));
+            }
         });
     });
 });

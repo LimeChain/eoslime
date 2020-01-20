@@ -132,6 +132,17 @@ describe('Account', function () {
             assertCorrectAccount(kylinAccount);
         });
 
+        it('Should throw when incorrect private key is provided', async () => {
+            try {
+                let LocalAccount = eoslime.init().Account;
+                LocalAccount.load(ACCOUNT_NAME, 'Incorrect private key');
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Invalid private key. Invalid checksum'));
+            }
+        });
+
         describe('Send tokens', function () {
             it('Should send EOS tokens', async () => {
                 const SEND_AMOUNT = '10.0000';
@@ -345,6 +356,17 @@ describe('Account', function () {
 
                 assert(authorityInfo.required_auth.keys.length == 2);
                 assert(authorityInfo.required_auth.keys.find((keyData) => { return keyData.key == keysPair.publicKey }));
+            });
+
+            it('Should throw if one provide an invalid public key', async () => {
+                try {
+                    const account = await Account.createRandom();
+                    await account.addAuthorityKey('Invalid public key');
+
+                    assert(false);
+                } catch (error) {
+                    assert(error.message.includes('Provided public key is not a valid one'));
+                }
             });
         });
 

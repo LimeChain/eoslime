@@ -223,6 +223,17 @@ describe('Multi signature account', function () {
     });
 
     describe('Load functionality', function () {
+        it('Should throw when incorrect private key is provided', async () => {
+            try {
+                const account = await eoslime.Account.createRandom();
+                eoslime.MultiSigAccount.load(account.name, 'Incorrect private key');
+
+                assert(false);
+            } catch (error) {
+                assert(error.message.includes('Invalid private key. Invalid checksum'))
+            }
+        });
+
         it('Should throw if one provide a broken private key on loadKeys', async () => {
             try {
                 const account = await eoslime.Account.createRandom();
