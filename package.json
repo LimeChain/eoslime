@@ -1,11 +1,11 @@
 {
     "name": "eoslime",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
     "main": "index.js",
     "scripts": {
         "test": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/*.js'",
-        "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 173a623c-7a18-475a-a688-66a82fcffe3c"
+        "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },
     "author": "Lyubomir Kiprov (Limechain)",
     "license": "MIT",
