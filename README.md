@@ -9,7 +9,7 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
-<<<<<<< HEAD
+
 # Version 1.0.2 change log
 
 * **Fix ABI Parsing** - https://github.com/LimeChain/eoslime/issues/37
@@ -28,8 +28,6 @@ EOSLIME was able to be initialized only with pre-configured providers connection
 * **Describe how examples in the documentation could be run**
 * **Increase the code coverage from 46% to 90+ %**
 
-=======
->>>>>>> 0b1d6e3dd38e1f4f9553dd0f5705a108b00daebc
 # Version 1.0.1 change log
 
 * **Token** option was added
