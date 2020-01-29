@@ -9,6 +9,7 @@ eoslime-core.js
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
+
 # Version 1.0.2 change log
 
 * **Fix ABI Parsing** - https://github.com/LimeChain/eoslime/issues/37
