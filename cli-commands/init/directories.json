@@ -1,6 +1,0 @@
-{
-    "DEPLOYMENT": "./deployment",
-    "CONTRACTS": "./contracts",
-    "TESTS": "./tests",
-    "PACKAGE_JSON": "./package.json"
-}

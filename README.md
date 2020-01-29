@@ -1,19 +1,17 @@
 [![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) 
 [![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
 
-eoslime.js
+eoslime-core.js
 ============
 
-EOS development and deployment framework based on eosjs.js. The framework's main purpose is to make the process of unit testing, deployment and compilation much simpler and much easier.
+**eoslime-core** is the main SDK used in the eoslime framework. Its goal is to be a general SDK for the EOS blockchain.
 
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
-<<<<<<< HEAD
 # Version 1.0.2 change log
 
 * **Fix ABI Parsing** - https://github.com/LimeChain/eoslime/issues/37
-* **Fix describe.only** - mocha describe.only behaviour has broken with `eoslime test` 
 * **Add more flexibility in eoslime initialization**
 EOSLIME was able to be initialized only with pre-configured providers connections. Now you can connect eoslime to your chain and keep the pre-configured functionality as the **default account on local network**
     ```javascript
@@ -28,8 +26,6 @@ EOSLIME was able to be initialized only with pre-configured providers connection
 * **Describe how examples in the documentation could be run**
 * **Increase the code coverage from 46% to 90+ %**
 
-=======
->>>>>>> 0b1d6e3dd38e1f4f9553dd0f5705a108b00daebc
 # Version 1.0.1 change log
 
 * **Token** option was added
