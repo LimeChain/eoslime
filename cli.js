@@ -5,6 +5,7 @@ const InitCommand = require('./cli-commands/init');
 const TestCommand = require('./cli-commands/test');
 const DeployCommand = require('./cli-commands/deploy');
 const CompileCommand = require('./cli-commands/compile');
+const ShapeCommand = require('./cli-commands/shape');
 
 const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
 
@@ -16,11 +17,13 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
     const testCommand = new TestCommand();
     const deployCommand = new DeployCommand();
     const compileCommand = new CompileCommand();
+    const shapeCommand = new ShapeCommand();
 
     menu.command(initCommand.template, initCommand.description, InitCommand.defineCommandOptions(initCommand), InitCommand.executeWithContext(initCommand));
     menu.command(testCommand.template, testCommand.description, TestCommand.defineCommandOptions(testCommand), TestCommand.executeWithContext(testCommand, MochaFramework));
     menu.command(deployCommand.template, deployCommand.description, DeployCommand.defineCommandOptions(deployCommand), DeployCommand.executeWithContext(deployCommand));
     menu.command(compileCommand.template, compileCommand.description, CompileCommand.defineCommandOptions(compileCommand), CompileCommand.executeWithContext(compileCommand));
+    menu.command(shapeCommand.template, shapeCommand.description, ShapeCommand.defineCommandOptions(shapeCommand), ShapeCommand.executeWithContext(shapeCommand));
 
     menu.command({
         command: '*',
