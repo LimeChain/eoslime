@@ -1,11 +1,9 @@
-const AsyncSoftExec = require('./../helpers/async-soft-exec');
+const git = require('simple-git/promise')()
 
 const Command = require('./../command');
 
 const commandMessages = require('./messages');
 const shapeCommandDefinition = require('./definition');
-
-const git = require('simple-git/promise')()
 
 // eoslime shape --name
 
@@ -18,21 +16,14 @@ class ShapeCommand extends Command {
         try {
             commandMessages.StartShaping();
             const optionsResults = await super.processOptions(args);
-            const shape = optionsResults.name;
 
-            if (!shape.repository) {
-                commandMessages.InvalidShapeName(shape.name);
+            if (!optionsResults.framework) {
+                commandMessages.InvalidShapeName(args.framework);
             }
 
-            await git.init();
-            await git.addRemote('origin', shape.repository);
-            await git.pull('origin', 'master');
+            await git.clone(optionsResults.framework);
 
-            const asyncSoftExec = new AsyncSoftExec('npm install');
-            asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulInstallation(error); });
-            asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulInstallation(); });
-
-            await asyncSoftExec.exec();
+            commandMessages.SuccessfulShaping();
         } catch (error) {
             commandMessages.UnsuccessfulShaping(error);
         }

@@ -1,10 +1,10 @@
-const Option = require('./../../option');
+const Option = require('../../option');
 const repositories = require('./../repositories.json');
 
-class NameOption extends Option {
+class FrameworkOption extends Option {
     constructor() {
         super(
-            'name',
+            'framework',
             {
                 "describe": "The name of the framework that the project will be build up.",
                 "type": "string",
@@ -14,11 +14,8 @@ class NameOption extends Option {
     }
 
     process(optionValue) {
-        return {
-            name: optionValue,
-            repository: repositories[optionValue.toUpperCase()]
-        }
+        return repositories[optionValue];
     }
 }
 
-module.exports = new NameOption();
+module.exports = new FrameworkOption();
