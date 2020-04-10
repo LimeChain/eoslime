@@ -6,7 +6,7 @@ class FrameworkOption extends Option {
         super(
             'framework',
             {
-                "describe": "The name of the framework that the project will be build up.",
+                "describe": "The front-end framework the project will be prepared for you on.",
                 "type": "string",
                 "default": "react"
             }
