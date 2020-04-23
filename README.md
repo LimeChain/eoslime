@@ -9,6 +9,11 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
+# Version 1.0.3 change log
+
+* **eoslime shape --framework=react**    
+A shape represents a simple full project. It includes a contract, tests, deployments and user interface. The idea of that project is for developers to have a ready solution they could start to build on top.    
+<br>React Project implementation - https://github.com/LimeChain/eoslime-shape-react
 
 # Version 1.0.2 change log
 

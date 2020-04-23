@@ -12,7 +12,7 @@ class ShapeCommand extends Command {
         super(shapeCommandDefinition);
     }
 
-    async execute(args) {
+    async execute (args) {
         try {
             commandMessages.StartShaping();
             const optionsResults = await super.processOptions(args);
