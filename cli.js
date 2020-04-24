@@ -30,6 +30,7 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
     const stopCommand = new StopCommand();
     const showCommand = new ShowCommand();
 
+    menu.usage('Usage: $0 [command]');
     menu.command(initCommand.template, initCommand.description, InitCommand.defineCommandOptions(initCommand), InitCommand.executeWithContext(initCommand));
     menu.command(testCommand.template, testCommand.description, TestCommand.defineCommandOptions(testCommand), TestCommand.executeWithContext(testCommand, MochaFramework));
     menu.command(shapeCommand.template, shapeCommand.description, ShapeCommand.defineCommandOptions(shapeCommand), ShapeCommand.executeWithContext(shapeCommand));
@@ -51,7 +52,7 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
         }
     });
 
-    menu.help('help');
+    menu.help();
     menu.version();
     menu.demandCommand();
     menu.recommendCommands();

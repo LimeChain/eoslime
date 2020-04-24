@@ -25,12 +25,16 @@ class Command {
 
     static defineSubcommands(subcommands) {
         return (yargs) => {
+            yargs.usage('Usage: $0 nodeos [command]');
+            
             for (const subcommand of subcommands) {
                 yargs.command(subcommand.template,
                     subcommand.description,
                     this.defineCommandOptions(subcommand),
                     this.executeWithContext(subcommand));
             }
+
+            yargs.demandCommand(1, '');
 
             return yargs;
         }
