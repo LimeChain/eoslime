@@ -1,0 +1,17 @@
+[
+    {
+        "name": "eoslimedavid",
+        "publicKey":"EOS7UyV15G2t47MqRm4WpUP6KTfy9sNU3HHGu9aAgR2A3ktxoBTLv",
+        "privateKey":"5KS9t8LGsaQZxLP6Ln5WK6XwYU8M3AYHcfx1x6zoGmbs34vQsPT"
+    },
+    {
+        "name": "eoslimekevid",
+        "publicKey":"EOS7UyV15G2t47MqRm4WpUP6KTfy9sNU3HHGu9aAgR2A3ktxoBTLv",
+        "privateKey":"5KS9t8LGsaQZxLP6Ln5WK6XwYU8M3AYHcfx1x6zoGmbs34vQsPT"
+    },
+    {
+        "name": "eoslimemarty",
+        "publicKey":"EOS7UyV15G2t47MqRm4WpUP6KTfy9sNU3HHGu9aAgR2A3ktxoBTLv",
+        "privateKey":"5KS9t8LGsaQZxLP6Ln5WK6XwYU8M3AYHcfx1x6zoGmbs34vQsPT"
+    }
+]

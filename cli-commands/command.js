@@ -23,6 +23,19 @@ class Command {
 
     execute(args) { }
 
+    static defineSubcommands(subcommands) {
+        return (yargs) => {
+            for (const subcommand of subcommands) {
+                yargs.command(subcommand.template,
+                    subcommand.description,
+                    this.defineCommandOptions(subcommand),
+                    this.executeWithContext(subcommand));
+            }
+
+            return yargs;
+        }
+    }
+
     static defineCommandOptions(command) {
         return (yargs) => {
             for (const option of command.options) {
