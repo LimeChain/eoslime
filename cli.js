@@ -34,7 +34,7 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
     menu.command(initCommand.template, initCommand.description, InitCommand.defineCommandOptions(initCommand), InitCommand.executeWithContext(initCommand));
     menu.command(testCommand.template, testCommand.description, TestCommand.defineCommandOptions(testCommand), TestCommand.executeWithContext(testCommand, MochaFramework));
     menu.command(shapeCommand.template, shapeCommand.description, ShapeCommand.defineCommandOptions(shapeCommand), ShapeCommand.executeWithContext(shapeCommand));
-    menu.command(nodeosCommand.template, nodeosCommand.description, NodeosCommand.defineSubcommands([startCommand, stopCommand, showCommand]));
+    menu.command(nodeosCommand.template, nodeosCommand.description, NodeosCommand.defineSubcommands(nodeosCommand, [startCommand, stopCommand, showCommand]));
     menu.command(deployCommand.template, deployCommand.description, DeployCommand.defineCommandOptions(deployCommand), DeployCommand.executeWithContext(deployCommand));
     menu.command(compileCommand.template, compileCommand.description, CompileCommand.defineCommandOptions(compileCommand), CompileCommand.executeWithContext(compileCommand));
 

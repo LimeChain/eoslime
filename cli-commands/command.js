@@ -23,9 +23,9 @@ class Command {
 
     execute(args) { }
 
-    static defineSubcommands(subcommands) {
+    static defineSubcommands(command, subcommands) {
         return (yargs) => {
-            yargs.usage('Usage: $0 nodeos [command]');
+            yargs.usage(`Usage: $0 ${command.template} [command]`);
             
             for (const subcommand of subcommands) {
                 yargs.command(subcommand.template,
