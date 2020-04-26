@@ -1,6 +1,5 @@
 const Command = require('../../../command');
 
-const commandMessages = require('./messages');
 const showCommandDefinition = require('./definition');
 
 // eoslime nodeos show --accounts --logs
@@ -11,7 +10,7 @@ class ShowCommand extends Command {
     }
 
     async execute(args) {
-        
+        await super.processOptions(args);
     }
 }
 
