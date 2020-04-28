@@ -15,10 +15,6 @@ class CompileCommand extends Command {
         super(compileCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     async execute(args) {
         try {
             commandMessages.StartCompilation();

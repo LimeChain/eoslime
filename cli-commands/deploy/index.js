@@ -10,10 +10,6 @@ class DeployCommand extends Command {
         super(deployCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     async execute(args) {
         try {
             commandMessages.StartDeployment();

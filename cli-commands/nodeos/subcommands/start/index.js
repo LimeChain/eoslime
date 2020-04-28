@@ -10,10 +10,6 @@ class StartCommand extends Command {
         super(startCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     async execute(args) {
         
     }

@@ -9,10 +9,6 @@ class ShowCommand extends Command {
         super(showCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     async execute(args) {
         await super.processOptions(args);
     }

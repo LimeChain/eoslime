@@ -18,10 +18,6 @@ class InitCommand extends Command {
         super(initCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     defineOptions(yargs) {
         super.defineOptions(yargs, initCommandDefinition.options);
     }

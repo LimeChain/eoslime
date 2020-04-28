@@ -10,10 +10,6 @@ class StopCommand extends Command {
         super(stopCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     async execute(args) {
         
     }

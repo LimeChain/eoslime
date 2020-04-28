@@ -21,9 +21,7 @@ class Command {
         return optionResults;
     }
 
-    define(...params) { }
-
-    defineCommand(...params) {
+    define(...params) {
         return {
             command: this.template,
             description: this.description,

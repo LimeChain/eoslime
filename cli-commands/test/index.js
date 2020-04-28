@@ -13,10 +13,6 @@ class TestCommand extends Command {
         super(testCommandDefinition);
     }
 
-    define(...params) {
-        return this.defineCommand(...params);
-    }
-
     async execute(args, TestFramework) {
         try {
             args.eoslime = eoslime.init();
