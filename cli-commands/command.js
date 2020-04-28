@@ -21,11 +21,18 @@ class Command {
         return optionResults;
     }
 
-    execute(args) { }
+    define(...params) {
+        return {
+            command: this.template,
+            description: this.description,
+            builder: this.defineCommandOptions(),
+            handler: this.defineCommandExecution(...params)
+        }
+    }
 
-    static defineCommandOptions(command) {
+    defineCommandOptions() {
         return (yargs) => {
-            for (const option of command.options) {
+            for (const option of this.options) {
                 yargs = yargs.options(option.name, option.definition);
             }
 
@@ -33,11 +40,14 @@ class Command {
         }
     }
 
-    static executeWithContext(context, ...params) {
+    defineCommandExecution(...params) {
         return async (args) => {
-            await context.execute(args, ...params);
+            await this.execute(args, ...params);
         }
     }
+
+    execute(args) { }
+
 }
 
 module.exports = Command;
