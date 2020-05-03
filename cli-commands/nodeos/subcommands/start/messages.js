@@ -1,10 +1,11 @@
 const chalk = require('chalk');
 
 module.exports = {
-    'StartProcessing': () => { console.log(chalk.magentaBright('===== Processing ... =====')); },
-    'SuccessfulProcessing': () => { console.log(chalk.greenBright(`===== Successful processing =====`)); },
-    'UnsuccessfulProcessing': (error) => {
-        console.log(chalk.redBright(`===== Unsuccessful processing =====`));
+    'NodeosStarting': () => { console.log(chalk.magentaBright('===== Starting nodeos ... =====')); },
+    'NodeosAlreadyRunning': () => { console.log(chalk.redBright(`===== Nodeos is already running =====`)); },
+    'SuccessfulStarting': () => { console.log(chalk.greenBright(`===== Successfully started =====`)); },
+    'UnsuccessfulStarting': (error) => {
+        console.log(chalk.redBright(`===== Unsuccessful starting =====`));
         console.log(error);
     }
 }
