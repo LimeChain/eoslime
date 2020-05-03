@@ -1,5 +1,5 @@
 module.exports = {
     "template": "nodeos",
-    "description": "Enable user to start/stop a local node",
+    "description": "Enable user to manage a local node",
     "options": []
 }

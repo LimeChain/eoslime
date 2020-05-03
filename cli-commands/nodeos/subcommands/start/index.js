@@ -51,7 +51,6 @@ const runNodeos = async function(folderPath) {
     const expression = commandExpression.replace(new RegExp('{path}', 'g'), folderPath);
 
     const asyncSoftExec = new AsyncSoftExec(expression);
-
     asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulStarting(error); });
     asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulStarting(); });
     
