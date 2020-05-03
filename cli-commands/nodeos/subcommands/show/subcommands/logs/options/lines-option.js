@@ -9,8 +9,7 @@ class LinesOption extends Option {
             'lines',
             {
                 "describe": "Number of lines to display",
-                "type": "number",
-                "default": 10
+                "type": "number"
             }
         );
     }
