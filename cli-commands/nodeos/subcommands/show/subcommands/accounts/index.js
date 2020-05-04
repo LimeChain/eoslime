@@ -16,9 +16,11 @@ class AccountsCommand extends Command {
         try {
             commandMessages.PredefinedAccounts();
             showAccounts();
+            return true;
         } catch (error) {
             commandMessages.UnsuccessfulShowing(error);
         }
+        return false;
     }
 }
 

@@ -25,9 +25,13 @@ class TestCommand extends Command {
 
             args.testFramework.setDescribeArgs(args.eoslime);
             args.testFramework.runTests();
+
+            return true;
         } catch (error) {
             console.log(error);
         }
+
+        return false;
     }
 }
 

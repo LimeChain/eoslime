@@ -41,6 +41,8 @@ class InitCommand extends Command {
         asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulInstallation(); });
 
         await asyncSoftExec.exec();
+
+        return true;
     }
 }
 

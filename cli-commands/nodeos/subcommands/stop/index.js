@@ -18,9 +18,11 @@ class StopCommand extends Command {
             commandMessages.StoppingNodeos();
             const optionsResults = await super.processOptions(args);
             await stopNodeos(optionsResults);
+            return true;
         } catch (error) {
             commandMessages.UnsuccessfulStopping(error);
         }
+        return false;
     }
 }
 

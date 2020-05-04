@@ -15,9 +15,11 @@ class DeployCommand extends Command {
             commandMessages.StartDeployment();
             const optionsResults = await super.processOptions(args);
             await runDeploymentScripts(optionsResults.path, optionsResults.network, optionsResults.deployer);
+            return true;
         } catch (error) {
             commandMessages.UnsuccessfulDeployment(error);
         }
+        return false;
     }
 }
 

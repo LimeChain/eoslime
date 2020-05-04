@@ -15,9 +15,11 @@ class LogsCommand extends Command {
         try {
             const optionsResults = await super.processOptions(args);
             await showLogs(optionsResults);
+            return true;
         } catch (error) {
             commandMessages.UnsuccessfulShowing(error);
         }
+        return false;
     }
 }
 

@@ -19,9 +19,11 @@ class StartCommand extends Command {
             commandMessages.StartingNodeos();
             const optionsResults = await super.processOptions(args);
             await startNodeos(optionsResults.path);
+            return true;
         } catch (error) {
             commandMessages.UnsuccessfulStarting(error);
         }
+        return false;
     }
 }
 
