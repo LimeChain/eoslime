@@ -14,8 +14,12 @@ class PathOption extends Option {
     }
 
     async process(optionValue) {
+        const filePath = `${optionValue}/nodeos.log`;
+        
         fileSystemUtil.isDir(optionValue);
-        return optionValue;
+        fileSystemUtil.isFile(filePath);
+
+        return filePath;
     }
 }
 

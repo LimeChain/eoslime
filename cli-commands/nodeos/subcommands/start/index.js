@@ -16,7 +16,7 @@ class StartCommand extends Command {
 
     async execute(args) {
         try {
-            commandMessages.NodeosStarting();
+            commandMessages.StartingNodeos();
             const optionsResults = await super.processOptions(args);
             await startNodeos(optionsResults.path);
         } catch (error) {
@@ -35,7 +35,7 @@ const startNodeos = async function(folderPath) {
     }
 }
 
-const isNodeosRunning = async function() {
+const isNodeosRunning = async function () {
     try {
         let result = await axios.get('http://localhost:8888/v1/chain/get_info');
 
@@ -47,7 +47,7 @@ const isNodeosRunning = async function() {
     return false;
 }
 
-const runNodeos = async function(folderPath) {
+const runNodeos = async function (folderPath) {
     const expression = commandExpression.replace(new RegExp('{path}', 'g'), folderPath);
 
     const asyncSoftExec = new AsyncSoftExec(expression);

@@ -1,7 +1,8 @@
 const pathOption = require('./options/path-option');
+const pidOption = require('./options/pid-option');
 
 module.exports = {
-    "template": "stop [path]",
+    "template": "stop [path] [pid]",
     "description": "Stop a local node",
-    "options": [pathOption]
+    "options": [pathOption, pidOption]
 }

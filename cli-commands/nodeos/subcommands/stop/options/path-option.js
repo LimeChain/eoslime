@@ -1,4 +1,5 @@
 const Option = require('../../../../option');
+const fileSystemUtil = require('../../../../helpers/file-system-util');
 
 class PathOption extends Option {
     constructor() {
@@ -7,12 +8,14 @@ class PathOption extends Option {
             {
                 "describe": "Path to node folder",
                 "type": "string",
+                "default": "."
             }
         );
     }
 
-    process() {
-        
+    process(optionValue) {
+        fileSystemUtil.isDir(optionValue);
+        return optionValue;
     }
 }
 

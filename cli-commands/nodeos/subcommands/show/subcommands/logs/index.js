@@ -1,10 +1,8 @@
+const exec = require('child_process').exec;
 const Command = require('../../../../../command');
-const readLastLines = require('read-last-lines');
 
 const commandMessages = require('./messages');
 const showCommandDefinition = require('./definition');
-
-const fileSystemUtil = require('../../../..../../../../helpers/file-system-util');
 
 // eoslime nodeos show logs --path --lines
 
@@ -23,11 +21,14 @@ class LogsCommand extends Command {
     }
 }
 
-const showLogs = async function(result) {
-    const filePath = `${result.path}/nodeos.log`;
-    fileSystemUtil.isFile(filePath);
-    let logs = await readLastLines.read(filePath, result.lines);
-    commandMessages.NodeosLogs(logs);
+const showLogs = async function (result) {
+    exec(`tail -n ${result.lines} ${result.path}`, (error, stdout, stderr) => {
+        if (error) {
+            throw new Error(`Could not show logs, due to '${error}'`);
+        }
+
+        commandMessages.NodeosLogs(stdout);
+    });
 }
 
 module.exports = LogsCommand;
