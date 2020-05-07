@@ -22,9 +22,19 @@ class BaseProvider {
         })
     }
 
-    select(table) {
+    select (table) {
         const tableReader = new TableReader(this.eos);
         return tableReader.select(table);
+    }
+
+    async getABI (contractName) {
+        const result = await this.eos.getAbi(contractName);
+        return result.abi;
+    }
+
+    async getRawWASM (contractName) {
+        const result = await this.eos.getRawCodeAndAbi(contractName);
+        return result.wasm;
     }
 }
 
