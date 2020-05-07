@@ -1,47 +1,96 @@
-const Contract = require('./contract');
+const is = require('../helpers/is');
+const contractFilesReader = require('../helpers/contract-files-reader');
+
+const ContractInitializator = require('./contract-initializator');
 const AccountFactory = require('../account/normal-account/account-factory');
 
-const ContractDeployer = require('./contract-deployer');
-
-const is = require('./../helpers/is');
-const contractFilesReader = require('./..//helpers/contract-files-reader');
-
-const EVENTS = {
-    'init': 'init',
+const defaultDeployOptions = {
+    inline: false
 }
 
-class ContractFactory extends ContractDeployer {
+const deployOptionsActions = {
+    inline: async (contract, inline) => {
+        if (inline) {
+            return contract.makeInline();
+        }
+    }
+}
+
+const EVENTS = {
+    'deploy': 'deploy'
+}
+
+class ContractFactory extends ContractInitializator {
 
     constructor(provider) {
         super(provider);
         Object.assign(this.events, EVENTS);
     }
 
-    fromFile(abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        let abiInterface = abi;
-        if (contractFilesReader.doesAbiExists(abi)) {
-            abiInterface = contractFilesReader.readABIFromFile(abi);
-        }
-
-        const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
-        this.emit(EVENTS.init, contract);
-
-        return contract;
-    }
-
-    async at(contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        const abiInterface = (await this.provider.eos.getAbi(contractName)).abi;
-        const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
-
-        this.emit(EVENTS.init, contract);
-        return contract;
-    }
-
-    async deploy(wasmPath, abiPath, options) {
+    async deploy (wasmPath, abiPath, options) {
         const accountFactory = new AccountFactory(this.provider);
         const newContractAccount = await accountFactory.createRandom();
 
-        return super.deployOnAccount(wasmPath, abiPath, newContractAccount, options);
+        return this.deployOnAccount(wasmPath, abiPath, newContractAccount, options);
+    }
+
+    async deployOnAccount (wasmPath, abiPath, contractAccount, options = defaultDeployOptions) {
+        const abi = contractFilesReader.readABIFromFile(abiPath);
+        const wasm = contractFilesReader.readWASMFromFile(wasmPath);
+
+        const contract = await this.__processDeployment(
+            wasm,
+            abi,
+            contractAccount,
+            options
+        );
+
+        return contract;
+    }
+
+    async deployRaw (wasm, abi, options) {
+        const accountFactory = new AccountFactory(this.provider);
+        const newContractAccount = await accountFactory.createRandom();
+
+        return this.deployRawOnAccount(wasm, abi, newContractAccount, options);
+    }
+
+    async deployRawOnAccount (wasm, abi, contractAccount, options = defaultDeployOptions) {
+        const contract = await this.__processDeployment(
+            Buffer.from(wasm, 'base64'),
+            abi,
+            contractAccount,
+            options
+        );
+
+        return contract;
+    }
+
+    async __processDeployment (wasm, abi, contractAccount, options = defaultDeployOptions) {
+        is(contractAccount).instanceOf('BaseAccount');
+
+        const setCodeTxReceipt = await this.provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
+        const setAbiTxReceipt = await this.provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
+
+        const contract = this.fromFile(abi, contractAccount.name, contractAccount);
+
+        options = Object.assign(defaultDeployOptions, options);
+        await executeOptions(contract, options);
+
+        this.emit(EVENTS.deploy, [setCodeTxReceipt, setAbiTxReceipt], contract);
+
+        return contract;
+    }
+}
+
+const executeOptions = async function (contract, options) {
+    const optionsKeys = Object.keys(options);
+    for (let i = 0; i < optionsKeys.length; i++) {
+        const optionKey = optionsKeys[i];
+
+        if (deployOptionsActions[optionKey]) {
+            await deployOptionsActions[optionKey](contract, options[optionKey]);
+        }
     }
 }
 

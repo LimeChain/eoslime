@@ -327,4 +327,38 @@ describe('Providers', function () {
             }
         });
     });
+
+    describe('Retrieve contract ABI', function () {
+        it('Should retrieve contract ABI', async () => {
+            const eoslimeInstance = eoslime.init();
+            const Provider = eoslimeInstance.Provider;
+
+            const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+
+            const contractABI = await Provider.getABI(faucetContract.name);
+
+            assert(faucetContract.abi.version == contractABI.version);
+            assert(JSON.stringify(faucetContract.abi.types) == JSON.stringify(contractABI.types));
+            assert(JSON.stringify(faucetContract.abi.structs) == JSON.stringify(contractABI.structs));
+            assert(JSON.stringify(faucetContract.abi.actions) == JSON.stringify(contractABI.actions));
+
+            assert(faucetContract.abi.tables[0].name == contractABI.tables[0].name);
+            assert(faucetContract.abi.tables[0].type == contractABI.tables[0].type);
+            assert(faucetContract.abi.tables[0].index_type == contractABI.tables[0].index_type);
+            assert(JSON.stringify(faucetContract.abi.tables[0].key_names) == JSON.stringify(contractABI.tables[0].key_names));
+            assert(JSON.stringify(faucetContract.abi.tables[0].key_types) == JSON.stringify(contractABI.tables[0].key_types));
+        });
+    });
+
+    describe('Retrieve contract raw WASM', function () {
+        it('Should retrieve contract raw WASM', async () => {
+            const eoslimeInstance = eoslime.init();
+            const Provider = eoslimeInstance.Provider;
+
+            const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+
+            const contractWASM = await Provider.getRawWASM(faucetContract.name);
+            assert(contractWASM.endsWith('='), 'Not correctly encoded WASM');
+        });
+    });
 });

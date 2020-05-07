@@ -3,6 +3,7 @@ const FunctionsFactory = require('./contract-function/functions-factory');
 
 class Contract {
     constructor(provider, abi, contractName, contractExecutorAccount) {
+        this.abi = abi;
         this.name = contractName;
         this.provider = provider;
         this.executor = contractExecutorAccount;
@@ -11,7 +12,7 @@ class Contract {
         declareTableGetters.call(this, abi);
     }
 
-    async makeInline() {
+    async makeInline () {
         is(this.executor).instanceOf('BaseAccount', 'executor is missing');
 
         if (this.name != this.executor.name) {
@@ -19,6 +20,11 @@ class Contract {
         }
 
         return this.executor.addPermission("eosio.code");
+    }
+
+    async getRawWASM () {
+        const wasm = await this.provider.getRawWASM(this.name);
+        return wasm;
     }
 }
 

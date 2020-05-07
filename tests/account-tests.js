@@ -63,7 +63,7 @@ describe('Account', function () {
     /*
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
     */
-    async function createEOSToken() {
+    async function createEOSToken () {
         const TOKEN_ABI_PATH = './tests/testing-contracts/compiled/eosio.token.abi';
         const TOKEN_WASM_PATH = './tests/testing-contracts/compiled/eosio.token.wasm';
         const TOTAL_SUPPLY = '1000000000.0000 SYS';
@@ -82,7 +82,7 @@ describe('Account', function () {
         await createEOSToken();
     });
 
-    function assertCorrectAccount(account) {
+    function assertCorrectAccount (account) {
         assert(account.name == ACCOUNT_NAME, 'Incorrect name');
         assert(account.privateKey == ACCOUNT_PRIVATE_KEY, 'Incorrect private key');
         assert(account.publicKey == ACCOUNT_PUBLIC_KEY, 'Incorrect public key');
