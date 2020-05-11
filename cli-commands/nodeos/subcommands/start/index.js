@@ -1,11 +1,15 @@
-const axios = require('axios');
+const path = require('path');
 
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../helpers/async-soft-exec');
 
+const template = require('./template');
+
 const commandMessages = require('./messages');
-const commandExpression = require('./settings').command;
 const startCommandDefinition = require('./definition');
+const fileSystemUtil = require('../../../helpers/file-system-util');
+
+const DEFAULT_NODEOS_DIR = '/tmp/nodeos';
 
 // eoslime nodeos start --path
 
@@ -15,48 +19,50 @@ class StartCommand extends Command {
     }
 
     async execute(args) {
+        let nodeosDir;
+
         try {
             commandMessages.StartingNodeos();
+
             const optionsResults = await super.processOptions(args);
-            await startNodeos(optionsResults.path);
-            return true;
+
+            const configJsonFile = path.join(__dirname, '../../config.json');
+
+            if (fileSystemUtil.exists(configJsonFile)) {
+                nodeosDir = require(configJsonFile).nodeos_dir;
+            }
+            else {
+                nodeosDir = optionsResults.path ? optionsResults.path : DEFAULT_NODEOS_DIR;
+
+                createNodeosDir(nodeosDir);
+                storeNodeosConfig({ nodeos_dir: nodeosDir });
+            }
+
+            if (fileSystemUtil.exists(path.join(nodeosDir, 'eosd.pid'))) {
+                commandMessages.NodeosAlreadyRunning();
+                return true;
+            }
+    
+            const asyncSoftExec = new AsyncSoftExec(template(nodeosDir));
+            asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulStarting(error); });
+            asyncSoftExec.onSuccess(() => { commandMessages.SuccessfullyStarted(); });
+            
+            await asyncSoftExec.exec();
         } catch (error) {
             commandMessages.UnsuccessfulStarting(error);
         }
-        return false;
+
+        return true;
     }
 }
 
-const startNodeos = async function(folderPath) {
-    const nodeosRunning = await isNodeosRunning();
-
-    if (nodeosRunning) {
-        commandMessages.NodeosAlreadyRunning();
-    } else {
-        await runNodeos(folderPath);
-    }
+const createNodeosDir = function (dirPath) {
+    fileSystemUtil.createDir(dirPath);
 }
 
-const isNodeosRunning = async function () {
-    try {
-        let result = await axios.get('http://localhost:8888/v1/chain/get_info');
-
-        if (result.status == 200) {
-            return true;
-        }
-    } catch (error) {}
-    
-    return false;
-}
-
-const runNodeos = async function (folderPath) {
-    const expression = commandExpression.replace(new RegExp('{path}', 'g'), folderPath);
-
-    const asyncSoftExec = new AsyncSoftExec(expression);
-    asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulStarting(error); });
-    asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulStarting(); });
-    
-    await asyncSoftExec.exec();
+const storeNodeosConfig = function (config) {
+    const configContent = JSON.stringify(config);
+    fileSystemUtil.writeFile(CONFIG_FILE, configContent);
 }
 
 module.exports = StartCommand;

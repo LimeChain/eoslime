@@ -6,7 +6,7 @@ module.exports = {
         console.log(logs);
     },
     'UnsuccessfulShowing': (error) => {
-        console.log(chalk.redBright(`===== Unsuccessful showing logs =====`));
+        console.log(chalk.redBright(`===== Logs has not been shown =====`));
         console.log(error);
     }
 }

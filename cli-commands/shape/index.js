@@ -24,13 +24,11 @@ class ShapeCommand extends Command {
             await git.clone(optionsResults.framework);
 
             commandMessages.SuccessfulShaping();
-
-            return true;
         } catch (error) {
             commandMessages.UnsuccessfulShaping(error);
         }
 
-        return false;
+        return true;
     }
 }
 

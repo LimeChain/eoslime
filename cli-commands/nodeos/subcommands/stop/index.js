@@ -1,12 +1,13 @@
-const axios = require('axios');
+const path = require('path');
 
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../helpers/async-soft-exec');
 
 const commandMessages = require('./messages');
 const stopCommandDefinition = require('./definition');
+const fileSystemUtil = require('../../../helpers/file-system-util');
 
-// eoslime nodeos stop --path --pid
+// eoslime nodeos stop
 
 class StopCommand extends Command {
     constructor() {
@@ -14,54 +15,40 @@ class StopCommand extends Command {
     }
 
     async execute(args) {
+        let nodeosDir;
+        let nodeosPid;
+
         try {
             commandMessages.StoppingNodeos();
-            const optionsResults = await super.processOptions(args);
-            await stopNodeos(optionsResults);
-            return true;
+
+            const configJsonFile = path.join(__dirname, '../../config.json');
+            
+            if (fileSystemUtil.exists(configJsonFile)) {
+                nodeosDir = require(configJsonFile).nodeos_dir;
+                const nodeosPidFile = path.join(nodeosDir, 'eosd.pid');
+
+                if (fileSystemUtil.exists(nodeosPidFile)) {
+                    nodeosPid = fileSystemUtil.readFile(nodeosPidFile);
+                }
+            }
+
+            if (nodeosPid) {
+                await fileSystemUtil.recursivelyDeleteDir(nodeosDir, false);
+
+                const asyncKillExec = new AsyncSoftExec(`kill ${nodeosPid}`);
+                asyncKillExec.onError((error) => commandMessages.UnsuccessfulStopping(error));
+                asyncKillExec.onSuccess(() => commandMessages.SuccessfullyStopped());
+
+                await asyncKillExec.exec();
+            } else {
+                commandMessages.NoRunningNodeos();
+            }
         } catch (error) {
             commandMessages.UnsuccessfulStopping(error);
         }
-        return false;
+
+        return true;
     }
-}
-
-const stopNodeos = async function (result) {
-    const nodeosRunning = await isNodeosRunning();
-
-    if (!nodeosRunning) {
-        commandMessages.NoRunningNodeos();
-    } else {
-        await stopAndClean(result);
-    }
-}
-
-const isNodeosRunning = async function () {
-    try {
-        let result = await axios.get('http://localhost:8888/v1/chain/get_info');
-
-        if (result.status == 200) {
-            return true;
-        }
-    } catch (error) {}
-    
-    return false;
-}
-
-const stopAndClean = async function (result) {
-    const killCommand = result.pid ? `kill ${result.pid}` : `pkill nodeos`;
-
-    const asyncKillExec = new AsyncSoftExec(killCommand);
-    asyncKillExec.onError((error) => commandMessages.UnsuccessfulProcessTermination(error));
-    asyncKillExec.onSuccess(() => commandMessages.SuccessfulProcessTermination());
-    await asyncKillExec.exec();
-
-    const asyncCleanExec = new AsyncSoftExec(`rm -rf ${result.path}/*`);
-    asyncCleanExec.onError((error) => commandMessages.UnsuccessfulCleanUp(error));
-    asyncCleanExec.onSuccess(() => commandMessages.SuccessfulCleanUp());
-    await asyncCleanExec.exec();
-
-    commandMessages.SuccessfulStopping();
 }
 
 module.exports = StopCommand;

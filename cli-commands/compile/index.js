@@ -32,7 +32,6 @@ class CompileCommand extends Command {
                     asyncSoftExec.onSuccess(() => commandMessages.SuccessfulCompilationOfContract(contractPath.fileName));
 
                     await asyncSoftExec.exec();
-                    return true;
                 }
             } else {
                 commandMessages.ContractNotExisting();
@@ -40,7 +39,7 @@ class CompileCommand extends Command {
         } catch (error) {
             commandMessages.UnsuccessfulCompilation(error);
         }
-        return false;
+        return true;
     }
 }
 

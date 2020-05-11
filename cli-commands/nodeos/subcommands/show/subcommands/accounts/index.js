@@ -1,8 +1,9 @@
-const Command = require('../../../../../command');
 const AccountsTable = require('./accounts-table');
+const Command = require('../../../../../command');
+
+const accounts = require('./accounts.json');
 
 const commandMessages = require('./messages');
-const accounts = require('./accounts.json');
 const accountsCommandDefinition = require('./definition');
 
 // eoslime nodeos show accounts
@@ -14,22 +15,19 @@ class AccountsCommand extends Command {
 
     async execute(args) {
         try {
-            commandMessages.PredefinedAccounts();
-            showAccounts();
-            return true;
+            commandMessages.PreloadedAccounts();
+            
+            let accountsTable = new AccountsTable();
+            for (let i = 0; i < accounts.length; i++) {
+                accountsTable.addRow([accounts[i].name, accounts[i].publicKey, accounts[i].privateKey]);
+            }
+            accountsTable.draw();
         } catch (error) {
             commandMessages.UnsuccessfulShowing(error);
         }
-        return false;
+        
+        return true;
     }
-}
-
-const showAccounts = function () {
-    let accountsTable = new AccountsTable();
-    accounts.forEach(account => {
-        accountsTable.addRow([account.name, account.publicKey, account.privateKey]);
-    });
-    accountsTable.draw();
 }
 
 module.exports = AccountsCommand;

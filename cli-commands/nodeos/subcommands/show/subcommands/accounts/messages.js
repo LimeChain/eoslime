@@ -1,9 +1,9 @@
 const chalk = require('chalk');
 
 module.exports = {
-    'PredefinedAccounts': () => { console.log(chalk.magentaBright('===== Predefined accounts =====')); },
+    'PreloadedAccounts': () => { console.log(chalk.magentaBright('===== Preloaded accounts =====')); },
     'UnsuccessfulShowing': (error) => {
-        console.log(chalk.redBright(`===== Unsuccessful showing accounts =====`));
+        console.log(chalk.redBright(`===== Accounts has not been shown =====`));
         console.log(error);
     }
 }

@@ -12,8 +12,8 @@ class LinesOption extends Option {
         );
     }
 
-    async process(optionValue) {
-        return optionValue ? optionValue : 10;
+    process(optionValue) {
+        return optionValue;
     }
 }
 
