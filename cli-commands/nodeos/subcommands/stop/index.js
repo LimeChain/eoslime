@@ -15,34 +15,31 @@ class StopCommand extends Command {
     }
 
     async execute(args) {
-        let nodeosDir;
-        let nodeosPid;
-
         try {
             commandMessages.StoppingNodeos();
 
             const configJsonFile = path.join(__dirname, '../../config.json');
             
             if (fileSystemUtil.exists(configJsonFile)) {
-                nodeosDir = require(configJsonFile).nodeos_dir;
+                const nodeosDir = require(configJsonFile).nodeos_dir;
                 const nodeosPidFile = path.join(nodeosDir, 'eosd.pid');
 
                 if (fileSystemUtil.exists(nodeosPidFile)) {
-                    nodeosPid = fileSystemUtil.readFile(nodeosPidFile);
+                    const nodeosPid = fileSystemUtil.readFile(nodeosPidFile);
+
+                    fileSystemUtil.rmFile(configJsonFile);
+                    await fileSystemUtil.recursivelyDeleteDir(nodeosDir);
+
+                    const asyncKillExec = new AsyncSoftExec(`kill ${nodeosPid}`);
+                    asyncKillExec.onError((error) => commandMessages.UnsuccessfulStopping(error));
+                    asyncKillExec.onSuccess(() => commandMessages.SuccessfullyStopped());
+
+                    await asyncKillExec.exec();
+                    return true;
                 }
             }
 
-            if (nodeosPid) {
-                await fileSystemUtil.recursivelyDeleteDir(nodeosDir, false);
-
-                const asyncKillExec = new AsyncSoftExec(`kill ${nodeosPid}`);
-                asyncKillExec.onError((error) => commandMessages.UnsuccessfulStopping(error));
-                asyncKillExec.onSuccess(() => commandMessages.SuccessfullyStopped());
-
-                await asyncKillExec.exec();
-            } else {
-                commandMessages.NoRunningNodeos();
-            }
+            commandMessages.NoRunningNodeos();
         } catch (error) {
             commandMessages.UnsuccessfulStopping(error);
         }

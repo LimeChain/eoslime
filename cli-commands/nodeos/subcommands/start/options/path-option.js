@@ -1,4 +1,4 @@
-const fileSystemUtil = require('../../../../helpers/file-system-util');
+const path = require('path');
 
 const Option = require('../../../../option');
 
@@ -14,7 +14,7 @@ class PathOption extends Option {
     }
 
     async process(optionValue) {
-        return optionValue;
+        return path.resolve(optionValue);
     }
 }
 

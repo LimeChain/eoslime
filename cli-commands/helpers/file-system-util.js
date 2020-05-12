@@ -1,5 +1,5 @@
 const fs = require('fs');
-
+const path = require('path');
 
 const fileSystemUtils = {
     createDir: (dirName) => {
@@ -56,7 +56,7 @@ const fileSystemUtils = {
             });
         });
     },
-    recursivelyDeleteDir: async function (dirPath, deleteSelf) {
+    recursivelyDeleteDir: async function (dirPath) {
         return new Promise(async (resolve, reject) => {
             fs.readdir(dirPath, async function (err, filenames) {
                 if (err) {
@@ -67,15 +67,13 @@ const fileSystemUtils = {
                     const filename = filenames[i];
     
                     if (fileSystemUtils.isDir(path.join(dirPath, filename))) {
-                        await fileSystemUtils.recursivelyDeleteDir(path.join(dirPath, filename), true);
+                        await fileSystemUtils.recursivelyDeleteDir(path.join(dirPath, filename));
                     } else {
                         fileSystemUtils.rmFile(path.join(dirPath, filename));
                     }
                 }
     
-                if (deleteSelf) {
-                    fileSystemUtils.rmDir(dirPath);
-                }
+                fileSystemUtils.rmDir(dirPath);
     
                 resolve();
             });

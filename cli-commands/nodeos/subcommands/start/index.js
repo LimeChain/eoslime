@@ -9,7 +9,8 @@ const commandMessages = require('./messages');
 const startCommandDefinition = require('./definition');
 const fileSystemUtil = require('../../../helpers/file-system-util');
 
-const DEFAULT_NODEOS_DIR = '/tmp/nodeos';
+const defaultNodeosDir = '/tmp/nodeos';
+const configJsonFile = path.join(__dirname, '../../config.json');
 
 // eoslime nodeos start --path
 
@@ -28,15 +29,22 @@ class StartCommand extends Command {
 
             const configJsonFile = path.join(__dirname, '../../config.json');
 
-            if (fileSystemUtil.exists(configJsonFile)) {
-                nodeosDir = require(configJsonFile).nodeos_dir;
+            if (!fileSystemUtil.exists(configJsonFile)) {
+                nodeosDir = optionsResults.path ? optionsResults.path : defaultNodeosDir;
             }
             else {
-                nodeosDir = optionsResults.path ? optionsResults.path : DEFAULT_NODEOS_DIR;
+                nodeosDir = require(configJsonFile).nodeos_dir;
 
-                createNodeosDir(nodeosDir);
-                storeNodeosConfig({ nodeos_dir: nodeosDir });
+                if (fileSystemUtil.exists(path.join(nodeosDir, 'eosd.pid'))) {
+                    commandMessages.NodeosAlreadyRunning();
+                    return true;
+                }
+
+                nodeosDir = optionsResults.path ? optionsResults.path : nodeosDir;
             }
+
+            createNodeosDir(nodeosDir);
+            storeNodeosConfig({ nodeos_dir: nodeosDir });
 
             if (fileSystemUtil.exists(path.join(nodeosDir, 'eosd.pid'))) {
                 commandMessages.NodeosAlreadyRunning();
@@ -62,7 +70,7 @@ const createNodeosDir = function (dirPath) {
 
 const storeNodeosConfig = function (config) {
     const configContent = JSON.stringify(config);
-    fileSystemUtil.writeFile(CONFIG_FILE, configContent);
+    fileSystemUtil.writeFile(configJsonFile, configContent);
 }
 
 module.exports = StartCommand;
