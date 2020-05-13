@@ -27,6 +27,8 @@ class ShapeCommand extends Command {
         } catch (error) {
             commandMessages.UnsuccessfulShaping(error);
         }
+
+        return true;
     }
 }
 

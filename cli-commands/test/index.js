@@ -28,6 +28,8 @@ class TestCommand extends Command {
         } catch (error) {
             console.log(error);
         }
+
+        return true;
     }
 }
 

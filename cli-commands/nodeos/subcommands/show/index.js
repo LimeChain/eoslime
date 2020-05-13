@@ -1,16 +1,18 @@
-const Command = require('../../../command');
+const ParentCommand = require('../../../parent-command');
+
+const LogsCommand = require('./subcommands/logs');
+const AccountsCommand = require('./subcommands/accounts');
 
 const showCommandDefinition = require('./definition');
 
-// eoslime nodeos show --accounts --logs
+// eoslime nodeos show
 
-class ShowCommand extends Command {
+class ShowCommand extends ParentCommand {
     constructor() {
         super(showCommandDefinition);
-    }
 
-    async execute(args) {
-        await super.processOptions(args);
+        this.subcommands.push(new AccountsCommand());
+        this.subcommands.push(new LogsCommand());
     }
 }
 

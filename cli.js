@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const exec = require('child_process').exec;
+const CommandDefiner = require('./cli-commands/command-definer');
 
 const InitCommand = require('./cli-commands/init');
 const TestCommand = require('./cli-commands/test');
@@ -14,6 +15,8 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
 
     let menu = require('yargs');
 
+    const commandDefiner = new CommandDefiner(menu);
+
     const initCommand = new InitCommand();
     const testCommand = new TestCommand();
     const shapeCommand = new ShapeCommand();
@@ -21,14 +24,12 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
     const deployCommand = new DeployCommand();
     const compileCommand = new CompileCommand();
 
-    menu.usage('Usage: $0 [command]');
-
-    menu.command(initCommand.define());
-    menu.command(testCommand.define(MochaFramework));
-    menu.command(shapeCommand.define());
-    menu.command(nodeosCommand.define());
-    menu.command(deployCommand.define());
-    menu.command(compileCommand.define());
+    menu.command(commandDefiner.define(initCommand));
+    menu.command(commandDefiner.define(testCommand, MochaFramework));
+    menu.command(commandDefiner.define(shapeCommand));
+    menu.command(commandDefiner.define(nodeosCommand));
+    menu.command(commandDefiner.define(deployCommand));
+    menu.command(commandDefiner.define(compileCommand));
 
     menu.command({
         command: '*',

@@ -15,13 +15,13 @@ class AsyncSoftExec {
 
     async exec() {
         return new Promise((resolve, reject) => {
-            exec(this.command, (error) => {
+            exec(this.command, (error, stdout) => {
                 if (error) {
                     this.errorCallback(error);
                     return void resolve(true);
                 }
 
-                this.successCallback();
+                this.successCallback(stdout);
                 return void resolve(true);
             });
         });

@@ -1,5 +1,5 @@
 const fs = require('fs');
-
+const path = require('path');
 
 const fileSystemUtils = {
     createDir: (dirName) => {
@@ -56,6 +56,29 @@ const fileSystemUtils = {
             });
         });
     },
+    recursivelyDeleteDir: async function (dirPath) {
+        return new Promise(async (resolve, reject) => {
+            fs.readdir(dirPath, async function (err, filenames) {
+                if (err) {
+                    return void reject(err.message);
+                }
+    
+                for (let i = 0; i < filenames.length; i++) {
+                    const filename = filenames[i];
+    
+                    if (fileSystemUtils.isDir(path.join(dirPath, filename))) {
+                        await fileSystemUtils.recursivelyDeleteDir(path.join(dirPath, filename));
+                    } else {
+                        fileSystemUtils.rmFile(path.join(dirPath, filename));
+                    }
+                }
+    
+                fileSystemUtils.rmDir(dirPath);
+    
+                resolve();
+            });
+        });
+    },
     forEachFileInDir: (dirPath, actionCallback) => {
         fs.readdir(dirPath, function (err, filenames) {
             if (err) {
@@ -69,6 +92,22 @@ const fileSystemUtils = {
     },
     exists: (path) => {
         return fs.existsSync(path);
+    },
+    readFile: (filePath) => {
+        return fs.readFileSync(filePath);
+    },
+    writeFile: (filePath, fileContent) => {
+        try {
+            fs.writeFileSync(filePath, fileContent);
+        } catch (err) {
+            throw new Error(`Storing content failed: ${err.message}`)
+        }
+    },
+    rmFile: (filePath) => {
+        fs.unlinkSync(filePath);
+    },
+    rmDir: (dirPath) => {
+        fs.rmdirSync(dirPath);
     }
 }
 

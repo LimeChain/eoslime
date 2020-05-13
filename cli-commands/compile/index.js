@@ -39,6 +39,7 @@ class CompileCommand extends Command {
         } catch (error) {
             commandMessages.UnsuccessfulCompilation(error);
         }
+        return true;
     }
 }
 

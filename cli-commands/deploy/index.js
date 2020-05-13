@@ -18,6 +18,7 @@ class DeployCommand extends Command {
         } catch (error) {
             commandMessages.UnsuccessfulDeployment(error);
         }
+        return true;
     }
 }
 

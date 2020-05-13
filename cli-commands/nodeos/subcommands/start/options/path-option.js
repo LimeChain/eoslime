@@ -1,3 +1,5 @@
+const path = require('path');
+
 const Option = require('../../../../option');
 
 class PathOption extends Option {
@@ -5,14 +7,14 @@ class PathOption extends Option {
         super(
             'path',
             {
-                "describe": "Path to node folder",
-                "type": "string",
+                "describe": "The path nodeos data will be stored",
+                "type": "string"
             }
         );
     }
 
-    process() {
-        
+    async process(optionValue) {
+        return path.resolve(optionValue);
     }
 }
 

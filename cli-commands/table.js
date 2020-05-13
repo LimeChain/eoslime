@@ -1,13 +1,9 @@
 const chalk = require('chalk').default;
 const CLITable = require('cli-table');
 
-const TABLE_HEAD = {
-    head: ['Account', 'Public Key', 'Private Key']
-}
-
-class ReportTable {
-    constructor() {
-        this.table = new CLITable(TABLE_HEAD);
+class Table {
+    constructor(tableHead) {
+        this.table = new CLITable(tableHead);
     }
 
     addRow(rowData) {
@@ -15,7 +11,8 @@ class ReportTable {
     }
 
     addSection(sectionName, sectionRows) {
-        this.table.push({ [chalk.cyanBright(sectionName)]: ['', '', ''] });
+        this.table.push({ [chalk.cyanBright(sectionName)]: 
+            addEmptyColumns(this.table.options.head.length) });
 
         if (sectionRows) {
             for (let i = 0; i < sectionRows.length; i++) {
@@ -31,4 +28,14 @@ class ReportTable {
     }
 }
 
-module.exports = ReportTable;
+const addEmptyColumns = function (n) {
+    let arr = [];
+
+    for (let i = 0; i < n - 1; i++) {
+        arr[i] = '';
+    }
+
+    return arr;
+}
+
+module.exports = Table;

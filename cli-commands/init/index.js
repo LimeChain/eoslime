@@ -1,5 +1,4 @@
 const AsyncSoftExec = require('./../helpers/async-soft-exec');
-
 const Command = require('./../command');
 
 const initDirectories = require('./directories');
@@ -16,10 +15,6 @@ class InitCommand extends Command {
 
     constructor() {
         super(initCommandDefinition);
-    }
-
-    defineOptions(yargs) {
-        super.defineOptions(yargs, initCommandDefinition.options);
     }
 
     async execute(args) {
@@ -41,6 +36,8 @@ class InitCommand extends Command {
         asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulInstallation(); });
 
         await asyncSoftExec.exec();
+
+        return true;
     }
 }
 
