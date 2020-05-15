@@ -5,6 +5,7 @@ class Command {
         this.description = commandDefinition.description || '';
         this.options = commandDefinition.options || [];
         this.subcommands = [];
+        this.params = [];
     }
 
     async processOptions(args) {

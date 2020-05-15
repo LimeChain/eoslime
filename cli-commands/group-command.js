@@ -1,12 +1,12 @@
 const Command = require('./command');
 
-class ParentCommand extends Command {
+class GroupCommand extends Command {
     constructor(commandDefinition) {
         super(commandDefinition);
     }
 
     async execute (args) {
-        if (validate(args, this.options)) {
+        if (optionsProvided(args, this.options)) {
             await super.processOptions(args);
             return true;
         }
@@ -15,7 +15,7 @@ class ParentCommand extends Command {
     }
 }
 
-const validate = function (args, commandOptions) {
+const optionsProvided = function (args, commandOptions) {
     for (let i = 0; i < commandOptions.length; i++) {
         const option = commandOptions[i];
         if (args[option.name]) {
@@ -26,4 +26,4 @@ const validate = function (args, commandOptions) {
     return false;
 }
 
-module.exports = ParentCommand;
+module.exports = GroupCommand;

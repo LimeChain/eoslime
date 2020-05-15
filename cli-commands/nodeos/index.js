@@ -1,20 +1,22 @@
-const ParentCommand = require('../parent-command');
+const GroupCommand = require('../group-command');
 
 const StartCommand = require('./subcommands/start');
 const StopCommand = require('./subcommands/stop');
-const ShowCommand = require('./subcommands/show');
+const LogsCommand = require('./subcommands/logs');
+const AccountsCommand = require('./subcommands/accounts');
 
 const nodeosCommandDefinition = require('./definition');
 
-// eoslime nodeos <start|stop|show>
+// eoslime nodeos <start|stop|logs|accounts>
 
-class NodeosCommand extends ParentCommand {
+class NodeosCommand extends GroupCommand {
     constructor() {
         super(nodeosCommandDefinition);
 
         this.subcommands.push(new StartCommand());
         this.subcommands.push(new StopCommand());
-        this.subcommands.push(new ShowCommand());
+        this.subcommands.push(new LogsCommand());
+        this.subcommands.push(new AccountsCommand());
     }
 }
 

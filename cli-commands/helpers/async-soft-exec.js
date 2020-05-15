@@ -3,6 +3,9 @@ const exec = require('child_process').exec;
 class AsyncSoftExec {
     constructor(command) {
         this.command = command;
+
+        this.errorCallback = () => {};
+        this.successCallback = () => {};
     }
 
     onError(callback) {

@@ -18,14 +18,14 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
     const commandDefiner = new CommandDefiner(menu);
 
     const initCommand = new InitCommand();
-    const testCommand = new TestCommand();
+    const testCommand = new TestCommand(MochaFramework);
     const shapeCommand = new ShapeCommand();
     const nodeosCommand = new NodeosCommand();
     const deployCommand = new DeployCommand();
     const compileCommand = new CompileCommand();
 
     menu.command(commandDefiner.define(initCommand));
-    menu.command(commandDefiner.define(testCommand, MochaFramework));
+    menu.command(commandDefiner.define(testCommand));
     menu.command(commandDefiner.define(shapeCommand));
     menu.command(commandDefiner.define(nodeosCommand));
     menu.command(commandDefiner.define(deployCommand));
