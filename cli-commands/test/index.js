@@ -9,8 +9,9 @@ const testUtils = require('./utils');
 
 class TestCommand extends Command {
 
-    constructor() {
+    constructor(...params) {
         super(testCommandDefinition);
+        this.params = params;
     }
 
     async execute(args, TestFramework) {

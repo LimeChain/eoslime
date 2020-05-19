@@ -1,4 +1,4 @@
-const path = require('path');
+const config = require('../../nodeos_data/config.json');
 
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../helpers/async-soft-exec');
@@ -18,25 +18,19 @@ class StopCommand extends Command {
         try {
             commandMessages.StoppingNodeos();
 
-            const configJsonFile = path.join(__dirname, '../../config.json');
-            
-            if (fileSystemUtil.exists(configJsonFile)) {
-                const nodeosDir = require(configJsonFile).nodeos_dir;
-                const nodeosPidFile = path.join(nodeosDir, 'eosd.pid');
+            const nodeosPath = config.nodeosPath;
+            const nodeosPidFile = nodeosPath + '/eosd.pid';
 
-                if (fileSystemUtil.exists(nodeosPidFile)) {
-                    const nodeosPid = fileSystemUtil.readFile(nodeosPidFile);
+            if (fileSystemUtil.exists(nodeosPidFile)) {
+                const nodeosPid = fileSystemUtil.readFile(nodeosPidFile);
 
-                    fileSystemUtil.rmFile(configJsonFile);
-                    await fileSystemUtil.recursivelyDeleteDir(nodeosDir);
+                const asyncKillExec = new AsyncSoftExec(`kill ${nodeosPid}`);
+                asyncKillExec.onError((error) => commandMessages.UnsuccessfulStopping(error));
+                await asyncKillExec.exec();
 
-                    const asyncKillExec = new AsyncSoftExec(`kill ${nodeosPid}`);
-                    asyncKillExec.onError((error) => commandMessages.UnsuccessfulStopping(error));
-                    asyncKillExec.onSuccess(() => commandMessages.SuccessfullyStopped());
-
-                    await asyncKillExec.exec();
-                    return true;
-                }
+                await cleanNodeosData(nodeosPath);
+                commandMessages.SuccessfullyStopped();
+                return true;
             }
 
             commandMessages.NoRunningNodeos();
@@ -46,6 +40,13 @@ class StopCommand extends Command {
 
         return true;
     }
+}
+
+const cleanNodeosData = async function (dirPath) {
+    fileSystemUtil.rmFile(dirPath + '/eosd.pid');
+    fileSystemUtil.rmFile(dirPath + '/nodeos.log');
+    await fileSystemUtil.recursivelyDeleteDir(dirPath + '/data');
+    await fileSystemUtil.recursivelyDeleteDir(dirPath + '/config');
 }
 
 module.exports = StopCommand;

@@ -1,4 +1,4 @@
-const Option = require('../../../../../../option');
+const Option = require('../../../../option');
 
 class LinesOption extends Option {
     constructor() {

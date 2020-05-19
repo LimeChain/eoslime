@@ -14,7 +14,7 @@ class PathOption extends Option {
     }
 
     async process(optionValue) {
-        return path.resolve(optionValue);
+        return optionValue;
     }
 }
 

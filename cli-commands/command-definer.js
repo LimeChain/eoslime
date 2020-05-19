@@ -3,12 +3,12 @@ class CommandDefiner {
         this.yargs = yargs;
     }
 
-    define (command, ...params) {
+    define (command) {
         return {
             command: command.template,
             description: command.description,
             builder: this.build(command),
-            handler: this.handle(command, ...params)
+            handler: this.handle(command, command.params)
         }
     }
 
@@ -26,7 +26,7 @@ class CommandDefiner {
         }
     }
 
-    handle (command, ...params) {
+    handle (command, params) {
         return async (args) => {
             const result = await command.execute(args, ...params);
             if (!result) {

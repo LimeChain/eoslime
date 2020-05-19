@@ -1,4 +1,5 @@
 const path = require('path');
+const config = require('../../nodeos_data/config.json');
 
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../helpers/async-soft-exec');
@@ -9,8 +10,7 @@ const commandMessages = require('./messages');
 const startCommandDefinition = require('./definition');
 const fileSystemUtil = require('../../../helpers/file-system-util');
 
-const defaultNodeosDir = '/tmp/nodeos';
-const configJsonFile = path.join(__dirname, '../../config.json');
+const defaultPath = path.join(__dirname, '../../nodeos_data');
 
 // eoslime nodeos start --path
 
@@ -20,42 +20,32 @@ class StartCommand extends Command {
     }
 
     async execute(args) {
-        let nodeosDir;
+        let nodeosPath;
 
         try {
             commandMessages.StartingNodeos();
 
             const optionsResults = await super.processOptions(args);
 
-            const configJsonFile = path.join(__dirname, '../../config.json');
-
-            if (!fileSystemUtil.exists(configJsonFile)) {
-                nodeosDir = optionsResults.path ? optionsResults.path : defaultNodeosDir;
-            }
-            else {
-                nodeosDir = require(configJsonFile).nodeos_dir;
-
-                if (fileSystemUtil.exists(path.join(nodeosDir, 'eosd.pid'))) {
-                    commandMessages.NodeosAlreadyRunning();
-                    return true;
-                }
-
-                nodeosDir = optionsResults.path ? optionsResults.path : nodeosDir;
+            if (!config.nodeosPath) {
+                nodeosPath = optionsResults.path ? optionsResults.path : defaultPath;
+            } else {
+                checkForNodeos(config.NODEOS_DIR);
+                nodeosPath = optionsResults.path ? optionsResults.path : config.nodeosPath;
             }
 
-            createNodeosDir(nodeosDir);
-            storeNodeosConfig({ nodeos_dir: nodeosDir });
-
-            if (fileSystemUtil.exists(path.join(nodeosDir, 'eosd.pid'))) {
-                commandMessages.NodeosAlreadyRunning();
-                return true;
-            }
+            checkForNodeos(nodeosPath);
+            storeNodeosConfig(nodeosPath);
     
-            const asyncSoftExec = new AsyncSoftExec(template(nodeosDir));
+            const asyncSoftExec = new AsyncSoftExec(template.build(nodeosPath));
             asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulStarting(error); });
-            asyncSoftExec.onSuccess(() => { commandMessages.SuccessfullyStarted(); });
-            
             await asyncSoftExec.exec();
+
+            if (fileSystemUtil.exists(nodeosPath + '/eosd.pid')) {
+                commandMessages.SuccessfullyStarted();
+            } else {
+                commandMessages.UnsuccessfulStarting('Pid file has not been created');
+            }
         } catch (error) {
             commandMessages.UnsuccessfulStarting(error);
         }
@@ -64,13 +54,15 @@ class StartCommand extends Command {
     }
 }
 
-const createNodeosDir = function (dirPath) {
-    fileSystemUtil.createDir(dirPath);
+const checkForNodeos = function (dirPath) {
+    if (fileSystemUtil.exists(dirPath + '/eosd.pid')) {
+        throw new Error('Nodeos is already running');
+    }
 }
 
-const storeNodeosConfig = function (config) {
-    const configContent = JSON.stringify(config);
-    fileSystemUtil.writeFile(configJsonFile, configContent);
+const storeNodeosConfig = function (dirPath) {
+    const configContent = JSON.stringify({ nodeosPath: dirPath });
+    fileSystemUtil.writeFile(`${defaultPath}/config.json`, configContent);
 }
 
 module.exports = StartCommand;

@@ -1,5 +1,5 @@
 const AccountsTable = require('./accounts-table');
-const Command = require('../../../../../command');
+const Command = require('../../../command');
 
 const accounts = require('./accounts.json');
 

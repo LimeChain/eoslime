@@ -1,4 +1,4 @@
-const Table = require('../../../../../table');
+const Table = require('../../../table');
 
 const TABLE_HEAD = {
     head: ['Account', 'Public Key', 'Private Key']

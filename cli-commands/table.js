@@ -28,11 +28,11 @@ class Table {
     }
 }
 
-const addEmptyColumns = function (n) {
+const addEmptyColumns = function (numberOfColumns) {
     let arr = [];
 
-    for (let i = 0; i < n - 1; i++) {
-        arr[i] = '';
+    for (let i = 0; i < numberOfColumns - 1; i++) {
+        arr.push('');
     }
 
     return arr;
