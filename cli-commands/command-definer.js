@@ -8,7 +8,7 @@ class CommandDefiner {
             command: command.template,
             description: command.description,
             builder: this.build(command),
-            handler: this.handle(command, command.params)
+            handler: this.handle(command)
         }
     }
 
@@ -26,9 +26,9 @@ class CommandDefiner {
         }
     }
 
-    handle (command, params) {
+    handle (command) {
         return async (args) => {
-            const result = await command.execute(args, ...params);
+            const result = await command.execute(args);
             if (!result) {
                 this.yargs.showHelp();
             }

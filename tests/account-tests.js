@@ -63,7 +63,7 @@ describe('Account', function () {
     /*
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
     */
-    async function createEOSToken() {
+    async function createEOSToken () {
         const TOKEN_ABI_PATH = './tests/testing-contracts/compiled/eosio.token.abi';
         const TOKEN_WASM_PATH = './tests/testing-contracts/compiled/eosio.token.wasm';
         const TOTAL_SUPPLY = '1000000000.0000 SYS';
@@ -82,7 +82,7 @@ describe('Account', function () {
         await createEOSToken();
     });
 
-    function assertCorrectAccount(account) {
+    function assertCorrectAccount (account) {
         assert(account.name == ACCOUNT_NAME, 'Incorrect name');
         assert(account.privateKey == ACCOUNT_PRIVATE_KEY, 'Incorrect private key');
         assert(account.publicKey == ACCOUNT_PUBLIC_KEY, 'Incorrect public key');
@@ -521,6 +521,50 @@ describe('Account', function () {
 
             return authority;
         }
+    });
+
+    describe('Create', function () {
+
+        it('Should create account [account creator]', async () => {
+            let creatorAccount = Account.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+
+            let accountName = await eoslime.utils.randomName();
+            let privateKey = await eoslime.utils.randomPrivateKey();
+
+            await Account.create(accountName, privateKey, creatorAccount);
+
+            assert(await Provider.eos.getAccount(accountName), 'Account is not created on blockchain');
+        });
+
+        it('Should create account [default account]', async () => {
+            let accountName = await eoslime.utils.randomName();
+            let privateKey = await eoslime.utils.randomPrivateKey();
+
+            await Account.create(accountName, privateKey);
+
+            assert(await Provider.eos.getAccount(accountName), 'Account is not created on blockchain');
+        });
+
+        it('Should throw if one try to create an already existing account', async () => {
+            try {
+                await Account.create(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                assert(false, 'Should throw');
+            } catch (error) {
+                assert(error.includes('that name is already taken'));
+            }
+        });
+
+        it('Should throw if one provide incorrect account as account creator', async () => {
+            try {
+                let accountName = await eoslime.utils.randomName();
+                let privateKey = await eoslime.utils.randomPrivateKey();
+
+                await Account.create(accountName, privateKey, 'Fake creator');
+                assert(false, 'Should throw');
+            } catch (error) {
+                assert(error.message.includes('Provided String is not an instance of BaseAccount'));
+            }
+        });
     });
 
     describe('Create from name', function () {

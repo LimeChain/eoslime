@@ -30,63 +30,48 @@ const fileSystemUtils = {
         return fs.lstatSync(path).isFile();
     },
     recursivelyReadDir: async function (dirPath) {
-        return new Promise(async (resolve, reject) => {
-            let files = [];
+        let files = [];
 
-            fs.readdir(dirPath, async function (err, filenames) {
-                if (err) {
-                    return void reject(err.message);
-                }
+        await fileSystemUtils.forEachFileInDir(dirPath, async (fileName) => {
 
-                for (let i = 0; i < filenames.length; i++) {
-                    const fileName = filenames[i];
-
-                    if (fileSystemUtils.isDir(`${dirPath}/${fileName}`)) {
-                        const dirFiles = await fileSystemUtils.recursivelyReadDir(`${dirPath}/${fileName}`);
-                        files = files.concat(dirFiles);
-                    } else {
-                        files.push({
-                            fileName: fileName,
-                            fullPath: `${dirPath}/${fileName}`
-                        });
-                    }
-                }
-
-                resolve(files);
-            });
+            if (fileSystemUtils.isDir(`${dirPath}/${fileName}`)) {
+                const dirFiles = await fileSystemUtils.recursivelyReadDir(`${dirPath}/${fileName}`);
+                files = files.concat(dirFiles);
+            } else {
+                files.push({
+                    fileName: fileName,
+                    fullPath: `${dirPath}/${fileName}`
+                });
+            }
         });
+
+        return files;
     },
     recursivelyDeleteDir: async function (dirPath) {
-        return new Promise(async (resolve, reject) => {
-            fs.readdir(dirPath, async function (err, filenames) {
+        await fileSystemUtils.forEachFileInDir(dirPath, async (fileName) => {
+            if (fileSystemUtils.isDir(path.join(dirPath, fileName))) {
+                await fileSystemUtils.recursivelyDeleteDir(path.join(dirPath, fileName));
+            } else {
+                fileSystemUtils.rmFile(path.join(dirPath, fileName));
+            }
+        });
+
+
+        fileSystemUtils.rmDir(dirPath);
+    },
+    forEachFileInDir: (dirPath, actionCallback) => {
+        return new Promise((resolve, reject) => {
+            fs.readdir(dirPath, async function (err, fileNames) {
                 if (err) {
                     return void reject(err.message);
                 }
-    
-                for (let i = 0; i < filenames.length; i++) {
-                    const filename = filenames[i];
-    
-                    if (fileSystemUtils.isDir(path.join(dirPath, filename))) {
-                        await fileSystemUtils.recursivelyDeleteDir(path.join(dirPath, filename));
-                    } else {
-                        fileSystemUtils.rmFile(path.join(dirPath, filename));
-                    }
-                }
-    
-                fileSystemUtils.rmDir(dirPath);
-    
-                resolve();
-            });
-        });
-    },
-    forEachFileInDir: (dirPath, actionCallback) => {
-        fs.readdir(dirPath, function (err, filenames) {
-            if (err) {
-                throw new Error(err.message);
-            }
 
-            filenames.forEach(function (filename) {
-                actionCallback(filename);
+                for (let i = 0; i < fileNames.length; i++) {
+                    const fileName = fileNames[i];
+                    await actionCallback(fileName);
+                }
+
+                resolve();
             });
         });
     },

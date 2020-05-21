@@ -2,14 +2,14 @@
 const exec = require('child_process').exec;
 const CommandDefiner = require('./cli-commands/command-definer');
 
-const InitCommand = require('./cli-commands/init');
-const TestCommand = require('./cli-commands/test');
-const ShapeCommand = require('./cli-commands/shape');
-const NodeosCommand = require('./cli-commands/nodeos');
-const DeployCommand = require('./cli-commands/deploy');
-const CompileCommand = require('./cli-commands/compile');
+const InitCommand = require('./cli-commands/commands/init');
+const TestCommand = require('./cli-commands/commands/test');
+const ShapeCommand = require('./cli-commands/commands/shape');
+const NodeosCommand = require('./cli-commands/commands/nodeos');
+const DeployCommand = require('./cli-commands/commands/deploy');
+const CompileCommand = require('./cli-commands/commands/compile');
 
-const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
+const MochaFramework = require('./cli-commands/commands/test/specific/test-frameworks/mocha');
 
 (() => {
 
@@ -24,16 +24,16 @@ const MochaFramework = require('./cli-commands/test/test-frameworks/mocha');
     const deployCommand = new DeployCommand();
     const compileCommand = new CompileCommand();
 
-    menu.command(commandDefiner.define(initCommand));
-    menu.command(commandDefiner.define(testCommand));
-    menu.command(commandDefiner.define(shapeCommand));
     menu.command(commandDefiner.define(nodeosCommand));
-    menu.command(commandDefiner.define(deployCommand));
+    menu.command(commandDefiner.define(initCommand));
     menu.command(commandDefiner.define(compileCommand));
+    menu.command(commandDefiner.define(testCommand));
+    menu.command(commandDefiner.define(deployCommand));
+    menu.command(commandDefiner.define(shapeCommand));
 
     menu.command({
         command: '*',
-        handler(args) {
+        handler (args) {
             exec(`${args['$0']} help`, (error, stdout, stderr) => {
                 if (error) {
                     throw new Error(`Could not execute help due to '${error}'`);

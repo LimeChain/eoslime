@@ -14,7 +14,7 @@ class BaseAccount {
         this.publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();
     }
 
-    async getAuthorityInfo() {
+    async getAuthorityInfo () {
         const authority = arguments[0] ? arguments[0] : this.executiveAuthority.permission;
 
         const accountInfo = await this.provider.eos.getAccount(this.name);

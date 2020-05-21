@@ -11,7 +11,7 @@ class AccountFactory {
         this.provider = provider;
     }
 
-    load(name, privateKey, authorityName = DEFAULT_AUTHORITY) {
+    load (name, privateKey, authorityName = DEFAULT_AUTHORITY) {
         try {
             return new Account(name, privateKey, this.provider, authorityName);
         } catch (error) {
@@ -19,7 +19,16 @@ class AccountFactory {
         }
     }
 
-    async createFromName(accountName, accountCreator = this.provider.defaultAccount) {
+    async create (accountName, privateKey, accountCreator = this.provider.defaultAccount) {
+        is(accountCreator).instanceOf('BaseAccount');
+
+        const newAccount = new Account(accountName, privateKey, this.provider, DEFAULT_AUTHORITY);
+        await createAccountOnBlockchain(newAccount, accountCreator);
+
+        return newAccount;
+    }
+
+    async createFromName (accountName, accountCreator = this.provider.defaultAccount) {
         is(accountCreator).instanceOf('BaseAccount');
 
         const accountPrivateKey = await utils.randomPrivateKey();
@@ -30,7 +39,7 @@ class AccountFactory {
         return newAccount;
     }
 
-    async createRandom(accountCreator = this.provider.defaultAccount) {
+    async createRandom (accountCreator = this.provider.defaultAccount) {
         is(accountCreator).instanceOf('BaseAccount');
 
         const privateKey = await utils.randomPrivateKey();
@@ -41,7 +50,7 @@ class AccountFactory {
         return newAccount;
     }
 
-    async createRandoms(accountsCount, accountCreator = this.provider.defaultAccount) {
+    async createRandoms (accountsCount, accountCreator = this.provider.defaultAccount) {
         const accounts = [];
         for (let i = 0; i < accountsCount; i++) {
             const newAccount = await this.createRandom(accountCreator);
@@ -51,7 +60,7 @@ class AccountFactory {
         return accounts;
     }
 
-    async createEncrypted(password, accountCreator = this.provider.defaultAccount) {
+    async createEncrypted (password, accountCreator = this.provider.defaultAccount) {
         try {
             const newAccount = await this.createRandom(accountCreator);
             const dataToBeEncrypted = {
@@ -69,7 +78,7 @@ class AccountFactory {
         }
     }
 
-    fromEncrypted(encryptedAccount, password) {
+    fromEncrypted (encryptedAccount, password) {
         try {
             const decryptedAccount = JSON.parse(JSON.stringify(encryptedAccount));
 
