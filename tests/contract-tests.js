@@ -24,7 +24,7 @@ describe("Contract", function () {
     /*
         Deploy eos token contract on local nodoes in order to send eos and buy ram / bandwidth
     */
-    async function createToken() {
+    async function createToken () {
         // Deploy a token contract
         try {
             const tokenAccount = await eoslime.Account.createRandom();
@@ -35,7 +35,7 @@ describe("Contract", function () {
         }
     }
 
-    async function createFaucet() {
+    async function createFaucet () {
         // Deploy a faucet contract
         try {
             faucetAccount = await eoslime.Account.createRandom();
@@ -98,6 +98,56 @@ describe("Contract", function () {
             } catch (error) {
                 assert(error.message.includes("Provided String is not an instance of BaseAccount"));
             }
+        });
+    });
+
+    describe("Deployment", function () {
+        it("Should deploy a contract from file on a random account", async () => {
+            const faucetContract = await eoslime.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+            const deployedABI = await eoslime.Provider.getABI(faucetContract.name);
+
+            assert(deployedABI);
+        });
+
+        it("Should deploy a contract from file on provided account", async () => {
+            const contractAccount = await eoslime.Account.createRandom();
+
+            const initialABI = await eoslime.Provider.getABI(contractAccount.name);
+            await eoslime.Contract.deployOnAccount(FAUCET_WASM_PATH, FAUCET_ABI_PATH, contractAccount);
+            const deployedABI = await eoslime.Provider.getABI(contractAccount.name);
+
+            assert(initialABI == undefined);
+            assert(deployedABI);
+        });
+
+        it("Should deploy a contract from raw data on a random account", async () => {
+            const contractA = await eoslime.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+            const contractA_ABI = await eoslime.Provider.getABI(contractA.name);
+            const contractA_WASM = await eoslime.Provider.getRawWASM(contractA.name);
+
+            const contractB = await eoslime.Contract.deployRaw(contractA_WASM, contractA_ABI);
+            const contractB_ABI = await eoslime.Provider.getABI(contractB.name);
+            const contractB_WASM = await eoslime.Provider.getRawWASM(contractB.name);
+
+            assert(contractA_WASM == contractB_WASM);
+            assert(JSON.stringify(contractA_ABI) == JSON.stringify(contractB_ABI));
+        });
+
+        it("Should deploy a contract from raw data on provided account", async () => {
+            const contractA = await eoslime.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
+            const contractA_ABI = await eoslime.Provider.getABI(contractA.name);
+            const contractA_WASM = await eoslime.Provider.getRawWASM(contractA.name);
+
+            const contractB_Account = await eoslime.Account.createRandom();
+            const initialABI = await eoslime.Provider.getABI(contractB_Account.name);
+
+            const contractB = await eoslime.Contract.deployRawOnAccount(contractA_WASM, contractA_ABI, contractB_Account);
+            const contractB_ABI = await eoslime.Provider.getABI(contractB.name);
+            const contractB_WASM = await eoslime.Provider.getRawWASM(contractB.name);
+
+            assert(initialABI == undefined);
+            assert(contractA_WASM == contractB_WASM);
+            assert(JSON.stringify(contractA_ABI) == JSON.stringify(contractB_ABI));
         });
     });
 
@@ -288,6 +338,15 @@ describe("Contract", function () {
                     )
                 );
             }
+        });
+    });
+
+    describe("Retrieve raw WASM", function () {
+        it("Should retrieve contract raw WASM", async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+
+            const contractWASM = await faucetContract.getRawWASM();
+            assert(contractWASM.endsWith('='), 'Not correctly encoded WASM');
         });
     });
 });

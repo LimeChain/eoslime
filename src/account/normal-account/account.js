@@ -9,7 +9,7 @@ class Account extends BaseAccount {
         super(name, privateKey, provider, permission);
     }
 
-    async buyRam(bytes, payer = this) {
+    async buyRam (bytes, payer = this) {
         is(payer).instanceOf('BaseAccount');
 
         return this.provider.eos.transaction(tr => {
@@ -21,7 +21,7 @@ class Account extends BaseAccount {
         }, { keyProvider: payer.privateKey });
     }
 
-    async buyBandwidth(cpu, net, payer = this) {
+    async buyBandwidth (cpu, net, payer = this) {
         is(payer).instanceOf('BaseAccount');
 
         return this.provider.eos.transaction(tr => {
@@ -35,7 +35,7 @@ class Account extends BaseAccount {
         }, { keyProvider: payer.privateKey });
     }
 
-    async send(receiver, amount, symbol = 'EOS') {
+    async send (receiver, amount, symbol = 'EOS') {
         is(receiver).instanceOf('BaseAccount');
 
         return this.provider.eos.transfer(
@@ -47,7 +47,7 @@ class Account extends BaseAccount {
         );
     }
 
-    async createSubAuthority(authorityName, threshold = 1) {
+    async createSubAuthority (authorityName, threshold = 1) {
         const authorization = {
             threshold,
             keys: [{ key: this.publicKey, weight: threshold }]
@@ -59,18 +59,18 @@ class Account extends BaseAccount {
         return AuthorityAccount.construct(authorityAccount, this.executiveAuthority.permission);
     }
 
-    async increaseThreshold(threshold) {
+    async increaseThreshold (threshold) {
         const authorityInfo = await this.getAuthorityInfo();
         authorityInfo.required_auth.threshold = threshold;
 
         return updateAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
     }
 
-    async addPermission(authorityName, weight = 1) {
+    async addPermission (authorityName, weight = 1) {
         return this.addOnBehalfAccount(this.name, authorityName, weight);
     }
 
-    async addOnBehalfAccount(accountName, authority = 'active', weight = 1) {
+    async addOnBehalfAccount (accountName, authority = 'active', weight = 1) {
         const authorityInfo = await this.getAuthorityInfo();
         const hasAlreadyAccount = authorityInfo.required_auth.accounts.find((account) => {
             return account.permission.actor == accountName;
@@ -82,7 +82,7 @@ class Account extends BaseAccount {
         }
     }
 
-    async addAuthorityKey(publicKey, weight = 1) {
+    async addAuthorityKey (publicKey, weight = 1) {
         if (!eosECC.isValidPublic(publicKey)) {
             throw new Error('Provided public key is not a valid one');
         }
@@ -98,7 +98,7 @@ class Account extends BaseAccount {
         }
     }
 
-    async setWeight(weight) {
+    async setWeight (weight) {
         const authorityInfo = await this.getAuthorityInfo();
         authorityInfo.required_auth.keys.map(authorityKey => {
             if (authorityKey.key == this.publicKey) {
@@ -109,7 +109,7 @@ class Account extends BaseAccount {
         return updateAuthority.call(this, authorityInfo.perm_name, authorityInfo.parent, authorityInfo.required_auth);
     }
 
-    async getBalance(symbol = 'EOS', code = 'eosio.token') {
+    async getBalance (symbol = 'EOS', code = 'eosio.token') {
         return this.provider.eos.getCurrencyBalance(code, this.name, symbol);
     }
 }
