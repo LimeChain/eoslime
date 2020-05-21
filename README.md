@@ -9,6 +9,48 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
+# Version 1.0.4 change log
+
+* **eoslime nodeos**      
+    * **eoslime nodeos start --path="Some path"**   
+    Run local predefined single node chain
+    * **eoslime nodeos stop**    
+    Stop single node chain started by **eoslime nodeos start**   
+    * **eoslime nodeos accounts**    
+    Show preloaded accounts on **eoslime nodeos start**     
+    * **eoslime nodeos logs**     
+    Show chain logs
+
+* **Account.create(name, privateKey, ?creator)**
+There are cases you have already generated your private key and you have a name for your account. You only need to create it on the chain.
+
+* **Contract.deployRaw(rawWasm, abiJSON, ?options)**    
+Used for deploying a contract from WASM string and ABI in JSON format
+A typical use case for `deployRaw` is in CI/CD. You don't want to compile your contract every time, however your tests needs WASM and ABI. A good approach is to deploy your contract on a test network like Jungle one and retrieve its WASM and ABI for your tests.
+    ```javascript
+    const eoslime = eoslime.init('jungle');
+    const deployedContract = 'your_contract_name'; 
+    const contractA_ABI = await eoslime.Provider.getABI(deployedContract);
+    const contractA_WASM = await eoslime.Provider.getRawWASM(deployedContract);
+        
+    const contractB = await eoslime.Contract.deployRaw(contractA_WASM, contractA_ABI); 
+    ```
+* **Contract.deployRawOnAccount(rawWasm, abiJSON, account, ?options)**     
+Used for deploying a contract from WASM string and ABI in JSON format
+
+* **Provider.getABI(contractName)**    
+Returns contract ABI in JSON format
+
+* **Provider.getRawWASM(contractName)**     
+Returns raw WASM useful for deploying another contract directly
+
+* **contractInstance.abi**     
+Returns contract ABI in JSON format
+
+* **contractInstance.getRawWASM()**     
+Returns contract raw WASM
+
+
 # Version 1.0.3 change log
 
 * **eoslime shape --framework=react**    
