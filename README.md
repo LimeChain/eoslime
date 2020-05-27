@@ -9,6 +9,20 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
+
+
+
+# Contributors
+Thanks these wonderful people for helping improve EOSLime
+
+
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/Avm07"><img src="https://avatars1.githubusercontent.com/u/24969602?s=400&u=c2ab916dba523284faa1310b363fed7ef27634f2&v=4" width="100px;" alt=""/><br /><sub><b>Artem</b></sub></a><br /><a href="https://github.com/LimeChain/eoslime/issues/53" title="Ideas">💬</a></td>
+</table>
+
+
+
 # Version 1.0.4 change log
 
 * **eoslime nodeos**      
