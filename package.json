@@ -6,6 +6,7 @@
     "scripts": {
         "test": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/*.js'",
         "test-dev": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
+        "test-cli": "mocha './tests/cli-commands/*.js'",
         "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },
     "author": "Lyubomir Kiprov (Limechain)",
@@ -42,6 +43,7 @@
         "eoslime": "./cli.js"
     },
     "devDependencies": {
-        "nyc": "14.1.1"
+        "nyc": "14.1.1",
+        "sinon": "9.0.2"
     }
 }

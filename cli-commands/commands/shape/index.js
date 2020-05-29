@@ -19,11 +19,10 @@ class ShapeCommand extends Command {
 
             if (!optionsResults.framework) {
                 commandMessages.InvalidShapeName(args.framework);
+            } else {
+                await git.clone(optionsResults.framework);
+                commandMessages.SuccessfulShaping();
             }
-
-            await git.clone(optionsResults.framework);
-
-            commandMessages.SuccessfulShaping();
         } catch (error) {
             commandMessages.UnsuccessfulShaping(error);
         }
