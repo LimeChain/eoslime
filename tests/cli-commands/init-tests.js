@@ -4,7 +4,6 @@ const assert = require('assert');
 
 const Command = require('../../cli-commands/commands/command');
 const InitCommand = require('../../cli-commands/commands/init/index');
-const GroupCommand = require('../../cli-commands/commands/group-command');
 const AsyncSoftExec = require('../../cli-commands/helpers/async-soft-exec');
 const definition = require('../../cli-commands/commands/init/definition');
 const fileSystemUtil = require('../../cli-commands/helpers/file-system-util');
@@ -18,9 +17,8 @@ describe('InitCommand', function () {
 
     let initialDir;
     let initCommand;
-    let processSpy;
-    let processOptionsSpy;
-    let copyAllFilesFromDirToSpy;
+    let exampleOptionSpy;
+    let fileSystemUtilSpy;
 
     before(async () => {
         initialDir = process.cwd();
@@ -31,9 +29,8 @@ describe('InitCommand', function () {
     beforeEach(async () => {
         initCommand = new InitCommand();
         sinon.stub(AsyncSoftExec.prototype, "exec");
-        processSpy = sinon.spy(WithExampleOption, "process");
-        processOptionsSpy = sinon.spy(Command.prototype, "processOptions");
-        copyAllFilesFromDirToSpy = sinon.spy(fileSystemUtil, "copyAllFilesFromDirTo");
+        exampleOptionSpy = sinon.spy(WithExampleOption, "process");
+        fileSystemUtilSpy = sinon.spy(fileSystemUtil, "copyAllFilesFromDirTo");
     });
 
     afterEach(async () => {
@@ -71,35 +68,28 @@ describe('InitCommand', function () {
         assert(initCommand.template == definition.template);
         assert(initCommand.description = definition.description);
         assert(initCommand.options == definition.options);
-    });
-
-    it('Should not have any subcommands', async () => {
-        assert(!(initCommand instanceof GroupCommand));
         assert(initCommand.subcommands.length == 0);
     });
 
     it('Should init project structure', async () => {
         assert(await initCommand.execute({}));
 
-        sinon.assert.calledWith(processOptionsSpy, {});
-        sinon.assert.notCalled(processSpy);
+        sinon.assert.notCalled(exampleOptionSpy);
         checkDirectories();
     });
 
     it('Should init project structure [with-example = false]', async () => {
         assert(await initCommand.execute(WITHOUT_EXAMPLE));
 
-        sinon.assert.calledWith(processOptionsSpy, WITHOUT_EXAMPLE);
-        sinon.assert.calledWith(processSpy, false);
-        sinon.assert.notCalled(copyAllFilesFromDirToSpy);
+        sinon.assert.calledWith(exampleOptionSpy, false);
+        sinon.assert.notCalled(fileSystemUtilSpy);
         checkDirectories();
     });
 
-    it('Should init project structure and provide an example files', async () => {
+    it('Should init project structure and provide example files', async () => {
         assert(await initCommand.execute(WITH_EXAMPLE));
 
-        sinon.assert.calledWith(processOptionsSpy, WITH_EXAMPLE);
-        sinon.assert.calledWith(processSpy, true);
+        sinon.assert.calledWith(exampleOptionSpy, true);
         checkDirectories();
         checkExampleFiles();
     });
