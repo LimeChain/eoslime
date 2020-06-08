@@ -7,7 +7,6 @@ const Command = require('../../cli-commands/commands/command');
 const TestCommand = require('../../cli-commands/commands/test/index');
 const ProviderFactory = require('../../src/network-providers/provider-factory');
 const MochaFramework = require('../../cli-commands/commands/test/specific/test-frameworks/mocha');
-const ReportTable = require('../../cli-commands/commands/test/options/resource-usage-option/report-table');
 
 const definition = require('../../cli-commands/commands/test/definition');
 const PathOption = require('../../cli-commands/commands/test/options/path-option');
@@ -32,7 +31,6 @@ describe('TestCommand', function () {
     let mochaSetDescribeArgs;
     let mochaRunTestsSpy;
     let providerFactorySpy;
-    let reportTableSpy;
 
     before(async () => {
         initialDir = process.cwd();
@@ -50,7 +48,6 @@ describe('TestCommand', function () {
         mochaSetDescribeArgs = sinon.spy(MochaFramework.prototype, "setDescribeArgs");
         mochaRunTestsSpy = sinon.spy(MochaFramework.prototype, "runTests");
         providerFactorySpy = sinon.spy(ProviderFactory.prototype, "reset");
-        reportTableSpy = sinon.spy(ReportTable.prototype, "draw");
         
         preloadMockedTests();
     });
@@ -154,7 +151,6 @@ describe('TestCommand', function () {
 
         sinon.assert.calledWith(resourceReportOptionSpy, 'true');
         sinon.assert.calledOnce(mochaRunTestsSpy);
-        // sinon.assert.calledOnce(reportTableSpy);
     });
 
     it('Should execute tests and display resource usage report', async () => {
@@ -162,7 +158,6 @@ describe('TestCommand', function () {
 
         sinon.assert.calledWith(resourceReportOptionSpy, 'false');
         sinon.assert.calledOnce(mochaRunTestsSpy);
-        // sinon.assert.notCalled(reportTableSpy);
     });
     
 });
