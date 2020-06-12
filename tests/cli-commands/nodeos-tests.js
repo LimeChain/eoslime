@@ -297,4 +297,32 @@ describe('NodeosCommand', function () {
 
     });
 
+    describe('DataManager', function () {
+
+        describe('nodeosIsRunning', function () {
+
+            it('Should return false when eosd.pid file does not exists', async () => {
+                assert(!nodoesDataManager.nodeosIsRunning(nodeosDataPath));
+            });
+    
+            it('Should return false when eosd.pid file exists, but nodeos is not running', async () => {
+                preloadNodeosData();
+    
+                sinon.stub(process, "kill").throws();
+    
+                assert(!nodoesDataManager.nodeosIsRunning(nodeosDataPath));
+            });
+
+            it('Should return true when eosd.pid file exists and nodeos is running', async () => {
+                preloadNodeosData();
+    
+                sinon.stub(process, "kill").returns(true);
+    
+                assert(nodoesDataManager.nodeosIsRunning(nodeosDataPath));
+            });
+
+        });
+
+    })
+
 });
