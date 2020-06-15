@@ -22,6 +22,7 @@ const accountsDefinition = require('../../cli-commands/commands/nodeos/subcomman
 const PathOption = require('../../cli-commands/commands/nodeos/subcommands/start/options/path-option');
 const LinesOption = require('../../cli-commands/commands/nodeos/subcommands/logs/options/lines-option');
 
+const logger = require('../../cli-commands/common/logger');
 const fileSystemUtil = require('../../cli-commands/helpers/file-system-util');
 const template = require('../../cli-commands/commands/nodeos/subcommands/start/specific/template');
 const predefinedAccounts = require('../../cli-commands/commands/nodeos/subcommands/common/accounts');
@@ -40,6 +41,11 @@ describe('NodeosCommand', function () {
         process.chdir(TEST_DIR);
         nodeosDataPath = path.resolve(process.cwd(), NODEOS_DATA_DIR);
         fs.mkdirSync('./nodeos-data');
+    });
+
+    beforeEach(async () => {
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
     });
 
     afterEach(async () => {

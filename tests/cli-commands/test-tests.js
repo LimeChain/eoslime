@@ -8,6 +8,7 @@ const TestCommand = require('../../cli-commands/commands/test/index');
 const ProviderFactory = require('../../src/network-providers/provider-factory');
 const MochaFramework = require('../../cli-commands/commands/test/specific/test-frameworks/mocha');
 
+const logger = require('../../cli-commands/common/logger');
 const definition = require('../../cli-commands/commands/test/definition');
 const PathOption = require('../../cli-commands/commands/test/options/path-option');
 const NetworkOption = require('../../cli-commands/commands/test/options/network-option');
@@ -39,6 +40,8 @@ describe('TestCommand', function () {
     });
 
     beforeEach(async () => {
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
         eoslimeSpy = sinon.spy(eoslime, "init");
         testCommand = new TestCommand(MochaFramework);
         pathOptionSpy = sinon.spy(PathOption, "process");
@@ -153,7 +156,7 @@ describe('TestCommand', function () {
         sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
-    it('Should execute tests and display resource usage report', async () => {
+    it('Should execute tests and not display resource usage report', async () => {
         assert(await testCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, 'resource-usage': 'false' }));
 
         sinon.assert.calledWith(resourceReportOptionSpy, 'false');

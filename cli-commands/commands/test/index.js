@@ -1,4 +1,5 @@
 const Command = require('../command');
+const commandMessages = require('./messages');
 const testCommandDefinition = require('./definition');
 
 const eoslime = require('../../../index');
@@ -16,6 +17,8 @@ class TestCommand extends Command {
 
     async execute (args) {
         try {
+            commandMessages.StartTesting();
+
             args.eoslime = eoslime.init();
             args.testFramework = new this.TestFramework();
 
@@ -25,8 +28,10 @@ class TestCommand extends Command {
 
             args.testFramework.setDescribeArgs(args.eoslime);
             args.testFramework.runTests();
+            
+            commandMessages.SuccessfulTesting();
         } catch (error) {
-            console.log(error);
+            commandMessages.UnsuccessfulTesting(error);
         }
 
         return true;

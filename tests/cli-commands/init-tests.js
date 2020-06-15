@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const sinon = require('sinon');
 const assert = require('assert');
 
+const logger = require('../../cli-commands/common/logger');
 const Command = require('../../cli-commands/commands/command');
 const InitCommand = require('../../cli-commands/commands/init/index');
 const AsyncSoftExec = require('../../cli-commands/helpers/async-soft-exec');
@@ -28,6 +29,8 @@ describe('InitCommand', function () {
 
     beforeEach(async () => {
         initCommand = new InitCommand();
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
         sinon.stub(AsyncSoftExec.prototype, "exec");
         exampleOptionSpy = sinon.spy(WithExampleOption, "process");
         fileSystemUtilSpy = sinon.spy(fileSystemUtil, "copyAllFilesFromDirTo");

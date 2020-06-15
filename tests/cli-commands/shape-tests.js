@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const assert = require('assert');
 
 const Git = require('simple-git/src/git');
+const logger = require('../../cli-commands/common/logger');
 const Command = require('../../cli-commands/commands/command');
 const ShapeCommand = require('../../cli-commands/commands/shape/index');
 const definition = require('../../cli-commands/commands/shape/definition');
@@ -19,6 +20,8 @@ describe('ShapeCommand', function () {
     beforeEach(async () => {
         shapeCommand = new ShapeCommand();
         frameworkOptionSpy = sinon.spy(FrameworkOption, "process");
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
     });
 
     afterEach(async () => {

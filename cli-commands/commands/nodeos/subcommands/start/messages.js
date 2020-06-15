@@ -1,11 +1,9 @@
 const chalk = require('chalk');
+const logger = require('../../../../common/logger');
 
 module.exports = {
-    'StartingNodeos': () => { console.log(chalk.magentaBright('===== Starting nodeos ... =====')); },
-    'NodeosAlreadyRunning': () => { console.log(chalk.blueBright(`===== Nodeos is already running =====`)); },
-    'SuccessfullyStarted': () => { console.log(chalk.greenBright(`===== Successfully started =====`)); },
-    'UnsuccessfulStarting': (error) => {
-        console.log(chalk.redBright(`===== Nodeos has not been started =====`));
-        console.log(error);
-    }
+    'StartingNodeos': () => { logger.info(chalk.magentaBright('===== Starting nodeos ... =====')); },
+    'NodeosAlreadyRunning': () => { logger.info(chalk.blueBright(`===== Nodeos is already running =====`)); },
+    'SuccessfullyStarted': () => { logger.info(chalk.greenBright(`===== Successfully started =====`)); },
+    'UnsuccessfulStarting': (error) => { logger.error(chalk.redBright(`===== Nodeos has not been started =====`), error); }
 }

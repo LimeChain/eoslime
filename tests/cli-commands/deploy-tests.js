@@ -4,6 +4,7 @@ const assert = require('assert');
 const prompts = require('prompts');
 const eoslime = require('../../index');
 
+const logger = require('../../cli-commands/common/logger');
 const Command = require('../../cli-commands/commands/command');
 const Account = require('../../src/account/normal-account/account');
 const DeployCommand = require('../../cli-commands/commands/deploy/index');
@@ -43,6 +44,8 @@ describe('DeployCommand', function () {
         pathOptionSpy = sinon.spy(PathOption, "process");
         networkOptionSpy = sinon.spy(NetworkOption, "process");
         deployerOptionSpy = sinon.spy(DeployerOption, "process");
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
         
         preloadDeploymentScript();
     });

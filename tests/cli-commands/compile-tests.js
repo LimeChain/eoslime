@@ -9,6 +9,7 @@ const fileSysUtils = require('../../cli-commands/helpers/file-system-util');
 const definition = require('../../cli-commands/commands/compile/definition');
 const PathOption = require('../../cli-commands/commands/compile/options/path-option');
 const directories = require('../../cli-commands/commands/compile/specific/directories.json');
+const logger = require('../../cli-commands/common/logger');
 
 describe('CompileCommand', function () {
     const TEST_DIR = './cli-commands-test';
@@ -29,6 +30,8 @@ describe('CompileCommand', function () {
 
     beforeEach(async () => {
         compileCommand = new CompileCommand();
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
         sinon.stub(AsyncSoftExec.prototype, "exec");
         pathOptionSpy = sinon.spy(PathOption, "process");
         fsCreateDirSpy = sinon.spy(fileSysUtils, "createDir");
