@@ -162,6 +162,20 @@ describe('DeployCommand', function () {
         assert(result.executiveAuthority.permission == DEPLOYER_PERMISSION);
     });
 
+    it('Should deploy when deployer is provided [permission missing]', async () => {
+        prompts.inject(`${DEPLOYER_PRIVATE_KEY}`);
+        
+        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, deployer: DEPLOYER_NAME }));
+
+        sinon.assert.calledWith(deployerOptionSpy, DEPLOYER_NAME);
+        
+        let result = await deployerOptionSpy.returnValues[0];
+        assert(result instanceof Account);
+        assert(result.name == DEPLOYER_NAME);
+        assert(result.privateKey == DEPLOYER_PRIVATE_KEY);
+        assert(result.executiveAuthority.permission == 'active');
+    });
+
     it('Should throw when invalid deployer private key is provided', async () => {
         prompts.inject(`${INVALID_PRIVATE_KEY}@${DEPLOYER_PERMISSION}`);
 
