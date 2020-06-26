@@ -19,6 +19,7 @@ const logsDefinition = require('../../cli-commands/commands/nodeos/subcommands/l
 const stopDefinition = require('../../cli-commands/commands/nodeos/subcommands/stop/definition');
 const startDefinition = require('../../cli-commands/commands/nodeos/subcommands/start/definition');
 const accountsDefinition = require('../../cli-commands/commands/nodeos/subcommands/accounts/definition');
+const logsCommandMessages = require('../../cli-commands/commands/nodeos/subcommands/logs/messages');
 const PathOption = require('../../cli-commands/commands/nodeos/subcommands/start/options/path-option');
 const LinesOption = require('../../cli-commands/commands/nodeos/subcommands/logs/options/lines-option');
 
@@ -193,10 +194,10 @@ describe('NodeosCommand', function () {
             sinon.assert.calledWith(fsReadFileSpy, nodeosDataPath + '/eosd.pid');
             sinon.assert.calledTwice(fsRemoveFileSpy);
             fsRemoveFileSpy.firstCall.calledWith(nodeosDataPath + '/eosd.pid');
-            fsRemoveFileSpy.firstCall.calledWith(nodeosDataPath + '/nodeos.log');
+            fsRemoveFileSpy.secondCall.calledWith(nodeosDataPath + '/nodeos.log');
             sinon.assert.calledTwice(fsRemoveDirSpy);
             fsRemoveDirSpy.firstCall.calledWith(nodeosDataPath + '/data');
-            fsRemoveDirSpy.firstCall.calledWith(nodeosDataPath + '/config');
+            fsRemoveDirSpy.secondCall.calledWith(nodeosDataPath + '/config');
         });
 
         it('Should throw when unexpected error occured', async () => {
@@ -218,7 +219,6 @@ describe('NodeosCommand', function () {
 
         beforeEach(async () => {
             logsCommand = new LogsCommand();
-            sinon.stub(AsyncSoftExec.prototype, "exec");
             sinon.stub(nodoesDataManager, "nodeosPath").returns(nodeosDataPath);
             linesOptionSpy = sinon.spy(LinesOption, "process");
         });
@@ -234,6 +234,7 @@ describe('NodeosCommand', function () {
         it('Should break when there is no running nodeos', async () => {
             preloadNodeosData();
 
+            sinon.stub(AsyncSoftExec.prototype, "exec");
             sinon.stub(nodoesDataManager, "nodeosIsRunning").returns(false);
             let processOptionsSpy = sinon.spy(Command.prototype, "processOptions");
 
@@ -245,6 +246,7 @@ describe('NodeosCommand', function () {
         it('Should display nodeos logs successfully', async () => {
             preloadNodeosData();
 
+            sinon.stub(AsyncSoftExec.prototype, "exec").callsFake(() => { logsCommandMessages.NodeosLogs(); });
             sinon.stub(nodoesDataManager, "nodeosIsRunning").returns(true);
 
             assert(await logsCommand.execute({ lines: 10 }));
@@ -282,7 +284,7 @@ describe('NodeosCommand', function () {
 
         it('Should display preloaded accounts', async () => {
             let addTableRowSpy = sinon.spy(AccountsTable.prototype, "addRow");
-            let drawTableSpy = sinon.spy(AccountsTable.prototype, "draw");
+            sinon.stub(AccountsTable.prototype, "draw");
 
             assert(await accountsCommand.execute());
 
@@ -290,9 +292,8 @@ describe('NodeosCommand', function () {
 
             sinon.assert.calledThrice(addTableRowSpy);
             addTableRowSpy.firstCall.calledWith(accounts[0].name, accounts[0].publicKey, accounts[0].privateKey);
-            addTableRowSpy.firstCall.calledWith(accounts[1].name, accounts[1].publicKey, accounts[1].privateKey);
-            addTableRowSpy.firstCall.calledWith(accounts[2].name, accounts[2].publicKey, accounts[2].privateKey);
-            sinon.assert.calledOnce(drawTableSpy);
+            addTableRowSpy.secondCall.calledWith(accounts[1].name, accounts[1].publicKey, accounts[1].privateKey);
+            addTableRowSpy.thirdCall.calledWith(accounts[2].name, accounts[2].publicKey, accounts[2].privateKey);
         });
 
         it('Should throw when table drawing failed', async () => {

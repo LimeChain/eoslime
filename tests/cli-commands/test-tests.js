@@ -30,7 +30,6 @@ describe('TestCommand', function () {
     let resourceReportOptionSpy;
     let mochaAddTestFilesSpy;
     let mochaSetDescribeArgs;
-    let mochaRunTestsSpy;
     let providerFactorySpy;
 
     before(async () => {
@@ -42,6 +41,7 @@ describe('TestCommand', function () {
     beforeEach(async () => {
         sinon.stub(logger, "info");
         sinon.stub(logger, "error");
+        sinon.stub(MochaFramework.prototype, "runTests");
         eoslimeSpy = sinon.spy(eoslime, "init");
         testCommand = new TestCommand(MochaFramework);
         pathOptionSpy = sinon.spy(PathOption, "process");
@@ -49,7 +49,6 @@ describe('TestCommand', function () {
         resourceReportOptionSpy = sinon.spy(ResourceReportOption, "process");
         mochaAddTestFilesSpy = sinon.spy(MochaFramework.prototype, "addTestFiles");
         mochaSetDescribeArgs = sinon.spy(MochaFramework.prototype, "setDescribeArgs");
-        mochaRunTestsSpy = sinon.spy(MochaFramework.prototype, "runTests");
         providerFactorySpy = sinon.spy(ProviderFactory.prototype, "reset");
         
         preloadMockedTests();
@@ -84,7 +83,6 @@ describe('TestCommand', function () {
         sinon.assert.calledOnce(eoslimeSpy);
         sinon.assert.calledWith(pathOptionSpy, DEFAULT_PATH);
         sinon.assert.calledWith(mochaAddTestFilesSpy, ["./tests/tests-mock.js"]);
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should throw when invalid tests folder is specified', async () => {
@@ -92,7 +90,6 @@ describe('TestCommand', function () {
 
         sinon.assert.calledWith(pathOptionSpy, INVALID_PATH);
         sinon.assert.notCalled(mochaAddTestFilesSpy);
-        sinon.assert.notCalled(mochaRunTestsSpy);
     });
 
     it('Should not throw when tests folder is empty', async () => {
@@ -102,7 +99,6 @@ describe('TestCommand', function () {
 
         sinon.assert.calledWith(pathOptionSpy, DEFAULT_PATH);
         sinon.assert.calledWith(mochaAddTestFilesSpy, []);
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should execute tests when path to file with tests is provided', async () => {
@@ -110,7 +106,6 @@ describe('TestCommand', function () {
         
         sinon.assert.calledWith(pathOptionSpy, `${DEFAULT_PATH}/tests-mock.js`);
         sinon.assert.calledOnce(mochaAddTestFilesSpy);
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should not throw when file without tests is provided', async () => {
@@ -120,7 +115,6 @@ describe('TestCommand', function () {
 
         sinon.assert.calledWith(pathOptionSpy, './tests.txt');
         sinon.assert.calledOnce(mochaAddTestFilesSpy);
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should execute tests when valid network is specified', async () => {
@@ -129,7 +123,6 @@ describe('TestCommand', function () {
         sinon.assert.calledWith(networkOptionSpy, DEFAULT_NETWORK);
         sinon.assert.calledOnce(providerFactorySpy);
         sinon.assert.calledOnce(mochaSetDescribeArgs);
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should execute tests when custom network url and chainId are provided', async () => {
@@ -138,7 +131,6 @@ describe('TestCommand', function () {
         sinon.assert.calledWith(networkOptionSpy, CUSTOM_NETWORK);
         sinon.assert.calledOnce(providerFactorySpy);
         sinon.assert.calledOnce(mochaSetDescribeArgs);
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should throw when invalid network is specified', async () => {
@@ -146,21 +138,18 @@ describe('TestCommand', function () {
 
         sinon.assert.calledWith(networkOptionSpy, INVALID_NETWORK);
         sinon.assert.notCalled(providerFactorySpy);
-        sinon.assert.notCalled(mochaRunTestsSpy);
     });
 
     it('Should execute tests and display resource usage report', async () => {
         assert(await testCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, 'resource-usage': 'true' }));
 
         sinon.assert.calledWith(resourceReportOptionSpy, 'true');
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
 
     it('Should execute tests and not display resource usage report', async () => {
         assert(await testCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, 'resource-usage': 'false' }));
 
         sinon.assert.calledWith(resourceReportOptionSpy, 'false');
-        sinon.assert.calledOnce(mochaRunTestsSpy);
     });
     
 });
