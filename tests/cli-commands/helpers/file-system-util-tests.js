@@ -21,6 +21,7 @@ describe('FileSystemUtil', function () {
 
     afterEach(async () => {
         sinon.restore();
+        fs.removeSync('./root');
     });
 
     after(async () => {
@@ -28,22 +29,12 @@ describe('FileSystemUtil', function () {
         fs.removeSync(TEST_DIR);
     });
 
-    // it('Should throw when trying to copy all files from not existing folder', async () => {
-    //     try {
-    //         await fileSystemUtil.copyAllFilesFromDirTo('./a', './b');
-    //     } catch (error) {
-    //         assert(error.message.includes('Example files can not be copied'));
-    //     }
-    // });
-
     it('Should recursively read dir content', async () => {
         let files = await fileSystemUtil.recursivelyReadDir('root');
 
         assert(files.length == 1);
         assert(files[0].fileName == 'sample.txt');
         assert(files[0].fullPath == 'root/sample.txt');fs.removeSync('./root');
-
-        fs.removeSync('./root');
     });
 
     it('Should recursively delete dir content', async () => {
