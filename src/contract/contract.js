@@ -2,7 +2,7 @@ const is = require('./../helpers/is');
 const FunctionsFactory = require('./contract-function/functions-factory');
 
 class Contract {
-    constructor(provider, abi, contractName, contractExecutorAccount) {
+    constructor (provider, abi, contractName, contractExecutorAccount) {
         this.abi = abi;
         this.name = contractName;
         this.provider = provider;
