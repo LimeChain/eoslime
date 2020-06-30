@@ -1,11 +1,11 @@
 const is = require('../../helpers/is')
 const eosECC = require('eosjs').modules.ecc;
 const BaseAccount = require('../base-account');
-const AuthorityAccount = require('../authority-account/account');
+// const AuthorityAccount = require('../authority-account/account');
 
 class Account extends BaseAccount {
 
-    constructor(name, privateKey, provider, permission) {
+    constructor (name, privateKey, provider, permission) {
         super(name, privateKey, provider, permission);
     }
 
@@ -54,9 +54,13 @@ class Account extends BaseAccount {
         }
 
         await updateAuthority.call(this, authorityName, this.executiveAuthority.permission, authorization);
-        const authorityAccount = new Account(this.name, this.privateKey, this.provider, authorityName);
-
-        return AuthorityAccount.construct(authorityAccount, this.executiveAuthority.permission);
+        // return new AuthorityAccount(
+        //     this.executiveAuthority.permission,
+        //     this.name,
+        //     this.privateKey,
+        //     this.provider,
+        //     authorityName
+        // );
     }
 
     async increaseThreshold (threshold) {
@@ -115,7 +119,7 @@ class Account extends BaseAccount {
 }
 
 const updateAuthority = async function (authorityName, parent, auth) {
-    await this.provider.eos.transaction(tr => {
+    const txReceipt = await this.provider.eos.transaction(tr => {
         tr.updateauth({
             account: this.name,
             permission: authorityName,
@@ -125,6 +129,7 @@ const updateAuthority = async function (authorityName, parent, auth) {
 
     }, { broadcast: true, sign: true, keyProvider: this.privateKey });
 
+    return txReceipt;
 }
 
 module.exports = Account;
