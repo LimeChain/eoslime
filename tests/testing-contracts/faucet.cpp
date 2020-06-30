@@ -60,4 +60,6 @@ public:
 			}
 		}
 	}
+
+	ACTION test() {}
 };
