@@ -8,7 +8,7 @@ const EVENTS = {
 
 class ContractFunction extends EventClass {
 
-    constructor(contract, functionName, functionFields) {
+    constructor (contract, functionName, functionFields) {
         super(EVENTS);
         this.contract = contract;
         this.functionName = functionName;
@@ -16,15 +16,14 @@ class ContractFunction extends EventClass {
         this.isTransactional = true;
     }
 
-    async broadcast(...params) {
+    async broadcast (params, options) {
         is(this.contract.executor).instanceOf('BaseAccount', 'executor is missing');
 
-        const functionParamsCount = this.functionFields.length;
-        const functionParams = params.slice(0, functionParamsCount);
+        const functionParams = params.slice(0, this.functionFields.length);
         const functionRawTxData = buildFunctionRawTxData.call(this, this.contract.executor, functionParams);
 
         // Optionals starts from the last function parameter position
-        const optionals = params[functionParamsCount] instanceof Object ? params[functionParamsCount] : null;
+        const optionals = options instanceof Object ? options : null;
         for (let i = 0; i < optionalsFunctions.all.length; i++) {
             const optionalFunction = optionalsFunctions.all[i];
             optionalFunction(optionals, functionRawTxData);
@@ -40,8 +39,17 @@ class ContractFunction extends EventClass {
         return txReceipt;
     }
 
-    async getRawTransaction(...params) {
-        const functionRawTxData = buildFunctionRawTxData.call(this, this.contract.executor, params);
+    async getRawTransaction (params, options) {
+        const functionRawTxData = buildFunctionRawTxData.call(this, this.contract.executor, ...params);
+
+        // Optionals starts from the last function parameter position
+        // const optionals = options instanceof Object ? options : null;
+        // for (let i = 0; i < optionalsFunctions.all.length; i++) {
+        //     const optionalFunction = optionalsFunctions.all[i];
+        //     optionalFunction(optionals, functionRawTxData);
+        // }
+
+
         const rawTransaction = await executeFunction(
             this.contract.provider.eos,
             functionRawTxData,
@@ -51,10 +59,19 @@ class ContractFunction extends EventClass {
         return rawTransaction.transaction.transaction;
     }
 
-    async sign(signer, ...params) {
+    async sign (params, options) {
         is(signer).instanceOf('BaseAccount');
 
-        const functionRawTxData = buildFunctionRawTxData.call(this, signer, params);
+        const functionRawTxData = buildFunctionRawTxData.call(this, signer, ...params);
+
+        // Optionals starts from the last function parameter position
+        // const optionals = options instanceof Object ? options : null;
+        // for (let i = 0; i < optionalsFunctions.all.length; i++) {
+        //     const optionalFunction = optionalsFunctions.all[i];
+        //     optionalFunction(optionals, functionRawTxData);
+        // }
+
+
         const rawTransaction = await executeFunction(
             this.contract.provider.eos,
             functionRawTxData,
