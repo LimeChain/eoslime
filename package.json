@@ -3,20 +3,14 @@
     "version": "1.0.4",
     "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
     "main": "index.js",
-    "types": "index.d.ts",
     "scripts": {
-        "build": "tsc",
-        "test": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
-        "test-prod": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/*.js'",
-        "test-types": "bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/contract.ts",
+        "test": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/*.js'",
+        "test-dev": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
         "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },
     "author": "Lyubomir Kiprov (Limechain)",
     "license": "MIT",
     "dependencies": {
-        "@types/assert": "^1.5.1",
-        "@types/mocha": "^7.0.2",
-        "assert": "^2.0.0",
         "chalk": "2.4.2",
         "cli-table": "0.3.1",
         "crypto-js": "3.1.9-1",
@@ -26,11 +20,6 @@
         "prompts": "2.2.1",
         "simple-git": "1.132.0",
         "yargs": "12.0.5"
-    },
-    "devDependencies": {
-        "nyc": "14.1.1",
-        "ts-node": "^8.10.2",
-        "typescript": "^3.9.5"
     },
     "keywords": [
         "lime",
@@ -51,5 +40,8 @@
     "homepage": "https://github.com/LimeChain/eoslime#readme",
     "bin": {
         "eoslime": "./cli.js"
+    },
+    "devDependencies": {
+        "nyc": "14.1.1"
     }
 }

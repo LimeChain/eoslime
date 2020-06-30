@@ -1,29 +1,28 @@
-const is = require('../../helpers/is');
-const Account = require('../normal-account/account');
+const is = require('../../helpers/is')
 
-class AuthorityAccount extends Account {
+class AuthorityAccount {
 
-    constructor (parentPermission, name, privateKey, provider, permission) {
-        super(name, privateKey, provider, permission);
-        this.parentPermission = parentPermission;
+    static construct(account, parentPermission) {
+        account.setAuthorityAbilities = setAuthorityAbilities(account, parentPermission);
+        return account;
     }
+}
 
-    async setAuthorityAbilities (abilities) {
+const setAuthorityAbilities = function (account, parentAuthority) {
+    return async function (abilities) {
         is(abilities).instanceOf('Array');
 
-        const txReceipt = await this.provider.eos.transaction(tr => {
+        await account.provider.eos.transaction(tr => {
             for (let i = 0; i < abilities.length; i++) {
                 const ability = abilities[i];
                 tr.linkauth({
-                    account: this.name,
+                    account: account.name,
                     code: ability.contract,
                     type: ability.action,
-                    requirement: this.executiveAuthority.permission
+                    requirement: account.executiveAuthority.permission
                 }, { authorization: [`${this.name}@${parentAuthority}`] });
             }
-        }, { broadcast: true, sign: true, keyProvider: this.privateKey });
-
-        return txReceipt;
+        }, { broadcast: true, sign: true, keyProvider: account.privateKey });
     }
 }
 
