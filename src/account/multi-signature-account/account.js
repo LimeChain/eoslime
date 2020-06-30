@@ -26,7 +26,7 @@ class MultiSignatureAccount extends BaseAccount {
     async propose (contractAction, actionData) {
         is(contractAction).instanceOf('ContractFunction');
 
-        const actionTx = await contractAction.sign(this, ...actionData);
+        const actionTx = await contractAction.sign(actionData, { from: this });
         const proposalId = Date.now();
 
         this.proposals[proposalId] = actionTx;

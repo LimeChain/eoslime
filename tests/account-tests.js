@@ -72,8 +72,8 @@ describe('Account', function () {
         try {
             const tokenAccount = await Account.createFromName('eosio.token');
             const tokenContract = await eoslimeTool.Contract.deployOnAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
-            await tokenContract.create(tokenAccount.name, TOTAL_SUPPLY);
-            await tokenContract.issue(ACCOUNT_NAME, TOTAL_SUPPLY, 'memo');
+            await tokenContract.actions.create([tokenAccount.name, TOTAL_SUPPLY]);
+            await tokenContract.actions.issue([ACCOUNT_NAME, TOTAL_SUPPLY, 'memo']);
         } catch (error) {
         }
     }
@@ -484,7 +484,10 @@ describe('Account', function () {
                 const accountRandomAuth = await account.createSubAuthority('random');
 
                 try {
-                    await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
+                    await faucetContract.actions.produce(
+                        [account.name, "100.0000 TKNS", account.name, "memo"],
+                        { from: accountRandomAuth }
+                    );
                 } catch (error) {
                     assert(error.includes('action declares irrelevant authority'));
                 }
@@ -496,7 +499,10 @@ describe('Account', function () {
                     }
                 ]);
 
-                await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
+                await faucetContract.actions.produce(
+                    [account.name, "100.0000 TKNS", account.name, "memo"],
+                    { from: accountRandomAuth }
+                );
             });
 
             it('Should throw if one does not provide array as abilities', async () => {

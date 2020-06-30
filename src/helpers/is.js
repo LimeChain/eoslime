@@ -6,7 +6,7 @@ module.exports = function (data) {
                 throw new Error(errorMessage);
             }
 
-            recursivelyCheckIfInstance(data, ofObject);
+            return recursivelyCheckIfInstance(data, ofObject);
         }
     }
 }

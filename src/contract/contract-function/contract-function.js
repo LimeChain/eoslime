@@ -10,6 +10,7 @@ class ContractFunction extends EventClass {
 
     constructor (contract, functionName, functionFields) {
         super(EVENTS);
+
         this.contract = contract;
         this.functionName = functionName;
         this.functionFields = functionFields;
@@ -19,77 +20,75 @@ class ContractFunction extends EventClass {
     async broadcast (params, options) {
         is(this.contract.executor).instanceOf('BaseAccount', 'executor is missing');
 
-        const functionParams = params.slice(0, this.functionFields.length);
-        const functionRawTxData = buildFunctionRawTxData.call(this, this.contract.executor, functionParams);
-
-        // Optionals starts from the last function parameter position
-        const optionals = options instanceof Object ? options : null;
-        for (let i = 0; i < optionalsFunctions.all.length; i++) {
-            const optionalFunction = optionalsFunctions.all[i];
-            optionalFunction(optionals, functionRawTxData);
+        const txOptions = {
+            broadcast: true,
+            sign: true
         }
 
-        const txReceipt = await executeFunction(
-            this.contract.provider.eos,
-            functionRawTxData,
-            { broadcast: true, sign: true, keyProvider: functionRawTxData.defaultExecutor.privateKey }
-        );
+        const txReceipt = await executeFunction.call(this, params, options, txOptions);
 
-        this.emit(EVENTS.processed, txReceipt, functionParams);
+        this.emit(EVENTS.processed, txReceipt, params);
         return txReceipt;
     }
 
     async getRawTransaction (params, options) {
-        const functionRawTxData = buildFunctionRawTxData.call(this, this.contract.executor, ...params);
+        const txOptions = {
+            broadcast: false,
+            sign: false
+        }
 
-        // Optionals starts from the last function parameter position
-        // const optionals = options instanceof Object ? options : null;
-        // for (let i = 0; i < optionalsFunctions.all.length; i++) {
-        //     const optionalFunction = optionalsFunctions.all[i];
-        //     optionalFunction(optionals, functionRawTxData);
-        // }
-
-
-        const rawTransaction = await executeFunction(
-            this.contract.provider.eos,
-            functionRawTxData,
-            { broadcast: false, sign: false }
-        );
-
+        const rawTransaction = await executeFunction.call(this, params, options, txOptions);
         return rawTransaction.transaction.transaction;
     }
 
     async sign (params, options) {
-        is(signer).instanceOf('BaseAccount');
+        const txOptions = {
+            broadcast: false,
+            sign: true
+        }
 
-        const functionRawTxData = buildFunctionRawTxData.call(this, signer, ...params);
-
-        // Optionals starts from the last function parameter position
-        // const optionals = options instanceof Object ? options : null;
-        // for (let i = 0; i < optionalsFunctions.all.length; i++) {
-        //     const optionalFunction = optionalsFunctions.all[i];
-        //     optionalFunction(optionals, functionRawTxData);
-        // }
-
-
-        const rawTransaction = await executeFunction(
-            this.contract.provider.eos,
-            functionRawTxData,
-            { broadcast: false, sign: true, keyProvider: signer.privateKey }
-        );
-
+        const rawTransaction = await executeFunction.call(this, params, options, txOptions);
         return rawTransaction.transaction;
     }
 }
 
-const buildFunctionRawTxData = function (authorizer, params) {
+async function executeFunction (params, fnOptions, txOptions) {
+    const functionRawTxData = buildFunctionRawTxData.call(
+        this,
+        this.contract.executor,
+        params,
+        fnOptions
+    );
+
+    return this.contract.provider.eos.transaction(
+        {
+            actions: functionRawTxData.actions
+        },
+        { ...txOptions, keyProvider: functionRawTxData.defaultExecutor.privateKey }
+    );
+};
+
+function buildFunctionRawTxData (authorizer, params, options) {
     const structuredParams = structureParamsToExpectedLook(params, this.functionFields);
     const functionTx = buildMainFunctionTx(this.contract.name, this.functionName, structuredParams, authorizer);
+
+    processOptions(options, functionTx);
 
     return functionTx;
 }
 
-const buildMainFunctionTx = function (contractName, actionName, data, authorizationAccount) {
+function structureParamsToExpectedLook (params, expectedParamsLook) {
+    let structuredParams = {};
+
+    for (let i = 0; i < expectedParamsLook.length; i++) {
+        let expectedParam = expectedParamsLook[i].name;
+        structuredParams[expectedParam] = params[i];
+    }
+
+    return structuredParams;
+};
+
+function buildMainFunctionTx (contractName, actionName, data, authorizationAccount) {
     return {
         defaultExecutor: authorizationAccount,
         actions: [
@@ -103,24 +102,12 @@ const buildMainFunctionTx = function (contractName, actionName, data, authorizat
     };
 };
 
-const structureParamsToExpectedLook = function (params, expectedParamsLook) {
-    let structuredParams = {};
-
-    for (let i = 0; i < expectedParamsLook.length; i++) {
-        let expectedParam = expectedParamsLook[i].name;
-        structuredParams[expectedParam] = params[i];
+function processOptions (options, functionRawTxData) {
+    const optionals = options instanceof Object ? options : null;
+    for (let i = 0; i < optionalsFunctions.all.length; i++) {
+        const optionalFunction = optionalsFunctions.all[i];
+        optionalFunction(optionals, functionRawTxData);
     }
-
-    return structuredParams;
-};
-
-const executeFunction = async function (eos, functionRawTx, options) {
-    return eos.transaction(
-        {
-            actions: functionRawTx.actions
-        },
-        options
-    );
-};
+}
 
 module.exports = ContractFunction;

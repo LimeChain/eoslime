@@ -240,9 +240,9 @@ describe('Providers', function () {
             const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
             const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-            await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+            await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
             const tokensHolder = await eoslimeInstance.Account.createRandom();
-            await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+            await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
             // With equal criteria
             const equalResult = await Provider.select('withdrawers').from(faucetContract.name).equal(tokensHolder.name).find();
@@ -281,9 +281,9 @@ describe('Providers', function () {
                 const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
                 const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
                 const tokensHolder = await eoslimeInstance.Account.createRandom();
-                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+                await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
                 await Provider.select().find();
             } catch (error) {
@@ -299,9 +299,9 @@ describe('Providers', function () {
                 const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
                 const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
                 const tokensHolder = await eoslimeInstance.Account.createRandom();
-                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+                await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
                 await Provider.select('withdrawers').from().find();
             } catch (error) {
@@ -317,9 +317,9 @@ describe('Providers', function () {
                 const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
                 const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
                 const tokensHolder = await eoslimeInstance.Account.createRandom();
-                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+                await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
                 await Provider.select('withdrawers').from(faucetContract.name).scope().find();
             } catch (error) {

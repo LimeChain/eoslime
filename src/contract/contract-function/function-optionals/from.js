@@ -1,7 +1,7 @@
-const Account = require("./../../../account/normal-account/account");
+const is = require('../../../helpers/is')
 
 const fromOption = function (optionals, rawTransaction) {
-    if (optionals && optionals.from instanceof Account) {
+    if (optionals && is(optionals.from).instanceOf('BaseAccount')) {
         rawTransaction.defaultExecutor = optionals.from;
         for (let i = 0; i < rawTransaction.actions.length; i++) {
             rawTransaction.actions[i].authorization = [rawTransaction.defaultExecutor.executiveAuthority];

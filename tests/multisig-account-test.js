@@ -27,11 +27,11 @@ describe('Multi signature account', function () {
             const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
             multiSigAccount.loadAccounts(accounts);
 
-            const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-            await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, proposalId);
+            const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+            await multiSigAccount.approve(multiSigAccount.accounts[1].publicKey, proposalId);
             await multiSigAccount.processProposal(proposalId);
 
-            const withdrawers = (await faucetContract.withdrawers.find())[0];
+            const withdrawers = (await faucetContract.tables.withdrawers.find())[0];
             assert(eoslime.utils.toName(withdrawers.account) == account.name);
             assert(withdrawers.quantity == "100.0000 TKNS");
         });
@@ -51,11 +51,11 @@ describe('Multi signature account', function () {
             const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
             multiSigAccount.loadKeys(keys.map((key) => { return key.privateKey }));
 
-            const proposalId = await multiSigAccount.propose(faucetContract.produce, [multiSigAccount.name, "100.0000 TKNS", multiSigAccount.name, "memo"])
+            const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [multiSigAccount.name, "100.0000 TKNS", multiSigAccount.name, "memo"])
             await multiSigAccount.approve(multiSigAccount.accounts[1].publicKey, proposalId)
             await multiSigAccount.processProposal(proposalId);
 
-            const withdrawers = (await faucetContract.withdrawers.find())[0];
+            const withdrawers = (await faucetContract.tables.withdrawers.find())[0];
             assert(eoslime.utils.toName(withdrawers.account) == account.name);
             assert(withdrawers.quantity == "100.0000 TKNS");
         });
@@ -71,7 +71,7 @@ describe('Multi signature account', function () {
             const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
             multiSigAccount.loadAccounts(accounts);
 
-            const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+            const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
             for (let i = 0; i < accounts.length; i++) {
                 await multiSigAccount.approve(accounts[i].publicKey, proposalId);
             }
@@ -80,7 +80,7 @@ describe('Multi signature account', function () {
 
             await multiSigAccount.processProposal(proposalId);
 
-            const withdrawers = (await faucetContract.withdrawers.find())[0];
+            const withdrawers = (await faucetContract.tables.withdrawers.find())[0];
             assert(eoslime.utils.toName(withdrawers.account) == account.name);
             assert(withdrawers.quantity == "100.0000 TKNS");
         });
@@ -119,7 +119,7 @@ describe('Multi signature account', function () {
                 const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
                 multiSigAccount.loadAccounts(accounts);
 
-                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
                 await multiSigAccount.approve('Fake account', proposalId);
 
                 assert(false);
@@ -140,8 +140,8 @@ describe('Multi signature account', function () {
                 const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
                 multiSigAccount.loadAccounts(accounts);
 
-                await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-                await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, 'Fake proposal');
+                await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.approve(multiSigAccount.accounts[1].publicKey, 'Fake proposal');
 
                 assert(false);
             } catch (error) {
@@ -164,8 +164,8 @@ describe('Multi signature account', function () {
                 const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
                 multiSigAccount.loadAccounts(accounts);
 
-                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
-                await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, proposalId);
+                const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                await multiSigAccount.approve(multiSigAccount.accounts[1].publicKey, proposalId);
 
                 await multiSigAccount.processProposal('Fake proposal');
 
@@ -187,7 +187,7 @@ describe('Multi signature account', function () {
                 const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
                 multiSigAccount.loadAccounts(accounts);
 
-                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
                 for (let i = 0; i < accounts.length; i++) {
                     await multiSigAccount.approve(accounts[i].publicKey, proposalId);
                 }
@@ -212,7 +212,7 @@ describe('Multi signature account', function () {
                 const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);
                 multiSigAccount.loadAccounts(accounts);
 
-                const proposalId = await multiSigAccount.propose(faucetContract.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
+                const proposalId = await multiSigAccount.propose(faucetContract.actions.produce, [account.name, "100.0000 TKNS", account.name, "memo"]);
                 await multiSigAccount.processProposal(proposalId);
 
                 assert(false);
