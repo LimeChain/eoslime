@@ -6,7 +6,7 @@ class MultiSignatureAccount extends BaseAccount {
     constructor (name, privateKey, provider, authority) {
         super(name, privateKey, provider, authority)
 
-        this.accounts = [this];
+        this.accounts = [];
         this.proposals = {};
     }
 

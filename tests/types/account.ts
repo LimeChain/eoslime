@@ -14,6 +14,8 @@ import { assertTransactionResult } from './utils';
 
 describe('All types of accounts', function () {
 
+    this.timeout(20000);
+
     const ACCOUNT_NAME = 'eosio';
     const ACCOUNT_PRIVATE_KEY = '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3';
 
@@ -361,10 +363,13 @@ describe('All types of accounts', function () {
             });
 
             it('Should approve a transaction for broadcasting', async () => {
+                const accounts = await eoslime.Account.createRandoms(2);
                 const multiSigAccount = eoslime.MultiSigAccount.load(ACCOUNT_NAME, ACCOUNT_PRIVATE_KEY);
+                multiSigAccount.loadAccounts(accounts);
+
                 const proposalId = await multiSigAccount.propose(contract.actions.test, []);
 
-                await multiSigAccount.approve(multiSigAccount.publicKey, proposalId);
+                await multiSigAccount.approve(multiSigAccount.accounts[0].publicKey, proposalId);
             });
 
             it('Should broadcast a proposed transaction', async () => {

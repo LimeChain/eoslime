@@ -199,45 +199,95 @@ describe("Contract", function () {
             }
         });
 
-        it('Should get the raw transaction from the action', async () => {
+        function assertRawTransaction (tx, contractName) {
+            assert(tx.expiration != undefined);
+            assert(tx.ref_block_num != undefined);
+            assert(tx.ref_block_prefix != undefined);
+            assert(tx.max_net_usage_words != undefined);
+            assert(tx.max_cpu_usage_ms != undefined);
+            assert(tx.delay_sec != undefined);
+            assert(tx.context_free_actions != undefined);
+            assert(tx.actions != undefined);
+            assert(tx.actions[0].name == 'produce');
+            assert(tx.actions[0].account == contractName);
+            assert(tx.actions[0].data != undefined);
+            assert(tx.actions[0].authorization != undefined);
+        }
+
+        it('Should get a raw transaction from action', async () => {
             const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
 
             const rawActionTx = await faucetContract.actions.produce.getRawTransaction([tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo']);
-            assert(rawActionTx.expiration != undefined);
-            assert(rawActionTx.ref_block_num != undefined);
-            assert(rawActionTx.ref_block_prefix != undefined);
-            assert(rawActionTx.max_net_usage_words != undefined);
-            assert(rawActionTx.max_cpu_usage_ms != undefined);
-            assert(rawActionTx.delay_sec != undefined);
-            assert(rawActionTx.context_free_actions != undefined);
-            assert(rawActionTx.actions != undefined);
-            assert(rawActionTx.actions[0].name == 'produce');
-            assert(rawActionTx.actions[0].account == faucetContract.name);
-            assert(rawActionTx.actions[0].data != undefined);
-            assert(rawActionTx.actions[0].authorization != undefined);
+            assertRawTransaction(rawActionTx, faucetContract.name);
         });
 
-        it('Should sign the action without broadcasting it', async () => {
+        it('Should get a raw transaction from payable action', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            const rawActionTx = await faucetContract.actions.produce.getRawTransaction([tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo'], { tokens: '5.0000 SYS' });
+
+            assertRawTransaction(rawActionTx, faucetContract.name);
+            assert(rawActionTx.actions[1].name == 'transfer');
+            assert(rawActionTx.actions[1].account == 'eosio.token');
+            assert(rawActionTx.actions[1].data != undefined);
+            assert(rawActionTx.actions[1].authorization != undefined);
+        });
+
+        it('Should get a raw transaction from unique action', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+
+            const rawActionTx = await faucetContract.actions.produce.getRawTransaction([tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo'], { unique: true });
+
+            assertRawTransaction(rawActionTx, faucetContract.name);
+            assert(rawActionTx.actions[1].name == 'nonce');
+            assert(rawActionTx.actions[1].account == 'eosio.null');
+            assert(rawActionTx.actions[1].data != undefined);
+            assert(rawActionTx.actions[1].authorization != undefined);
+        });
+
+        function assertSignedTransaction (tx, contractName) {
+            assert(tx.signatures.length == 1);
+            assertRawTransaction(tx.transaction, contractName);
+        }
+
+        it('Should sign an action without broadcasting it', async () => {
             const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
             const tokensHolder = await eoslime.Account.createRandom();
             const signer = await eoslime.Account.createRandom();
 
             const signedActionTx = await faucetContract.actions.produce.sign([tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo'], { from: signer });
+            assertSignedTransaction(signedActionTx, faucetContract.name);
+        });
 
-            assert(signedActionTx.signatures.length == 1);
-            assert(signedActionTx.transaction.expiration != undefined);
-            assert(signedActionTx.transaction.ref_block_num != undefined);
-            assert(signedActionTx.transaction.ref_block_prefix != undefined);
-            assert(signedActionTx.transaction.max_net_usage_words != undefined);
-            assert(signedActionTx.transaction.max_cpu_usage_ms != undefined);
-            assert(signedActionTx.transaction.delay_sec != undefined);
-            assert(signedActionTx.transaction.context_free_actions != undefined);
-            assert(signedActionTx.transaction.actions != undefined);
-            assert(signedActionTx.transaction.actions[0].name == 'produce');
-            assert(signedActionTx.transaction.actions[0].account == faucetContract.name);
-            assert(signedActionTx.transaction.actions[0].data != undefined);
-            assert(signedActionTx.transaction.actions[0].authorization != undefined);
+        it('Should sign a payable action ', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+            const signer = await eoslime.Account.createRandom();
+
+            const signedActionTx = await faucetContract.actions.produce.sign([tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo'], { tokens: '5.0000 SYS', from: signer });
+
+            assertSignedTransaction(signedActionTx, faucetContract.name);
+            assert(signedActionTx.transaction.actions[1].name == 'transfer');
+            assert(signedActionTx.transaction.actions[1].account == 'eosio.token');
+            assert(signedActionTx.transaction.actions[1].data != undefined);
+            assert(signedActionTx.transaction.actions[1].authorization != undefined);
+        });
+
+        it('Should sign unique action ', async () => {
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const tokensHolder = await eoslime.Account.createRandom();
+            const signer = await eoslime.Account.createRandom();
+
+            const signedActionTx = await faucetContract.actions.produce.sign([tokensHolder.name, '100.0000 TKNS', tokenContract.name, 'memo'], { unique: true, from: signer });
+
+            assertSignedTransaction(signedActionTx, faucetContract.name);
+            assert(signedActionTx.transaction.actions[1].name == 'nonce');
+            assert(signedActionTx.transaction.actions[1].account == 'eosio.null');
+            assert(signedActionTx.transaction.actions[1].data != undefined);
+            assert(signedActionTx.transaction.actions[1].authorization != undefined);
         });
 
         it('Should throw if trying to sign the action with an invalid signer', async () => {
