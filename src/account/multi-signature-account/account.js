@@ -12,7 +12,7 @@ class MultiSignatureAccount extends BaseAccount {
 
     loadKeys (privateKeys) {
         for (let i = 0; i < privateKeys.length; i++) {
-            this.accounts.push(new BaseAccount(this.name, privateKeys[i], this.provider, this.executiveAuthority.permission));
+            this.accounts.push(new BaseAccount(this.name, privateKeys[i], this.provider, this.authority.permission));
         }
     }
 

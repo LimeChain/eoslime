@@ -95,7 +95,7 @@ function buildMainFunctionTx (contractName, actionName, data, authorizationAccou
             {
                 account: contractName,
                 name: actionName,
-                authorization: [authorizationAccount.executiveAuthority],
+                authorization: [authorizationAccount.authority],
                 data: data
             }
         ]

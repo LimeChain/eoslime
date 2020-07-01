@@ -44,8 +44,8 @@ describe('Multi signature account', function () {
                 await eoslime.utils.generateKeys()
             ]
 
-            await account.addAuthorityKey(keys[0].publicKey)
-            await account.addAuthorityKey(keys[1].publicKey)
+            await account.addOnBehalfKey(keys[0].publicKey)
+            await account.addOnBehalfKey(keys[1].publicKey)
             await account.increaseThreshold(2);
 
             const multiSigAccount = eoslime.MultiSigAccount.load(account.name, account.privateKey);

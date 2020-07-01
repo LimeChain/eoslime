@@ -27,20 +27,21 @@ describe('All types of accounts', function () {
             assert(account.provider !== undefined);
             assert(account.publicKey !== undefined);
             assert(account.privateKey !== undefined);
-            assert(account.executiveAuthority.actor !== undefined);
-            assert(account.executiveAuthority.permission !== undefined);
+            assert(account.authority.actor !== undefined);
+            assert(account.authority.permission !== undefined);
 
             assert(typeof (account.send) == 'function');
             assert(typeof (account.buyRam) == 'function');
             assert(typeof (account.setWeight) == 'function');
             assert(typeof (account.getBalance) == 'function');
             assert(typeof (account.buyBandwidth) == 'function');
+            assert(typeof (account.addAuthority) == 'function');
             assert(typeof (account.addPermission) == 'function');
-            assert(typeof (account.addAuthorityKey) == 'function');
+            assert(typeof (account.addOnBehalfKey) == 'function');
             assert(typeof (account.getAuthorityInfo) == 'function');
             assert(typeof (account.increaseThreshold) == 'function');
-            assert(typeof (account.createSubAuthority) == 'function');
             assert(typeof (account.addOnBehalfAccount) == 'function');
+            assert(typeof (account.setAuthorityAbilities) == 'function');
         }
 
         describe('Static functions', function () {
@@ -184,12 +185,10 @@ describe('All types of accounts', function () {
                 assertTransactionResult(tx);
             });
 
-            it('Should create authority', async () => {
+            it('Should add authority', async () => {
                 const account = await eoslime.Account.createRandom();
-                const newAuthorityAccount = await account.createSubAuthority('custom');
-
-                assertAccount(newAuthorityAccount);
-                assert(typeof (newAuthorityAccount.setAuthorityAbilities) == 'function');
+                const tx = await account.addAuthority('custom');
+                assertTransactionResult(tx);
             });
 
             it('Should create permission for active authority', async () => {
@@ -210,7 +209,7 @@ describe('All types of accounts', function () {
                 const account = await eoslime.Account.createRandom();
                 const keysPair = await utils.generateKeys();
 
-                const tx = await account.addAuthorityKey(keysPair.publicKey);
+                const tx = await account.addOnBehalfKey(keysPair.publicKey);
                 assertTransactionResult(tx);
             });
 
@@ -220,7 +219,7 @@ describe('All types of accounts', function () {
                 const account = await eoslime.Account.createRandom();
                 const keysPair = await utils.generateKeys();
 
-                const tx = await account.addAuthorityKey(keysPair.publicKey, WEIGHT);
+                const tx = await account.addOnBehalfKey(keysPair.publicKey, WEIGHT);
                 assertTransactionResult(tx);
             });
 
@@ -249,7 +248,7 @@ describe('All types of accounts', function () {
                 const account = await eoslime.Account.createRandom();
 
                 const keysPair = await utils.generateKeys();
-                await account.addAuthorityKey(keysPair.publicKey);
+                await account.addOnBehalfKey(keysPair.publicKey);
                 const tx = await account.increaseThreshold(THRESHOLD);
 
                 assertTransactionResult(tx);
@@ -290,9 +289,8 @@ describe('All types of accounts', function () {
             const { name } = await eoslime.Contract.deploy(WASM_PATH, ABI_PATH);
 
             const account = await eoslime.Account.createRandom();
-            const authorityAccount = await account.createSubAuthority('custom');
-
-            const tx = await authorityAccount.setAuthorityAbilities([
+            await account.addAuthority('custom');
+            const tx = await account.setAuthorityAbilities('custom', [
                 {
                     action: 'test',
                     contract: name
@@ -311,8 +309,8 @@ describe('All types of accounts', function () {
             assert(account.proposals);
             assert(account.publicKey);
             assert(account.privateKey);
-            assert(account.executiveAuthority.actor);
-            assert(account.executiveAuthority.permission);
+            assert(account.authority.actor);
+            assert(account.authority.permission);
 
             assert(typeof (account.loadKeys) == 'function');
             assert(typeof (account.loadAccounts) == 'function');

@@ -2,10 +2,10 @@ const eosECC = require('eosjs').modules.ecc;
 
 class BaseAccount {
 
-    constructor(name, privateKey, provider, permission) {
+    constructor (name, privateKey, provider, permission) {
         this.name = name;
         this.provider = provider;
-        this.executiveAuthority = {
+        this.authority = {
             actor: name,
             permission: permission
         }
@@ -15,7 +15,7 @@ class BaseAccount {
     }
 
     async getAuthorityInfo () {
-        const authority = arguments[0] ? arguments[0] : this.executiveAuthority.permission;
+        const authority = arguments[0] ? arguments[0] : this.authority.permission;
 
         const accountInfo = await this.provider.eos.getAccount(this.name);
         const authorityInfo = accountInfo.permissions.find((permission) => {

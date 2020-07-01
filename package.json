@@ -8,7 +8,7 @@
         "build": "tsc",
         "test": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
         "test-prod": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/*.js'",
-        "test-types": "bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/contract.ts",
+        "test-types": "bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/*.ts",
         "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },
     "author": "Lyubomir Kiprov (Limechain)",

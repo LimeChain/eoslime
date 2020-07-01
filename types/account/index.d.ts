@@ -32,10 +32,15 @@ declare class BaseAccount {
     public publicKey: string;
     public privateKey: string;
     public provider: BaseProvider;
-    public executiveAuthority: ExecutiveAuthority;
+    public authority: ExecutiveAuthority;
 
     constructor (name: string, privateKey: string, provider: BaseProvider, permission: string);
     public getAuthorityInfo (): Promise<AuthorityDetails>;
+}
+
+interface AuthorityAbilities {
+    action: string;
+    contract: string;
 }
 
 export class Account extends BaseAccount {
@@ -45,26 +50,14 @@ export class Account extends BaseAccount {
     public buyRam (bytes: number, payer?: Account): Promise<TransactionResult>;
     public buyBandwidth (cpu: string, net: string, payer?: Account): Promise<TransactionResult>;
     public send (receiver: Account, amount: string, symbol: string): Promise<TransactionResult>;
-    public createSubAuthority (authorityName: string, threshold?: number): Promise<AuthorityAccount>;
+    public addAuthority (authorityName: string, threshold?: number): Promise<TransactionResult>;
+    public setAuthorityAbilities (authorityName: string, abilities: Array<AuthorityAbilities>): Promise<TransactionResult>;
     public increaseThreshold (threshold: number): Promise<TransactionResult>;
     public addPermission (authorityName: string, weight?: number): Promise<TransactionResult>;
     public addOnBehalfAccount (accountName: string, authority?: string, weight?: number): Promise<TransactionResult>;
-    public addAuthorityKey (publicKey: string, weight?: number): Promise<TransactionResult>;
+    public addOnBehalfKey (publicKey: string, weight?: number): Promise<TransactionResult>;
     public setWeight (weight: number): Promise<TransactionResult>;
     public getBalance (symbol?: string, code?: string): Promise<Array<string>>;
-}
-
-interface AuthorityAbilities {
-    action: string;
-    contract: string;
-}
-
-declare class AuthorityAccount extends Account {
-
-    public parentPermission: string;
-
-    constructor (parentPermission: string, name: string, privateKey: string, provider: BaseProvider, permission: string);
-    public setAuthorityAbilities (abilities: Array<AuthorityAbilities>): Promise<TransactionResult>;
 }
 
 export class MultiSignatureFactory {
