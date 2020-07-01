@@ -17,8 +17,23 @@ declare class ContractInitializator extends EventClass {
 
     constructor (provider: BaseProvider);
 
-    /* Own functions */
+    /**
+     * @description Instantiate a contract by retrieving the ABI from the chain
+     *
+     * @param {string} contractName Contract name of the contract one wants to instantiate
+     * @param {Account} [contractExecutorAccount] Account responsible for signing and broadcasting transactions
+     * @returns {Promise<Contract>} Instantiated contract
+     */
     public at (contractName: string, contractExecutorAccount?: Account): Promise<Contract>;
+
+    /**
+     * @description Instantiate a contract by providing the ABI
+     *
+     * @param {*} abi Contract ABI
+     * @param {string} contractName Contract name of the contract one wants to instantiate
+     * @param {Account} [contractExecutorAccount] Account responsible for signing and broadcasting transactions
+     * @returns {Contract} Instantiated contract
+     */
     public fromFile (abi: any, contractName: string, contractExecutorAccount?: Account): Contract
 }
 
@@ -36,9 +51,47 @@ export class ContractFactory extends ContractInitializator {
     public on (eventName: 'deploy', callback: (contract: Contract, deployTx: [TransactionResult, TransactionResult]) => void): void;
 
     /* Own functions */
+
+    /**
+     * @description Deploy a new contract on a random generated account from ABI and WASM files
+     *
+     * @param {string} wasmPath Path to the contract WASM file 
+     * @param {string} abiPath Path to the contract ABI file
+     * @param {DeployOptions} [options] 
+     * @returns {Promise<Contract>} Deployed contract
+     */
     public deploy (wasmPath: string, abiPath: string, options?: DeployOptions): Promise<Contract>;
+
+    /**
+     * @description Deploy a new contract on a random generated account from loaded ABI and WASM 
+     *
+     * @param {string} wasm Contract WASM
+     * @param {*} abi Contract ABI
+     * @param {DeployOptions} [options]
+     * @returns {Promise<Contract>} Deployed contract
+     */
     public deployRaw (wasm: string, abi: any, options?: DeployOptions): Promise<Contract>;
+
+    /**
+     * @description Deploy a new contract on the provided account from ABI and WASM files
+     *
+     * @param {string} wasmPath Path to the contract WASM file 
+     * @param {string} abiPath Path to the contract ABI file
+     * @param {Account} contractAccount Account the contract will be deployed on
+     * @param {DeployOptions} [options]
+     * @returns {Promise<Contract>} Deployed contract
+     */
     public deployOnAccount (wasmPath: string, abiPath: string, contractAccount: Account, options?: DeployOptions): Promise<Contract>;
+
+    /**
+     * @description Deploy a new contract on the provided account from loaded ABI and WASM 
+     *
+     * @param {string} wasm Contract WASM
+     * @param {*} abi Contract ABI
+     * @param {Account} contractAccount Account the contract will be deployed on
+     * @param {DeployOptions} [options]
+     * @returns {Promise<Contract>} Deployed contract
+     */
     public deployRawOnAccount (wasm: string, abi: any, contractAccount: Account, options?: DeployOptions): Promise<Contract>;
 }
 
@@ -56,7 +109,23 @@ export interface ContractFunction extends EventClass {
     on (eventName: 'processed', callback: (txResult: TransactionResult, ...fnParams: any[]) => void): void;
 
     /* Own functions */
+
+    /**
+     * @description Construct raw transaction for an action
+     *
+     * @param {any[]} params Action arguments
+     * @param {ContractFunctionOptions} [options]
+     * @returns {Promise<RawTransaction>} Raw transaction
+     */
     getRawTransaction (params: any[], options?: ContractFunctionOptions): Promise<RawTransaction>;
+
+    /**
+     * @description Sign action and return a ready-to-broadcast transaction
+     *
+     * @param {any[]} params Action arguments
+     * @param {ContractFunctionOptions} [options]
+     * @returns {Promise<SignedTransaction>} Ready to broadcast transaction
+     */
     sign (params: any[], options?: ContractFunctionOptions): Promise<SignedTransaction>;
 }
 
@@ -79,6 +148,17 @@ export class Contract {
 
     constructor (provider: BaseProvider, abi: any, contractName: string, contractExecutorAccount: Account);
 
+    /**
+     * @description Enable the contract to make inline actions
+     *
+     * @returns {Promise<void>} void
+     */
     public makeInline (): Promise<void>;
-    public getRawWASM (): Promise<any>;
+
+    /**
+     * @description Retrieve contract raw WASM
+     *
+     * @returns {Promise<string>} Contract raw WASM
+     */
+    public getRawWASM (): Promise<string>;
 }
