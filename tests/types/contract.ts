@@ -16,7 +16,9 @@ const WASM_PATH = "./tests/testing-contracts/compiled/faucet.wasm";
 
 describe("Contract", function () {
 
-    const account = eoslime.Account.load('eosio', '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3');
+    this.timeout(20000);
+
+    const eosio = eoslime.Account.load('eosio', '5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3');
 
     const assertContract = function (contract: Contract): void {
         assert(typeof contract.actions.produce == "function");
@@ -30,17 +32,17 @@ describe("Contract", function () {
 
     describe("Instantiation", function () {
         it("Should have fromFile function", async () => {
-            const contract = eoslime.Contract.fromFile(ABI_PATH, 'contracttest', account);
+            const contract = eoslime.Contract.fromFile(ABI_PATH, 'contracttest', eosio);
             assertContract(contract);
         });
 
         it("Should have at function", async () => {
             const { name } = await eoslime.Contract.deploy(WASM_PATH, ABI_PATH);
-            const contract = await eoslime.Contract.at(name, account);
+            const contract = await eoslime.Contract.at(name, eosio);
             assertContract(contract);
         });
 
-        it("Should set default account as executor if none is provided", async () => {
+        it("Should set default eosio as executor if none is provided", async () => {
             const contract = eoslime.Contract.fromFile(ABI_PATH, 'contracttest');
             assertContract(contract);
         });
@@ -91,7 +93,7 @@ describe("Contract", function () {
 
         it("Should execute a blockchain action from another executor", async () => {
             const contract = await eoslime.Contract.deploy(WASM_PATH, ABI_PATH);
-            await contract.actions.test([], { from: account });
+            await contract.actions.test([], { from: eosio });
         });
 
         it('Should process nonce-action', async () => {
@@ -101,7 +103,7 @@ describe("Contract", function () {
 
         it('Should process token action', async () => {
             const contract = await eoslime.Contract.deploy(WASM_PATH, ABI_PATH);
-            await contract.actions.test([], { tokens: '5.0000 SYS' });
+            await contract.actions.test([], { from: eosio, tokens: '5.0000 SYS' });
         });
 
         describe("Methods", function () {
@@ -115,7 +117,7 @@ describe("Contract", function () {
 
             it('Should get a raw transaction from an action with options', async () => {
                 const contract = await eoslime.Contract.deploy(WASM_PATH, ABI_PATH);
-                const rawActionTx = await contract.actions.test.getRawTransaction([], { from: account });
+                const rawActionTx = await contract.actions.test.getRawTransaction([], { from: eosio });
 
                 assertRawTransaction(rawActionTx);
             });
@@ -186,7 +188,7 @@ describe("Contract", function () {
             const { name } = await eoslime.Contract.deploy(WASM_PATH, ABI_PATH);
 
             eoslime.Contract.on('init', (contract: Contract) => { assertContract(contract) });
-            eoslime.Contract.fromFile(ABI_PATH, name, account);
+            eoslime.Contract.fromFile(ABI_PATH, name, eosio);
         });
 
         it("Should have deploy event", async () => {

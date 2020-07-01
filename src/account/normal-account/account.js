@@ -1,7 +1,6 @@
 const is = require('../../helpers/is')
 const eosECC = require('eosjs').modules.ecc;
 const BaseAccount = require('../base-account');
-// const AuthorityAccount = require('../authority-account/account');
 
 class Account extends BaseAccount {
 
@@ -42,25 +41,49 @@ class Account extends BaseAccount {
             this.name,
             receiver.name,
             `${amount} ${symbol}`,
-            this.executiveAuthority,
+            this.authority,
             { broadcast: true, sign: true, keyProvider: this.privateKey }
         );
     }
 
-    async createSubAuthority (authorityName, threshold = 1) {
+    async addAuthority (authorityName, threshold = 1) {
         const authorization = {
             threshold,
             keys: [{ key: this.publicKey, weight: threshold }]
         }
 
-        await updateAuthority.call(this, authorityName, this.executiveAuthority.permission, authorization);
-        // return new AuthorityAccount(
-        //     this.executiveAuthority.permission,
-        //     this.name,
-        //     this.privateKey,
-        //     this.provider,
-        //     authorityName
-        // );
+        return updateAuthority.call(this, authorityName, this.authority.permission, authorization);
+    }
+
+    async setAuthorityAbilities (authorityName, abilities) {
+        is(abilities).instanceOf('Array');
+
+        const accountInfo = await this.provider.eos.getAccount(this.name);
+        const hasAuthName = accountInfo.permissions.find((permissions) => {
+            return permissions.perm_name == authorityName;
+        });
+
+        if (!hasAuthName) {
+            throw new Error(`
+                Account does not have authority with name: [${authorityName}]. 
+                You could add it by using [addAuthority] function. 
+                For details check [Set authority abilities] suite in account-tests.js
+            `);
+        }
+
+        const txReceipt = await this.provider.eos.transaction(tr => {
+            for (let i = 0; i < abilities.length; i++) {
+                const ability = abilities[i];
+                tr.linkauth({
+                    account: this.name,
+                    code: ability.contract,
+                    type: ability.action,
+                    requirement: authorityName
+                }, { authorization: [this.authority] });
+            }
+        }, { broadcast: true, sign: true, keyProvider: this.privateKey });
+
+        return txReceipt;
     }
 
     async increaseThreshold (threshold) {
@@ -86,7 +109,7 @@ class Account extends BaseAccount {
         }
     }
 
-    async addAuthorityKey (publicKey, weight = 1) {
+    async addOnBehalfKey (publicKey, weight = 1) {
         if (!eosECC.isValidPublic(publicKey)) {
             throw new Error('Provided public key is not a valid one');
         }
@@ -125,7 +148,7 @@ const updateAuthority = async function (authorityName, parent, auth) {
             permission: authorityName,
             parent: parent,
             auth: auth
-        }, { authorization: [this.executiveAuthority] });
+        }, { authorization: [this.authority] });
 
     }, { broadcast: true, sign: true, keyProvider: this.privateKey });
 

@@ -6,13 +6,13 @@ class MultiSignatureAccount extends BaseAccount {
     constructor (name, privateKey, provider, authority) {
         super(name, privateKey, provider, authority)
 
-        this.accounts = [this];
+        this.accounts = [];
         this.proposals = {};
     }
 
     loadKeys (privateKeys) {
         for (let i = 0; i < privateKeys.length; i++) {
-            this.accounts.push(new BaseAccount(this.name, privateKeys[i], this.provider, this.executiveAuthority.permission));
+            this.accounts.push(new BaseAccount(this.name, privateKeys[i], this.provider, this.authority.permission));
         }
     }
 
@@ -26,7 +26,7 @@ class MultiSignatureAccount extends BaseAccount {
     async propose (contractAction, actionData) {
         is(contractAction).instanceOf('ContractFunction');
 
-        const actionTx = await contractAction.sign(this, ...actionData);
+        const actionTx = await contractAction.sign(actionData, { from: this });
         const proposalId = Date.now();
 
         this.proposals[proposalId] = actionTx;
