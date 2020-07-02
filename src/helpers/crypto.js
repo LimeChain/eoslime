@@ -6,7 +6,7 @@ module.exports = {
             let dataHash = cryptoJS.SHA256(data).toString(cryptoJS.enc.Hex);
             return dataHash;
         } catch (error) {
-            throw new Error('Couldn\'t hash the data')
+            throw new Error('Couldn\'t hash the data');
         }
     },
     encrypt: function (data, password) {

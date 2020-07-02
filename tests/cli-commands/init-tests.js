@@ -2,10 +2,12 @@ const fs = require('fs-extra');
 const sinon = require('sinon');
 const assert = require('assert');
 
+const logger = require('../../cli-commands/common/logger');
 const Command = require('../../cli-commands/commands/command');
 const InitCommand = require('../../cli-commands/commands/init/index');
 const AsyncSoftExec = require('../../cli-commands/helpers/async-soft-exec');
 const definition = require('../../cli-commands/commands/init/definition');
+const commandMessages = require('../../cli-commands/commands/init/messages');
 const fileSystemUtil = require('../../cli-commands/helpers/file-system-util');
 const directories = require('../../cli-commands/commands/init/specific/directories.json');
 const WithExampleOption = require('../../cli-commands/commands/init/options/with-example/with-example-option');
@@ -28,7 +30,9 @@ describe('InitCommand', function () {
 
     beforeEach(async () => {
         initCommand = new InitCommand();
-        sinon.stub(AsyncSoftExec.prototype, "exec");
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
+        sinon.stub(AsyncSoftExec.prototype, "exec").callsFake(() => { commandMessages.SuccessfulInstallation(); });
         exampleOptionSpy = sinon.spy(WithExampleOption, "process");
         fileSystemUtilSpy = sinon.spy(fileSystemUtil, "copyAllFilesFromDirTo");
     });
@@ -92,6 +96,12 @@ describe('InitCommand', function () {
         sinon.assert.calledWith(exampleOptionSpy, true);
         checkDirectories();
         checkExampleFiles();
+    });
+
+    it('Should throw when processing command options failed', async () => {
+        sinon.stub(Command.prototype, "processOptions").throws('Test: Process Options Failure');
+
+        assert(await initCommand.execute({}));
     });
 
 });

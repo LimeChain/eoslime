@@ -1,14 +1,9 @@
 const chalk = require('chalk');
+const logger = require('../../common/logger');
 
 module.exports = {
-    'StartDeployment': () => { console.log(chalk.magentaBright('===== Deployment has started... =====')); },
-    'SuccessfulDeploymentOfScript': (script) => { console.log(chalk.greenBright(`===== Successful deployment of ${script} =====`)); },
-    'UnsuccessfulDeploymentOfScript': (script, error) => {
-        console.log(chalk.redBright(`===== Unsuccessful deployment of ${script} =====`));
-        console.log(error);
-    },
-    'UnsuccessfulDeployment': (error) => {
-        console.log(chalk.redBright(`===== Unsuccessful deployment =====`));
-        console.log(error);
-    }
+    'StartDeployment': () => { logger.info(chalk.magentaBright('===== Deployment has started... =====')); },
+    'SuccessfulDeploymentOfScript': (script) => { logger.info(chalk.greenBright(`===== Successful deployment of ${script} =====`)); },
+    'UnsuccessfulDeploymentOfScript': (script, error) => { logger.error(chalk.redBright(`===== Unsuccessful deployment of ${script} =====`), error); },
+    'UnsuccessfulDeployment': (error) => { logger.error(chalk.redBright(`===== Unsuccessful deployment =====`), error); }
 }

@@ -1,10 +1,8 @@
 const chalk = require('chalk');
+const logger = require('../../../../common/logger');
 
 module.exports = {
-    'StoppingNodeos': () => { console.log(chalk.magentaBright('===== Stopping nodeos ... =====')); },
-    'SuccessfullyStopped': () => { console.log(chalk.greenBright(`===== Successfully stopped =====`)); },
-    'UnsuccessfulStopping': (error) => {
-        console.log(chalk.redBright(`===== Nodeos has not been stopped =====`));
-        console.log(error);
-    }
+    'StoppingNodeos': () => { logger.info(chalk.magentaBright('===== Stopping nodeos ... =====')); },
+    'SuccessfullyStopped': () => { logger.info(chalk.greenBright(`===== Successfully stopped =====`)); },
+    'UnsuccessfulStopping': (error) => { logger.error(chalk.redBright(`===== Nodeos has not been stopped =====`), error); }
 }

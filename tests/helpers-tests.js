@@ -1,4 +1,6 @@
+const sinon = require('sinon');
 const assert = require('assert');
+const cryptoJS = require('crypto-js');
 const is = require('./../src/helpers/is');
 const crypto = require('./../src/helpers/crypto');
 const EventClass = require('./../src/helpers/event-class');
@@ -13,22 +15,33 @@ describe('Helpers scripts', function () {
             const expectedHash = 'a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e';
             const resultedHash = crypto.hash('Hello World');
 
-            assert(expectedHash == resultedHash)
+            assert(expectedHash == resultedHash);
         });
 
         it('Should encrypt and decrypt a data', async () => {
             const encryptedData = crypto.encrypt('Hello World', '123');
             const decryptedData = crypto.decrypt(encryptedData, '123');
 
-            assert(decryptedData == 'Hello World')
+            assert(decryptedData == 'Hello World');
+        });
+
+        it('Should throw if it is not able to hash the data', async () => {
+            sinon.stub(cryptoJS, "SHA256").throws();
+            
+            try {
+                crypto.hash();
+            } catch (error) {
+                assert(error.message.includes('Couldn\'t hash the data'));
+            }
+
+            sinon.restore();
         });
 
         it('Should throw if it is not able to encrypt a data', async () => {
             try {
                 crypto.encrypt('Hello World', { fake: 'FAKE' });
-                assert(false);
             } catch (error) {
-                assert(error.message.includes('Couldn\'t encrypt the data'))
+                assert(error.message.includes('Couldn\'t encrypt the data'));
             }
         });
 
@@ -36,9 +49,8 @@ describe('Helpers scripts', function () {
             try {
                 const encryptedData = crypto.encrypt('Hello World', '123');
                 crypto.decrypt(encryptedData, { fake: 'FAKE' });
-                assert(false);
             } catch (error) {
-                assert(error.message.includes('Couldn\'t decrypt the data'))
+                assert(error.message.includes('Couldn\'t decrypt the data'));
             }
         });
     });
@@ -58,8 +70,24 @@ describe('Helpers scripts', function () {
             eventClass.on('created', () => x++);
             eventClass.emit('created');
 
-            assert(x == 2)
+            assert(x == 2);
         });
+
+        it('Should not be able to subscribe for unknown event', async () => {
+            const eventClass = new EventClass({ });
+            eventClass.on('created', () => { });
+
+            assert(eventClass.eventsHooks['created'] == undefined);
+        });
+
+        it('Should be able to subscribe twice for an event', async () => {
+            const eventClass = new EventClass({ 'created': 'created' });
+            eventClass.on('created', () => { });
+            eventClass.on('created', () => { });
+
+            assert(eventClass.eventsHooks['created'].length == 2);
+        });
+
     });
 
     describe('is.js', function () {

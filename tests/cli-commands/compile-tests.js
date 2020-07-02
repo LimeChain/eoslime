@@ -7,8 +7,10 @@ const CompileCommand = require('../../cli-commands/commands/compile/index');
 const AsyncSoftExec = require('../../cli-commands/helpers/async-soft-exec');
 const fileSysUtils = require('../../cli-commands/helpers/file-system-util');
 const definition = require('../../cli-commands/commands/compile/definition');
+const commandMessages = require('../../cli-commands/commands/compile/messages');
 const PathOption = require('../../cli-commands/commands/compile/options/path-option');
 const directories = require('../../cli-commands/commands/compile/specific/directories.json');
+const logger = require('../../cli-commands/common/logger');
 
 describe('CompileCommand', function () {
     const TEST_DIR = './cli-commands-test';
@@ -29,7 +31,8 @@ describe('CompileCommand', function () {
 
     beforeEach(async () => {
         compileCommand = new CompileCommand();
-        sinon.stub(AsyncSoftExec.prototype, "exec");
+        sinon.stub(logger, "info");
+        sinon.stub(logger, "error");
         pathOptionSpy = sinon.spy(PathOption, "process");
         fsCreateDirSpy = sinon.spy(fileSysUtils, "createDir");
     });
@@ -67,6 +70,10 @@ describe('CompileCommand', function () {
     });
 
     it('Should compile when valid contracts folder is specified', async () => {
+        sinon.stub(AsyncSoftExec.prototype, "exec").callsFake(() => {
+            commandMessages.SuccessfulCompilationOfContract();
+        });
+
         createContractsFolder();
         preloadContracts();
 
@@ -97,6 +104,10 @@ describe('CompileCommand', function () {
     });
 
     it('Should compile when valid contract path is specified', async () => {
+        sinon.stub(AsyncSoftExec.prototype, "exec").callsFake(() => {
+            commandMessages.UnsuccessfulCompilationOfContract();
+        });
+
         createContractsFolder();
         preloadContracts();
         
