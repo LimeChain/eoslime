@@ -5,7 +5,7 @@ const Option = require('../../option');
 
 class PathOption extends Option {
 
-    constructor() {
+    constructor () {
         super(
             'path',
             {
@@ -29,7 +29,7 @@ class PathOption extends Option {
             });
         }
 
-        return optionValue.endsWith('.cpp') ? [ { fullPath: optionValue, fileName: path.basename(optionValue, '.cpp') } ] : [];
+        return optionValue.endsWith('.cpp') ? [{ fullPath: optionValue, fileName: path.basename(optionValue, '.cpp') }] : [];
     }
 }
 

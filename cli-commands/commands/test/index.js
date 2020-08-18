@@ -1,23 +1,23 @@
 const Command = require('../command');
-const commandMessages = require('./messages');
+
+const MESSAGE_COMMAND = require('./messages').COMMAND;
 const testCommandDefinition = require('./definition');
 
 const eoslime = require('../../../index');
-
 const testUtils = require('./specific/utils');
 
 // eoslime test --path --network --resource-usage=
 
 class TestCommand extends Command {
 
-    constructor(TestFramework) {
+    constructor (TestFramework) {
         super(testCommandDefinition);
         this.TestFramework = TestFramework;
     }
 
     async execute (args) {
         try {
-            commandMessages.StartTesting();
+            MESSAGE_COMMAND.Start();
 
             args.eoslime = eoslime.init();
             args.testFramework = new this.TestFramework();
@@ -27,14 +27,12 @@ class TestCommand extends Command {
             setTestsHelpers(args.eoslime);
 
             args.testFramework.setDescribeArgs(args.eoslime);
-            args.testFramework.runTests();
-            
-            commandMessages.SuccessfulTesting();
-        } catch (error) {
-            commandMessages.UnsuccessfulTesting(error);
-        }
+            await args.testFramework.runTests();
 
-        return true;
+            MESSAGE_COMMAND.Success();
+        } catch (error) {
+            MESSAGE_COMMAND.Error(error);
+        }
     }
 }
 

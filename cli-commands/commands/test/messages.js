@@ -1,8 +1,9 @@
-const chalk = require('chalk');
 const logger = require('../../common/logger');
 
 module.exports = {
-    'StartTesting': () => { logger.info(chalk.magentaBright('===== Testing has started... =====')); },
-    'SuccessfulTesting': () => { logger.info(chalk.greenBright(`===== Testing completed successfully =====`)); },
-    'UnsuccessfulTesting': (error) => { logger.error(chalk.redBright(`===== Testing failed =====`), error); }
+    'COMMAND': {
+        'Start': () => { logger.info('===== Testing has started... ====='); },
+        'Success': () => { logger.success(`===== Testing completed successfully =====`); },
+        'Error': (error) => { logger.error(`===== Testing failed =====`, error); }
+    }
 }

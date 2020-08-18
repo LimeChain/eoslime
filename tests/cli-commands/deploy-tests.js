@@ -1,187 +1,199 @@
-const fs = require('fs-extra');
+const path = require('path')
 const sinon = require('sinon');
 const assert = require('assert');
-const prompts = require('prompts');
-const eoslime = require('../../index');
+const proxyquire = require('proxyquire').noCallThru();
 
-const logger = require('../../cli-commands/common/logger');
-const Command = require('../../cli-commands/commands/command');
-const Account = require('../../src/account/normal-account/account');
-const DeployCommand = require('../../cli-commands/commands/deploy/index');
 const definition = require('../../cli-commands/commands/deploy/definition');
-const PathOption = require('../../cli-commands/commands/deploy/options/path-option');
+
+const Command = require('../../cli-commands/commands/command');
+const DeployCommand = require('../../cli-commands/commands/deploy/index');
+
 const NetworkOption = require('../../cli-commands/commands/deploy/options/network-option');
-const DeployerOption = require('../../cli-commands/commands/deploy/options/deployer-option');
 
-describe('DeployCommand', function () {
-    const TEST_DIR = './cli-commands-test';
-    const DEFAULT_PATH = './deployment';
-    const INVALID_PATH = './unknown_folder';
-    const DEFAULT_NETWORK = 'local';
-    const INVALID_NETWORK = 'invalid_network';
-    const CUSTOM_NETWORK = { url: "https://test.custom.net", chainId: "cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f" };
-    const DEPLOYER_NAME = 'alice';
-    const DEPLOYER_PERMISSION = 'active';
-    const DEPLOYER_PRIVATE_KEY = '5JymWHYohPMXTckmmFkmiRZZDQTWN91eDFSnEvjYAbXTd6oFtie';
-    const INVALID_PRIVATE_KEY = 'invalid_private_key';
+const Logger = require('./utils/logger');
+const logger = new Logger();
 
-    let initialDir;
+describe('Deploy Command', function () {
+
     let deployCommand;
-    let eoslimeSpy;
-    let pathOptionSpy;
-    let networkOptionSpy;
-    let deployerOptionSpy;
-
-    before(async () => {
-        initialDir = process.cwd();
-        fs.mkdirSync(TEST_DIR);
-        process.chdir(TEST_DIR);
-    });
 
     beforeEach(async () => {
+        logger.hide(sinon);
         deployCommand = new DeployCommand();
-        eoslimeSpy = sinon.spy(eoslime, "init");
-        pathOptionSpy = sinon.spy(PathOption, "process");
-        networkOptionSpy = sinon.spy(NetworkOption, "process");
-        deployerOptionSpy = sinon.spy(DeployerOption, "process");
-        sinon.stub(logger, "info");
-        sinon.stub(logger, "error");
-        
-        preloadDeploymentScript();
     });
 
     afterEach(async () => {
         sinon.restore();
-        fs.removeSync('./contracts');
-        fs.removeSync('./deployment');
-    });
-    
-    after(async () => {
-        process.chdir(initialDir);
-        fs.removeSync(TEST_DIR);
     });
 
-    function preloadDeploymentScript () {
-        fs.mkdirSync('./deployment');
-        fs.copyFileSync('../tests/cli-commands/mocks/deployment.js', './deployment/deployment.js');
-    }
+    describe('Command', function () {
 
-    it('Should initialize command properly', async () => {
-        assert(deployCommand instanceof Command);
-        assert(deployCommand.template == definition.template);
-        assert(deployCommand.description = definition.description);
-        assert(deployCommand.options == definition.options);
-        assert(deployCommand.subcommands.length == 0);
+        it('Should initialize command properly', async () => {
+            assert(deployCommand instanceof Command);
+            assert(deployCommand.template == definition.template);
+            assert(deployCommand.description = definition.description);
+            assert(deployCommand.options == definition.options);
+            assert(deployCommand.subcommands.length == 0);
+        });
+
+        function stubBaseCommand (cb) {
+            return {
+                '../command': class FakeBaseCommand {
+                    processOptions (args) {
+                        return cb(args);
+                    }
+                }
+            }
+        }
+
+        it('Should deploy contracts', async () => {
+            const deployCommand = new (proxyquire('../../cli-commands/commands/deploy/index', {
+                ...stubBaseCommand(() => {
+                    return {
+                        path: [{
+                            deploy: (network, deployer) => {
+                                assert(network == 'custom');
+                                assert(deployer == 'deployer');
+                            }
+                        }],
+                        network: 'custom',
+                        deployer: 'deployer'
+                    }
+                })
+            }));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('success', (message) => {
+                    if (message.includes('Successful deployment of')) {
+                        return resolve(true);
+                    }
+                });
+
+                await deployCommand.execute();
+            });
+
+            await waitToPass;
+        });
+
+        it('Should log error message in case a deployment script throws', async () => {
+            const deployCommand = new (proxyquire('../../cli-commands/commands/deploy/index', {
+                ...stubBaseCommand(() => {
+                    return {
+                        path: [{
+                            deploy: () => {
+                                throw new Error('Fake Error');
+                            }
+                        }]
+                    }
+                })
+            }));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('error', (message) => {
+                    if (message.includes('Unsuccessful deployment of')) {
+                        return resolve(true);
+                    }
+                });
+
+                await deployCommand.execute();
+            });
+
+            await waitToPass;
+        });
+
+        it('Should log error message in case of error', async () => {
+            const deployCommand = new (proxyquire('../../cli-commands/commands/deploy/index', {
+                ...stubBaseCommand(() => { throw new Error('Fake error'); })
+            }));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('error', (message) => {
+                    if (message.includes(' Unsuccessful deployment')) {
+                        return resolve(true);
+                    }
+                });
+
+                await deployCommand.execute();
+            });
+
+            await waitToPass;
+        });
     });
 
-    it('Should deploy when valid deployment folder is specified', async () => {
-        assert(await deployCommand.execute({ path: DEFAULT_PATH }));
 
-        sinon.assert.calledWith(pathOptionSpy, DEFAULT_PATH);
-        
-        let result = await pathOptionSpy.returnValues[0];
-        assert(result[0].fileName, 'deployment.js');
-        assert(typeof(result[0].deploy) == 'function');
-        assert(result[0].deploy.name, 'deploy');
+    describe('Options', function () {
+
+        describe('Path', function () {
+
+            function stubFileSystemUtils (isFolder) {
+                return {
+                    '../../../helpers/file-system-util': {
+                        isDir: () => { return isFolder; },
+                        isFile: () => { return !isFolder; },
+                        recursivelyReadDir: (dir) => {
+                            return [{ fileName: 'fileName', fullPath: `${dir}/fullPath` }];
+                        }
+                    }
+                }
+            }
+
+            function stubDeploymentPath (deploymentPath) {
+                return {
+                    [deploymentPath]: 'deploymentPath'
+                }
+            }
+
+            it('Should return a deployment script', async () => {
+                const pathOption = proxyquire('../../cli-commands/commands/deploy/options/path-option', {
+                    ...stubFileSystemUtils(false),
+                    ...stubDeploymentPath(path.resolve('./', './custom.js'))
+                });
+
+                const deploymentScript = (await pathOption.process('./custom.js'))[0];
+                assert(deploymentScript.fileName == './custom.js');
+                assert(deploymentScript.deploy == 'deploymentPath');
+            });
+
+            it('Should return all deployment scripts from folder', async () => {
+                const pathOption = proxyquire('../../cli-commands/commands/deploy/options/path-option', {
+                    ...stubFileSystemUtils(true),
+                    ...stubDeploymentPath(path.resolve('./', './custom/fullPath'))
+                });
+
+                const deploymentScripts = await pathOption.process('./custom');
+                assert(deploymentScripts[0].fileName == 'fileName');
+                assert(deploymentScripts[0].deploy == 'deploymentPath');
+            });
+        });
+
+        describe('Network', function () {
+
+            it('Should return an instance of eoslime', async () => {
+                const eoslimeInstance = NetworkOption.process('local');
+                assert(eoslimeInstance.Provider.network.name == 'local');
+            });
+        });
+
+        describe('Deployer', function () {
+
+            function stubPrompts (output) {
+                return {
+                    'prompts': () => { return { value: output } }
+                }
+            }
+
+            it('Should return an instance of eoslime.Account', async () => {
+                const deployerOption = proxyquire('../../cli-commands/commands/deploy/options/deployer-option', {
+                    ...stubPrompts('5KieRy975NgHk5XQfn8r6o3pcqJDF2vpeV9bDiuB5uF4xKCTwRF@active')
+                });
+
+                const deployer = await deployerOption.process('name', { network: 'local' });
+
+                assert(deployer.constructor.name == 'Account');
+                assert(deployer.name == 'name');
+                assert(deployer.privateKey == '5KieRy975NgHk5XQfn8r6o3pcqJDF2vpeV9bDiuB5uF4xKCTwRF');
+                assert(deployer.executiveAuthority.permission == 'active');
+            });
+        });
     });
-
-    it('Should throw when invalid deployment folder is specified', async () => {
-        assert(await deployCommand.execute({ path: INVALID_PATH }));
-
-        sinon.assert.calledWith(pathOptionSpy, INVALID_PATH);
-    });
-
-    it('Should not throw when deployment folder is empty', async () => {
-        assert(await deployCommand.execute({ path: DEFAULT_PATH }));
-
-        sinon.assert.calledWith(pathOptionSpy, DEFAULT_PATH);
-    });
-
-    it('Should deploy when valid deployment script is specified', async () => {
-        assert(await deployCommand.execute({ path: `${DEFAULT_PATH}/deployment.js` }));
-
-        sinon.assert.calledWith(pathOptionSpy, `${DEFAULT_PATH}/deployment.js`);
-        
-        let result = await pathOptionSpy.returnValues[0];
-        assert(result[0].fileName, 'deployment.js');
-        assert(typeof(result[0].deploy) == 'function');
-        assert(result[0].deploy.name, 'deploy');
-    });
-
-    it('Should throw when invalid deployment script is specified', async () => {
-        fs.createFileSync('./test.txt');
-
-        assert(await deployCommand.execute({ path: './test.txt', network: DEFAULT_NETWORK }));
-
-        sinon.assert.calledWith(pathOptionSpy, './test.txt');
-    });
-
-    it('Should deploy when valid deployment network is specified', async () => {
-        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK }));
-
-        sinon.assert.calledWith(networkOptionSpy, DEFAULT_NETWORK);
-        sinon.assert.calledWith(eoslimeSpy, DEFAULT_NETWORK);
-        
-        let result = await networkOptionSpy.returnValues[0];
-        assert(result.hasOwnProperty('Account'));
-        assert(result.hasOwnProperty('Contract'));
-        assert(result.hasOwnProperty('Provider'));
-        assert(result.hasOwnProperty('MultiSigAccount'));
-    });
-
-    it('Should deploy when custom network url and chainId are provided', async () => {
-        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: CUSTOM_NETWORK }));
-
-        sinon.assert.calledWith(networkOptionSpy, CUSTOM_NETWORK);
-        sinon.assert.calledWith(eoslimeSpy, CUSTOM_NETWORK);
-        
-        let result = await networkOptionSpy.returnValues[0];
-        assert(result.hasOwnProperty('Account'));
-        assert(result.hasOwnProperty('Contract'));
-        assert(result.hasOwnProperty('Provider'));
-        assert(result.hasOwnProperty('MultiSigAccount'));
-    });
-
-    it('Should throw when invalid network is specified', async () => {
-        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: INVALID_NETWORK }));
-
-        sinon.assert.calledWith(networkOptionSpy, INVALID_NETWORK);
-    });
-
-    it('Should deploy when deployer is provided', async () => {
-        prompts.inject(`${DEPLOYER_PRIVATE_KEY}@${DEPLOYER_PERMISSION}`);
-        
-        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, deployer: DEPLOYER_NAME }));
-
-        sinon.assert.calledWith(deployerOptionSpy, DEPLOYER_NAME);
-        
-        let result = await deployerOptionSpy.returnValues[0];
-        assert(result instanceof Account);
-        assert(result.name == DEPLOYER_NAME);
-        assert(result.privateKey == DEPLOYER_PRIVATE_KEY);
-        assert(result.executiveAuthority.permission == DEPLOYER_PERMISSION);
-    });
-
-    it('Should deploy when deployer is provided [permission missing]', async () => {
-        prompts.inject(`${DEPLOYER_PRIVATE_KEY}`);
-        
-        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, deployer: DEPLOYER_NAME }));
-
-        sinon.assert.calledWith(deployerOptionSpy, DEPLOYER_NAME);
-        
-        let result = await deployerOptionSpy.returnValues[0];
-        assert(result instanceof Account);
-        assert(result.name == DEPLOYER_NAME);
-        assert(result.privateKey == DEPLOYER_PRIVATE_KEY);
-        assert(result.executiveAuthority.permission == 'active');
-    });
-
-    it('Should throw when invalid deployer private key is provided', async () => {
-        prompts.inject(`${INVALID_PRIVATE_KEY}@${DEPLOYER_PERMISSION}`);
-
-        assert(await deployCommand.execute({ path: DEFAULT_PATH, network: DEFAULT_NETWORK, deployer: DEPLOYER_NAME }));
-
-        sinon.assert.calledWith(deployerOptionSpy, DEPLOYER_NAME);
-    });
-
 });

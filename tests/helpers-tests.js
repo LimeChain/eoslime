@@ -1,6 +1,5 @@
-const sinon = require('sinon');
 const assert = require('assert');
-const cryptoJS = require('crypto-js');
+
 const is = require('./../src/helpers/is');
 const crypto = require('./../src/helpers/crypto');
 const EventClass = require('./../src/helpers/event-class');
@@ -18,26 +17,15 @@ describe('Helpers scripts', function () {
             assert(expectedHash == resultedHash);
         });
 
-        it('Should encrypt and decrypt a data', async () => {
+        it('Should encrypt and decrypt data', async () => {
             const encryptedData = crypto.encrypt('Hello World', '123');
             const decryptedData = crypto.decrypt(encryptedData, '123');
 
             assert(decryptedData == 'Hello World');
         });
 
-        it('Should throw if it is not able to hash the data', async () => {
-            sinon.stub(cryptoJS, "SHA256").throws();
-            
-            try {
-                crypto.hash();
-            } catch (error) {
-                assert(error.message.includes('Couldn\'t hash the data'));
-            }
 
-            sinon.restore();
-        });
-
-        it('Should throw if it is not able to encrypt a data', async () => {
+        it('Should throw if it is not able to encrypt data', async () => {
             try {
                 crypto.encrypt('Hello World', { fake: 'FAKE' });
             } catch (error) {
@@ -45,7 +33,7 @@ describe('Helpers scripts', function () {
             }
         });
 
-        it('Should throw if it is not able to decrypt a data', async () => {
+        it('Should throw if it is not able to decrypt data', async () => {
             try {
                 const encryptedData = crypto.encrypt('Hello World', '123');
                 crypto.decrypt(encryptedData, { fake: 'FAKE' });
@@ -73,19 +61,19 @@ describe('Helpers scripts', function () {
             assert(x == 2);
         });
 
-        it('Should not be able to subscribe for unknown event', async () => {
-            const eventClass = new EventClass({ });
-            eventClass.on('created', () => { });
-
-            assert(eventClass.eventsHooks['created'] == undefined);
-        });
-
-        it('Should be able to subscribe twice for an event', async () => {
+        it('Should be able for more than one subscriber to listen for an event', async () => {
             const eventClass = new EventClass({ 'created': 'created' });
             eventClass.on('created', () => { });
             eventClass.on('created', () => { });
 
             assert(eventClass.eventsHooks['created'].length == 2);
+        });
+
+        it('Should not be able to subscribe for unknown event', async () => {
+            const eventClass = new EventClass({});
+            eventClass.on('created', () => { });
+
+            assert(eventClass.eventsHooks['created'] == undefined);
         });
 
     });

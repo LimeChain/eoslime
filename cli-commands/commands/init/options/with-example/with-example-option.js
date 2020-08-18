@@ -5,7 +5,7 @@ const Option = require('../../../option');
 
 class WithExampleOption extends Option {
 
-    constructor() {
+    constructor () {
         super(
             'with-example',
             {

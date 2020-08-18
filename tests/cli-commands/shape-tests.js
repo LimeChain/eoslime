@@ -1,66 +1,104 @@
 const sinon = require('sinon');
 const assert = require('assert');
+const proxyquire = require('proxyquire').noCallThru();
 
-const Git = require('simple-git/src/git');
-const logger = require('../../cli-commands/common/logger');
+const definition = require('../../cli-commands/commands/shape/definition');
+
 const Command = require('../../cli-commands/commands/command');
 const ShapeCommand = require('../../cli-commands/commands/shape/index');
-const definition = require('../../cli-commands/commands/shape/definition');
-const repositories = require('../../cli-commands/commands/shape/specific/repositories.json');
+
 const FrameworkOption = require('../../cli-commands/commands/shape/options/framework-option');
 
-describe('ShapeCommand', function () {
-    const FRAMEWORK_REACT = "react";
-    const NOT_SUPPORTED_FRAMEWORK = "angular";
+const Logger = require('./utils/logger');
+const logger = new Logger();
 
-    let shapeCommand;
-    let simpleGitSpy;
-    let frameworkOptionSpy;
+describe('Shape Command', function () {
 
     beforeEach(async () => {
-        shapeCommand = new ShapeCommand();
-        frameworkOptionSpy = sinon.spy(FrameworkOption, "process");
-        sinon.stub(logger, "info");
-        sinon.stub(logger, "error");
+        logger.hide(sinon);
     });
 
     afterEach(async () => {
         sinon.restore();
     });
 
-    it('Should initialize command properly', async () => {
-        assert(shapeCommand instanceof Command);
-        assert(shapeCommand.template == definition.template);
-        assert(shapeCommand.description = definition.description);
-        assert(shapeCommand.options == definition.options);
-        assert(shapeCommand.subcommands.length == 0);
-    });
+    describe('Command', function () {
 
-    it('Should prepare React project', async () => {
-        sinon.stub(Git.prototype, 'clone').callsFake(function (command, callback) {
-            callback.call();
+        it('Should initialize command properly', async () => {
+            const shapeCommand = new ShapeCommand();
+
+            assert(shapeCommand instanceof Command);
+            assert(shapeCommand.template == definition.template);
+            assert(shapeCommand.description = definition.description);
+            assert(shapeCommand.options == definition.options);
+            assert(shapeCommand.subcommands.length == 0);
         });
-        
-        assert(await shapeCommand.execute({ framework: FRAMEWORK_REACT }));
 
-        sinon.assert.calledWith(frameworkOptionSpy, FRAMEWORK_REACT);
-        assert(frameworkOptionSpy.returnValues[0] == repositories[FRAMEWORK_REACT]);
+        it('Should prepare shape ', async () => {
+            const shapeCommand = new (proxyquire('../../cli-commands/commands/shape/index',
+                {
+                    'simple-git/promise': () => {
+                        return { clone: () => { assert(true); } }
+                    }
+                }
+            ));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('success', (message) => {
+                    if (message.includes('Successful shaping')) {
+                        return resolve(true);
+                    }
+                });
+
+                await shapeCommand.execute({ framework: 'react' });
+            });
+
+            await waitToPass;
+        });
+
+        function stubBaseCommand (cb) {
+            return {
+                '../command': class FakeBaseCommand {
+                    processOptions () {
+                        return cb();
+                    }
+                }
+            }
+        }
+
+        it('Should log in case of an error', async () => {
+            const shapeCommand = new (proxyquire('../../cli-commands/commands/shape/index', {
+                ...stubBaseCommand(() => { throw new Error('Fake error'); })
+            }));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('error', (message) => {
+                    if (message.includes('Unsuccessful shaping')) {
+                        return resolve(true);
+                    }
+                });
+
+                await shapeCommand.execute();
+            });
+
+            await waitToPass;
+        });
     });
 
-    it('Should throw when an unknown front-end framework is specified', async () => {
-        simpleGitSpy = sinon.spy(Git.prototype, 'clone');
-        
-        assert(await shapeCommand.execute({ framework: NOT_SUPPORTED_FRAMEWORK }));
+    describe('Options', function () {
+        describe('Framework', function () {
 
-        sinon.assert.calledWith(frameworkOptionSpy, NOT_SUPPORTED_FRAMEWORK);
-        assert(frameworkOptionSpy.returnValues[0] == repositories[NOT_SUPPORTED_FRAMEWORK]);
-        sinon.assert.notCalled(simpleGitSpy);
+            it('Should return the repository of the shape framework', async () => {
+                assert(FrameworkOption.process('react') == 'https://github.com/LimeChain/eoslime-shape-react.git');
+            });
+
+            it('Should throw in case the provided framework is not supported', async () => {
+                try {
+                    await FrameworkOption.process('Not supported');
+                } catch (error) {
+                    assert(error.message == 'Invalid Shape framework');
+                }
+            });
+        });
     });
-
-    it('Should throw when repository cloning fails', async () => {
-        sinon.stub(Git.prototype, 'clone').throws('Test: Cloning Repo Failure');
-
-        assert(await shapeCommand.execute({ framework: FRAMEWORK_REACT }));
-    });
-
 });

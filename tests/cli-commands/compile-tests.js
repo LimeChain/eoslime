@@ -1,140 +1,203 @@
-const fs = require('fs-extra');
 const sinon = require('sinon');
 const assert = require('assert');
+const proxyquire = require('proxyquire').noCallThru();
+
+const definition = require('../../cli-commands/commands/compile/definition');
 
 const Command = require('../../cli-commands/commands/command');
 const CompileCommand = require('../../cli-commands/commands/compile/index');
-const AsyncSoftExec = require('../../cli-commands/helpers/async-soft-exec');
-const fileSysUtils = require('../../cli-commands/helpers/file-system-util');
-const definition = require('../../cli-commands/commands/compile/definition');
-const commandMessages = require('../../cli-commands/commands/compile/messages');
-const PathOption = require('../../cli-commands/commands/compile/options/path-option');
-const directories = require('../../cli-commands/commands/compile/specific/directories.json');
-const logger = require('../../cli-commands/common/logger');
 
-describe('CompileCommand', function () {
-    const TEST_DIR = './cli-commands-test';
-    const DEFAULT_PATH = './contracts';
-    const INVALID_PATH = './unknown_folder';
-    const INVALID_FILE = 'file.txt';
+const Logger = require('./utils/logger');
+const logger = new Logger();
 
-    let initialDir;
-    let compileCommand;
-    let pathOptionSpy;
-    let fsCreateDirSpy;
-
-    before(async () => {
-        initialDir = process.cwd();
-        fs.mkdirSync(TEST_DIR);
-        process.chdir(TEST_DIR);
-    });
+describe('Compile Command', function () {
 
     beforeEach(async () => {
-        compileCommand = new CompileCommand();
-        sinon.stub(logger, "info");
-        sinon.stub(logger, "error");
-        pathOptionSpy = sinon.spy(PathOption, "process");
-        fsCreateDirSpy = sinon.spy(fileSysUtils, "createDir");
+        logger.hide(sinon);
     });
 
     afterEach(async () => {
         sinon.restore();
-        cleanDirectories();
     });
 
-    after(async () => {
-        process.chdir(initialDir);
-        fs.removeSync(TEST_DIR);
-    });
+    describe('Command', function () {
 
-    function cleanDirectories () {
-        fs.removeSync('./contracts');
-        fs.removeSync('./compiled');
-    }
-
-    function createContractsFolder () {
-        fs.mkdirSync('./contracts');
-    }
-
-    function preloadContracts() {
-        fs.copyFileSync('../tests/testing-contracts/eosio.token.cpp', './contracts/eosio.token.cpp');
-        fs.copyFileSync('../tests/testing-contracts/eosio.token.hpp', './contracts/eosio.token.hpp');
-    }
-
-    it('Should initialize command properly', async () => {
-        assert(compileCommand instanceof Command);
-        assert(compileCommand.template == definition.template);
-        assert(compileCommand.description = definition.description);
-        assert(compileCommand.options == definition.options);
-        assert(compileCommand.subcommands.length == 0);
-    });
-
-    it('Should compile when valid contracts folder is specified', async () => {
-        sinon.stub(AsyncSoftExec.prototype, "exec").callsFake(() => {
-            commandMessages.SuccessfulCompilationOfContract();
+        it('Should initialize command properly', async () => {
+            const compileCommand = new CompileCommand();
+            assert(compileCommand instanceof Command);
+            assert(compileCommand.template == definition.template);
+            assert(compileCommand.description = definition.description);
+            assert(compileCommand.options == definition.options);
+            assert(compileCommand.subcommands.length == 0);
         });
 
-        createContractsFolder();
-        preloadContracts();
+        function stubBaseCommand (cb) {
+            return {
+                '../command': class FakeBaseCommand {
+                    processOptions () {
+                        return cb();
+                    }
+                }
+            }
+        }
 
-        assert(await compileCommand.execute({ path: DEFAULT_PATH }));
+        function stubAsyncSoftExec (checkPoints) {
+            return {
+                '../../helpers/async-soft-exec': class FakeAsyncSoftExec {
+                    exec () { checkPoints.exec--; }
+                }
+            }
+        }
 
-        sinon.assert.calledWith(pathOptionSpy, DEFAULT_PATH);
-        sinon.assert.calledOnceWithExactly(fsCreateDirSpy, directories.COMPILED);
+        it('Should compile ', async () => {
+            const checkPoints = {
+                exec: 1,
+                createDir: 1
+            }
 
-        let result = await pathOptionSpy.returnValues[0];
-        assert(result[0].fullPath == `${DEFAULT_PATH}/eosio.token.cpp`);
-        assert(result[0].fileName == 'eosio.token');
-    });
+            const compileCommand = new (proxyquire(
+                '../../cli-commands/commands/compile/index',
+                {
+                    ...stubBaseCommand(() => {
+                        return { path: [{ fileName: 'test', fullPath: './test.cpp' }] }
+                    }),
+                    ...stubAsyncSoftExec(checkPoints),
+                    '../../helpers/file-system-util': {
+                        createDir: () => {
+                            checkPoints.createDir--;
+                        }
+                    }
+                }
+            ));
 
-    it('Should throw when invalid contracts folder is specified', async () => {
-        assert(await compileCommand.execute({ path: INVALID_PATH }));
+            await compileCommand.execute();
 
-        sinon.assert.calledWith(pathOptionSpy, INVALID_PATH);
-        sinon.assert.notCalled(fsCreateDirSpy);
-    });
-
-    it('Should throw when specified contracts folder is empty', async () => {
-        createContractsFolder();
-
-        assert(await compileCommand.execute({ path: DEFAULT_PATH }));
-
-        sinon.assert.calledWith(pathOptionSpy, DEFAULT_PATH);
-        sinon.assert.notCalled(fsCreateDirSpy);
-    });
-
-    it('Should compile when valid contract path is specified', async () => {
-        sinon.stub(AsyncSoftExec.prototype, "exec").callsFake(() => {
-            commandMessages.UnsuccessfulCompilationOfContract();
+            assert(checkPoints.exec == 0);
+            assert(checkPoints.createDir == 0);
         });
 
-        createContractsFolder();
-        preloadContracts();
-        
-        assert(await compileCommand.execute({ path: `${DEFAULT_PATH}/eosio.token.cpp` }));
+        it('Should log in case any contracts was found', async () => {
+            const compileCommand = new (proxyquire('../../cli-commands/commands/compile/index',
+                { ...stubBaseCommand(() => { return { path: [] } }) }
+            ));
 
-        sinon.assert.calledWith(pathOptionSpy, `${DEFAULT_PATH}/eosio.token.cpp`);
-        sinon.assert.calledOnceWithExactly(fsCreateDirSpy, directories.COMPILED);
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('info', (message) => {
+                    if (message.includes('There is not a contract to compile')) {
+                        return resolve(true);
+                    }
+                });
 
-        let result = await pathOptionSpy.returnValues[0];
-        assert(result[0].fullPath == `${DEFAULT_PATH}/eosio.token.cpp`);
-        assert(result[0].fileName == 'eosio.token');
+                await compileCommand.execute({ 'path': './' });
+            });
+
+            await waitToPass;
+        });
+
+        it('Should log in case a contract could not be compiled', async () => {
+            const compileCommand = new (proxyquire(
+                '../../cli-commands/commands/compile/index',
+                {
+                    ...stubBaseCommand(() => {
+                        return { path: [{ fileName: 'test', fullPath: './test.cpp' }] }
+                    }),
+                    '../../helpers/async-soft-exec': class FakeAsyncSoftExec {
+                        exec () { throw new Error('Fake error'); }
+                    },
+                    '../../helpers/file-system-util': {
+                        createDir: () => { }
+                    }
+                }
+            ));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('error', (message) => {
+                    if (message.includes('Unsuccessful compilation of')) {
+                        return resolve(true);
+                    }
+                });
+
+                await compileCommand.execute({ 'path': './' });
+            });
+
+            await waitToPass;
+        });
+
+        it('Should log in case of an error', async () => {
+            const compileCommand = new (proxyquire('../../cli-commands/commands/compile/index',
+                { ...stubBaseCommand(() => { throw new Error('Fake Error') }) }
+            ));
+
+            const waitToPass = new Promise(async (resolve, reject) => {
+                logger.on('error', (message) => {
+                    if (message.includes('Unsuccessful compilation')) {
+                        return resolve(true);
+                    }
+                });
+
+                await compileCommand.execute({ 'path': './' });
+            });
+
+            await waitToPass;
+        });
     });
 
-    it('Should throw when invalid contract path is specified', async () => {
-        assert(await compileCommand.execute({ path: `${INVALID_PATH}/eosio.token.cpp` }));
 
-        sinon.assert.calledWith(pathOptionSpy, `${INVALID_PATH}/eosio.token.cpp`);
-        sinon.assert.notCalled(fsCreateDirSpy);
+    describe('Options', function () {
+        describe('Path', function () {
+
+            function stubFileSystemUtils (isFolder) {
+                const Option = proxyquire(
+                    '../../cli-commands/commands/compile/options/path-option',
+                    {
+                        '../../../helpers/file-system-util': {
+                            isDir: () => {
+                                return isFolder;
+                            },
+                            recursivelyReadDir: () => {
+                                return [
+                                    {
+                                        fileName: 'test1.cpp',
+                                        fullPath: `./custom/test1.cpp`
+                                    }, {
+                                        fileName: 'test2.cpp',
+                                        fullPath: `./custom/test2.cpp`
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                );
+
+                return Option;
+            }
+
+            it('Should return contract path', async () => {
+                const pathOption = stubFileSystemUtils(false);
+                const result = await pathOption.process('./test.cpp');
+
+                assert(result.length == 1);
+                assert(result[0].fileName == 'test');
+                assert(result[0].fullPath == './test.cpp');
+            });
+
+            it('Should return contracts paths from a folder', async () => {
+                const pathOption = stubFileSystemUtils(true);
+                const result = await pathOption.process('./test.cpp');
+
+                assert(result.length == 2);
+                assert(result[0].fileName == 'test1');
+                assert(result[1].fileName == 'test2');
+                assert(result[0].fullPath == './custom/test1.cpp');
+                assert(result[1].fullPath == './custom/test2.cpp');
+            });
+
+            it('Should return empty array if any contracts was found', async () => {
+                const pathOption = stubFileSystemUtils(false);
+                const result = await pathOption.process('./test.fake');
+
+                assert(result.length == 0);
+            });
+        });
     });
-
-    it('Should throw when invalid contract name is specified', async () => {
-        fs.createFileSync(INVALID_FILE);
-
-        assert(await compileCommand.execute({ path: `./${INVALID_FILE}` }));
-
-        sinon.assert.calledWith(pathOptionSpy, `./${INVALID_FILE}`);
-        sinon.assert.notCalled(fsCreateDirSpy);
-    });
-
 });

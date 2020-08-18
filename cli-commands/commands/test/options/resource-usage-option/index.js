@@ -2,7 +2,7 @@ const Option = require('../../../option');
 const ReportTable = require('./report-table');
 
 class ResourceReportOption extends Option {
-    constructor() {
+    constructor () {
         super(
             'resource-usage',
             {
