@@ -22,7 +22,7 @@ const EVENTS = {
 
 class ContractFactory extends ContractInitializator {
 
-    constructor(provider) {
+    constructor (provider) {
         super(provider);
         Object.assign(this.events, EVENTS);
     }
@@ -77,7 +77,7 @@ class ContractFactory extends ContractInitializator {
         options = Object.assign(defaultDeployOptions, options);
         await executeOptions(contract, options);
 
-        this.emit(EVENTS.deploy, [setCodeTxReceipt, setAbiTxReceipt], contract);
+        this.emit(EVENTS.deploy, contract, [setCodeTxReceipt, setAbiTxReceipt]);
 
         return contract;
     }

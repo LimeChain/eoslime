@@ -60,7 +60,7 @@ class ResourceReportOption extends Option {
 }
 
 const fillDeploymentsResources = function (eoslime, deploymentsResources) {
-    eoslime.Contract.on('deploy', (txReceipts, contract) => {
+    eoslime.Contract.on('deploy', (contract, txReceipts) => {
         const setCodeResources = extractResourcesCostsFromReceipt(txReceipts[0]);
         const setABIResources = extractResourcesCostsFromReceipt(txReceipts[1]);
 

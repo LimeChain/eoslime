@@ -2,11 +2,14 @@ const is = require('./../helpers/is');
 const FunctionsFactory = require('./contract-function/functions-factory');
 
 class Contract {
-    constructor(provider, abi, contractName, contractExecutorAccount) {
+    constructor (provider, abi, contractName, contractExecutorAccount) {
         this.abi = abi;
         this.name = contractName;
         this.provider = provider;
         this.executor = contractExecutorAccount;
+
+        this.actions = {};
+        this.tables = {};
 
         declareFunctionsFromABI.call(this, abi);
         declareTableGetters.call(this, abi);
@@ -37,7 +40,7 @@ let declareFunctionsFromABI = function (abi) {
     for (let i = 0; i < contractActions.length; i++) {
         const functionName = contractActions[i].name;
         const functionType = contractActions[i].type;
-        this[functionName] = FunctionsFactory.createFunction(this, functionName, contractStructs[functionType].fields)
+        this.actions[functionName] = FunctionsFactory.createFunction(this, functionName, contractStructs[functionType].fields)
     }
 };
 
@@ -46,7 +49,7 @@ let declareTableGetters = function (abi) {
 
     for (let i = 0; i < contractTables.length; i++) {
         const tableName = contractTables[i].name;
-        this[tableName] = new Proxy({}, {
+        this.tables[tableName] = new Proxy({}, {
             get: (target, name) => {
                 return this.provider.select(tableName).from(this.name)[name];
             }
