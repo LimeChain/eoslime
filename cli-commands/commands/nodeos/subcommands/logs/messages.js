@@ -1,15 +1,11 @@
-const chalk = require('chalk');
+const logger = require('../../../../common/logger');
 
 module.exports = {
-    'NodeosLogs': (logs) => {
-        console.log(chalk.magentaBright('===== Nodeos logs ====='));
-        console.log(logs);
+    'COMMAND': {
+        'Success': (logs) => { logger.success(`===== Nodeos logs ===== \n ${logs}`); },
+        'Error': (error) => { logger.error(`===== Logs has not been shown =====`, error); }
     },
-    'EmptyLogs': () => {
-        console.log(chalk.blueBright('===== Empty logs ====='));
-    },
-    'UnsuccessfulShowing': (error) => {
-        console.log(chalk.redBright(`===== Logs has not been shown =====`));
-        console.log(error);
+    'LOGS': {
+        'Empty': () => { logger.info('===== Empty logs ====='); },
     }
 }

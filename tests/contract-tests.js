@@ -305,14 +305,14 @@ describe("Contract", function () {
     describe("Blockchain tables", function () {
 
         it("Should have a default table getter", async () => {
-            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name);
 
             // withdrawers is a table in the contract
             assert(faucetContract.tables.withdrawers);
         });
 
         it("Should apply the default query params if none provided", async () => {
-            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor
@@ -325,7 +325,7 @@ describe("Contract", function () {
         });
 
         it("Should query a table", async () => {
-            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name, faucetAccount);
+            const faucetContract = eoslime.Contract.fromFile(FAUCET_ABI_PATH, faucetAccount.name);
             const tokensHolder = await eoslime.Account.createRandom();
 
             // faucetAccount is the executor

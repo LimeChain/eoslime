@@ -4,19 +4,19 @@ const nodeosDataManager = require('../../specific/nodeos-data/data-manager');
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../../helpers/async-soft-exec');
 
-const commandMessages = require('./messages');
+const MESSAGE_COMMAND = require('./messages').COMMAND;
 const stopCommandDefinition = require('./definition');
 
 // eoslime nodeos stop
 
 class StopCommand extends Command {
-    constructor() {
+    constructor () {
         super(stopCommandDefinition);
     }
 
     async execute (args) {
         try {
-            commandMessages.StoppingNodeos();
+            MESSAGE_COMMAND.Start();
 
             if (nodeosDataManager.nodeosIsRunning(nodeosDataManager.nodeosPath())) {
                 const nodeosPid = fileSystemUtil.readFile(
@@ -27,12 +27,11 @@ class StopCommand extends Command {
             }
 
             await clearNodeosData(nodeosDataManager.nodeosPath());
-            commandMessages.SuccessfullyStopped();
-        } catch (error) {
-            commandMessages.UnsuccessfulStopping(error);
-        }
 
-        return true;
+            MESSAGE_COMMAND.Success();
+        } catch (error) {
+            MESSAGE_COMMAND.Error(error);
+        }
     }
 }
 

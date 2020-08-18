@@ -1,10 +1,9 @@
-const chalk = require('chalk');
+const logger = require('../../common/logger');
 
 module.exports = {
-    'Installation': () => { console.log(chalk.magentaBright('===== Installing eoslime... =====')); },
-    'SuccessfulInstallation': () => { console.log(chalk.greenBright('===== Successfully installed =====')); },
-    'UnsuccessfulInstallation': (error) => {
-        console.log(chalk.redBright('===== Unsuccessful installation ====='));
-        console.log(error);
+    'COMMAND': {
+        'Start': () => { logger.info('===== Installing eoslime... ====='); },
+        'Success': () => { logger.success('===== Successfully installed ====='); },
+        'Error': (error) => { logger.error('===== Unsuccessful installation =====', error); }
     }
 }

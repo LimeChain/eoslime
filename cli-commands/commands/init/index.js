@@ -4,7 +4,7 @@ const Command = require('../command');
 const initDirectories = require('./specific/directories.json');
 const initCommandDefinition = require('./definition');
 
-const commandMessages = require('./messages');
+const MESSAGE_COMMAND = require('./messages').COMMAND;
 const fileSystemUtil = require('../../helpers/file-system-util');
 
 const defaultPackageJsonDestination = `${__dirname}/specific/default-package.json`;
@@ -13,47 +13,45 @@ const defaultPackageJsonDestination = `${__dirname}/specific/default-package.jso
 
 class InitCommand extends Command {
 
-    constructor() {
+    constructor () {
         super(initCommandDefinition);
     }
 
     async execute (args) {
+
         try {
-            commandMessages.Installation();
+            MESSAGE_COMMAND.Start();
 
             createContractsDir();
             createDeploymentDir();
             createTestsDir();
             copyDefaultPackageJson();
 
-            super.processOptions(args);
+            await super.processOptions(args);
+
+            const asyncSoftExec = new AsyncSoftExec('npm install eoslime');
+            await asyncSoftExec.exec();
+
+            MESSAGE_COMMAND.Success();
         } catch (error) {
-            commandMessages.UnsuccessfulInstallation(error);
+            MESSAGE_COMMAND.Error(error);
         }
-
-        const asyncSoftExec = new AsyncSoftExec('npm install eoslime');
-        asyncSoftExec.onError((error) => { commandMessages.UnsuccessfulInstallation(error); });
-        asyncSoftExec.onSuccess(() => { commandMessages.SuccessfulInstallation(); });
-
-        await asyncSoftExec.exec();
-
-        return true;
     }
 }
 
-let createContractsDir = function () {
+const createContractsDir = function () {
     fileSystemUtil.createDir(initDirectories.CONTRACTS);
 }
 
-let createDeploymentDir = function () {
+const createDeploymentDir = function () {
     fileSystemUtil.createDir(initDirectories.DEPLOYMENT);
 }
 
-let createTestsDir = function () {
+const createTestsDir = function () {
     fileSystemUtil.createDir(initDirectories.TESTS);
 }
 
-let copyDefaultPackageJson = function () {
+const copyDefaultPackageJson = function () {
     fileSystemUtil.copyFileFromTo(defaultPackageJsonDestination, initDirectories.PACKAGE_JSON);
 }
 

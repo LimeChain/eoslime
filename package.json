@@ -6,8 +6,8 @@
     "types": "index.d.ts",
     "scripts": {
         "build": "tsc",
-        "test": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
-        "test-prod": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/*.js'",
+        "test": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/**/*.js'",
+        "test-dev": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
         "test-types": "bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/*.ts",
         "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },
@@ -15,22 +15,24 @@
     "license": "MIT",
     "dependencies": {
         "@types/assert": "^1.5.1",
-        "@types/mocha": "^7.0.2",
         "assert": "^2.0.0",
         "chalk": "2.4.2",
         "cli-table": "0.3.1",
         "crypto-js": "3.1.9-1",
         "eosjs": "16.0.9",
         "is-invalid-path": "1.0.2",
-        "mocha": "5.2.0",
         "prompts": "2.2.1",
         "simple-git": "1.132.0",
         "yargs": "12.0.5"
     },
     "devDependencies": {
+        "@types/mocha": "^7.0.2",
         "nyc": "14.1.1",
         "ts-node": "^8.10.2",
-        "typescript": "^3.9.5"
+        "typescript": "^3.9.5",
+        "mocha": "5.2.0",
+        "sinon": "^9.0.2",
+        "proxyquire": "^2.1.3"
     },
     "keywords": [
         "lime",

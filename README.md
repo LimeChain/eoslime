@@ -91,7 +91,7 @@ EOSLIME was able to be initialized only with pre-configured providers connection
     const eoslime = require('eoslime').init('bos', { url: 'Your url', chainId: 'Your chainId' });
     // ... any other supported netwok ...
     ```
-* **Allow read-only contracts** - You are able now to instantiate a contract withouth a signer/executor and read the contract's tables
+* **Allow read-only contracts** - You are able now to instantiate a contract without a signer/executor and read the contract's tables
 * **Add Tutorial section in the documentation**
 * **Describe how examples in the documentation could be run**
 * **Increase the code coverage from 46% to 90+ %**
