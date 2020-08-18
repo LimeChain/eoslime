@@ -3,20 +3,21 @@ const nodoesDataManager = require('../../specific/nodeos-data/data-manager');
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../../helpers/async-soft-exec');
 
-const commandMessages = require('./messages');
+const MESSAGE_COMMAND = require('./messages').COMMAND;
+const MESSAGE_LOGS = require('./messages').LOGS;
 const logsCommandDefinition = require('./definition');
 
 // eoslime nodeos show logs --lines
 
 class LogsCommand extends Command {
-    constructor() {
+    constructor () {
         super(logsCommandDefinition);
     }
 
     async execute (args) {
         if (!nodoesDataManager.nodeosIsRunning(nodoesDataManager.nodeosPath())) {
-            commandMessages.EmptyLogs();
-            return true;
+            MESSAGE_LOGS.Empty();
+            return void 0;
         }
 
         try {
@@ -24,13 +25,12 @@ class LogsCommand extends Command {
             const nodeosLogFile = nodoesDataManager.nodeosPath() + '/nodeos.log';
 
             const asyncSoftExec = new AsyncSoftExec(`tail -n ${optionsResults.lines} ${nodeosLogFile}`);
-            asyncSoftExec.onSuccess((logs) => { commandMessages.NodeosLogs(logs); });
-            await asyncSoftExec.exec();
-        } catch (error) {
-            commandMessages.UnsuccessfulShowing(error);
-        }
+            const logs = await asyncSoftExec.exec();
 
-        return true;
+            MESSAGE_COMMAND.Success(logs);
+        } catch (error) {
+            MESSAGE_COMMAND.Error(error);
+        }
     }
 }
 

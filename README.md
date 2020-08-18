@@ -9,7 +9,28 @@ EOS development and deployment framework based on eosjs.js. The framework's main
 Telegram - https://t.me/eoslime   
 Documentation - https://lyubo.gitbook.io/eoslime/
 
-# Version 1.0.4 change log
+
+
+
+# Contributors
+Thanks these wonderful people for helping improve EOSLime
+
+
+<table>
+<tr>
+    <td align="center"><a href="https://github.com/vladichhh"><img src="https://avatars0.githubusercontent.com/u/6073094?s=400&u=082c73ab35e0227f16679edab6bcde05ccde37c3&v=4" width="100px;" alt=""/><br/><sub><b>Kristian Veselinov</b></sub></a><br/><a href="#" title="Management">🧭</a><a href="#" title="Marketing">🚀</a></td>
+    <td align="center"><a href="https://github.com/vladichhh"><img src="https://avatars0.githubusercontent.com/u/31288155?s=400&u=80cbd54d1c973ebac1f443230e4a07a9a0bca7a2&v=4" width="100px;" alt=""/><br/><sub><b>Vladimir Hristov</b></sub></a><br/><a href="#" title="Code">💻</a><a href="#" title="Maintenance">🚧</a><a href="#" title="Ideas">💡</a></td>
+    <td align="center"><a href="https://github.com/Avm07"><img src="https://avatars1.githubusercontent.com/u/24969602?s=400&u=c2ab916dba523284faa1310b363fed7ef27634f2&v=4" width="100px;" alt=""/><br/><sub><b>Artem</b></sub></a><br/>
+    <a href="https://github.com/LimeChain/eoslime/issues/53" title="Ideas">💡</a>
+    </td>
+</tr>
+</table>
+
+
+
+# Change log
+
+## Version 1.0.4 change log
 
 * **eoslime nodeos**      
     * **eoslime nodeos start --path="Some path"**   
@@ -51,13 +72,13 @@ Returns contract ABI in JSON format
 Returns contract raw WASM
 
 
-# Version 1.0.3 change log
+## Version 1.0.3 change log
 
 * **eoslime shape --framework=react**    
 A shape represents a simple full project. It includes a contract, tests, deployments and user interface. The idea of that project is for developers to have a ready solution they could start to build on top.    
 <br>React Project implementation - https://github.com/LimeChain/eoslime-shape-react
 
-# Version 1.0.2 change log
+## Version 1.0.2 change log
 
 * **Fix ABI Parsing** - https://github.com/LimeChain/eoslime/issues/37
 * **Fix describe.only** - mocha describe.only behaviour has broken with `eoslime test` 
@@ -70,12 +91,12 @@ EOSLIME was able to be initialized only with pre-configured providers connection
     const eoslime = require('eoslime').init('bos', { url: 'Your url', chainId: 'Your chainId' });
     // ... any other supported netwok ...
     ```
-* **Allow read-only contracts** - You are able now to instantiate a contract withouth a signer/executor and read the contract's tables
+* **Allow read-only contracts** - You are able now to instantiate a contract without a signer/executor and read the contract's tables
 * **Add Tutorial section in the documentation**
 * **Describe how examples in the documentation could be run**
 * **Increase the code coverage from 46% to 90+ %**
 
-# Version 1.0.1 change log
+## Version 1.0.1 change log
 
 * **Token** option was added
 There are cases, where you need to execute a contract function and pay some tokens, but this could be done by processing two transactions. The first one is to your contract, the second one is to eosio.token contract. But what about if the tokens transfer reverts and the transaction to your contract is successful. That is what payable contract actions are purposed for. You should be able to execute an atomic transaction constructed by both actions above.

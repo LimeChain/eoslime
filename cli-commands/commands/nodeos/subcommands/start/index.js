@@ -1,7 +1,8 @@
 const Command = require('../../../command');
 const AsyncSoftExec = require('../../../../helpers/async-soft-exec');
 
-const commandMessages = require('./messages');
+const MESSAGE_COMMAND = require('./messages').COMMAND;
+const MESSAGE_NODEOS = require('./messages').NODEOS;
 const startCommandDefinition = require('./definition');
 
 const template = require('./specific/template');
@@ -12,20 +13,20 @@ const nodeosDataManager = require('../../specific/nodeos-data/data-manager');
 // eoslime nodeos start --path
 
 class StartCommand extends Command {
-    constructor() {
+    constructor () {
         super(startCommandDefinition);
     }
 
     async execute (args) {
         if (nodeosDataManager.nodeosIsRunning(nodeosDataManager.nodeosPath())) {
-            commandMessages.NodeosAlreadyRunning();
-            return true;
+            MESSAGE_NODEOS.AlreadyRunning();
+            return void 0;
         }
 
         try {
-            commandMessages.StartingNodeos();
-            const optionsResults = await super.processOptions(args);
+            MESSAGE_COMMAND.Start();
 
+            const optionsResults = await super.processOptions(args);
             nodeosDataManager.setNodeosPath(optionsResults.path);
 
             const asyncSoftExec = new AsyncSoftExec(template.build(optionsResults.path));
@@ -34,12 +35,10 @@ class StartCommand extends Command {
             nodeosDataManager.requireRunningNodeos(optionsResults.path);
             await predefinedAccounts.load();
 
-            commandMessages.SuccessfullyStarted();
+            MESSAGE_COMMAND.Success();
         } catch (error) {
-            commandMessages.UnsuccessfulStarting(error);
+            MESSAGE_COMMAND.Error(error);
         }
-
-        return true;
     }
 }
 

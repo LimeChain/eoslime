@@ -1,9 +1,8 @@
-const chalk = require('chalk');
+const logger = require('../../../../common/logger');
 
 module.exports = {
-    'PreloadedAccounts': () => { console.log(chalk.magentaBright('===== Preloaded accounts =====')); },
-    'UnsuccessfulShowing': (error) => {
-        console.log(chalk.redBright(`===== Accounts has not been shown =====`));
-        console.log(error);
+    'COMMAND': {
+        'Start': () => { logger.info('===== Preloaded accounts ====='); },
+        'Error': (error) => { logger.error(`===== Accounts has not been shown =====`, error); }
     }
 }

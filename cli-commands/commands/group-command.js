@@ -1,17 +1,17 @@
 const Command = require('./command');
 
 class GroupCommand extends Command {
-    constructor(commandDefinition) {
+    constructor (commandDefinition) {
         super(commandDefinition);
     }
 
     async execute (args) {
         if (optionsProvided(args, this.options)) {
             await super.processOptions(args);
-            return true;
+            this.hasBeenExecuted = true;
+        } else {
+            this.hasBeenExecuted = false;
         }
-
-        return false;
     }
 }
 

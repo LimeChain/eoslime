@@ -14,8 +14,7 @@ const nodeosDataManager = {
         try {
             const pid = fileSystemUtil.readFile(path + '/eosd.pid').toString();
             return process.kill(pid, 0);
-        }
-        catch (e) {
+        } catch (e) {
             return e.code === 'EPERM'
         }
     },

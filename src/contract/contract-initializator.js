@@ -10,14 +10,12 @@ const EVENTS = {
 
 class ContractInitializator extends EventClass {
 
-    constructor(provider) {
+    constructor (provider) {
         super(EVENTS);
         this.provider = provider;
     }
 
     fromFile (abi, contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        is(contractExecutorAccount).instanceOf('BaseAccount');
-
         let abiInterface = abi;
         if (contractFilesReader.doesAbiExists(abi)) {
             abiInterface = contractFilesReader.readABIFromFile(abi);
@@ -30,8 +28,6 @@ class ContractInitializator extends EventClass {
     }
 
     async at (contractName, contractExecutorAccount = this.provider.defaultAccount) {
-        is(contractExecutorAccount).instanceOf('BaseAccount');
-
         const abiInterface = (await this.provider.eos.getAbi(contractName)).abi;
         const contract = new Contract(this.provider, abiInterface, contractName, contractExecutorAccount);
 

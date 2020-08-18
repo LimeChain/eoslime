@@ -1,7 +1,9 @@
 const AsyncSoftExec = require('../../helpers/async-soft-exec');
 const Command = require('../command');
 
-const commandMessages = require('./messages');
+const MESSAGE_COMMAND = require('./messages').COMMAND;
+const MESSAGE_CONTRACT = require('./messages').CONTRACT;
+
 const compiledDirectories = require('./specific/directories.json');
 const compileCommandDefinition = require('./definition');
 
@@ -11,13 +13,13 @@ const fileSysUtils = require('../../helpers/file-system-util');
 
 class CompileCommand extends Command {
 
-    constructor() {
+    constructor () {
         super(compileCommandDefinition);
     }
 
     async execute (args) {
         try {
-            commandMessages.StartCompilation();
+            MESSAGE_COMMAND.Start();
 
             const optionsResults = await super.processOptions(args);
 
@@ -26,20 +28,25 @@ class CompileCommand extends Command {
 
                 for (let i = 0; i < optionsResults.path.length; i++) {
                     const contractPath = optionsResults.path[i];
-                    // Todo: Check how to compile without using eosio-cpp
-                    const asyncSoftExec = new AsyncSoftExec(`eosio-cpp -I . -o ./compiled/${contractPath.fileName}.wasm ${contractPath.fullPath} --abigen`);
-                    asyncSoftExec.onError((error) => commandMessages.UnsuccessfulCompilationOfContract(error, contractPath.fileName));
-                    asyncSoftExec.onSuccess(() => commandMessages.SuccessfulCompilationOfContract(contractPath.fileName));
-
-                    await asyncSoftExec.exec();
+                    await processCompilation(contractPath)
                 }
             } else {
-                commandMessages.ContractNotExisting();
+                MESSAGE_CONTRACT.NotFound();
             }
         } catch (error) {
-            commandMessages.UnsuccessfulCompilation(error);
+            MESSAGE_COMMAND.Error(error);
         }
-        return true;
+    }
+}
+
+const processCompilation = async function (contract) {
+    try {
+        const asyncSoftExec = new AsyncSoftExec(`eosio-cpp -I . -o ./compiled/${contract.fileName}.wasm ${contract.fullPath} --abigen`);
+        await asyncSoftExec.exec();
+
+        MESSAGE_CONTRACT.Compiled(contract.fileName);
+    } catch (error) {
+        MESSAGE_CONTRACT.NotCompiled(error, contract.fileName);
     }
 }
 
