@@ -12,7 +12,7 @@ import {
 
 import { assertTransactionResult } from './utils';
 
-describe('All types of accounts', function () {
+describe.only('All types of accounts', function () {
 
     this.timeout(20000);
 

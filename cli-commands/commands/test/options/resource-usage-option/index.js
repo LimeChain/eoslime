@@ -81,36 +81,31 @@ const fillDeploymentsResources = function (eoslime, deploymentsResources) {
 
 const fillFunctionsResources = function (eoslime, contractsResources) {
     eoslime.Contract.on('init', (contract) => {
-        for (const functionName in contract) {
-            if (contract.hasOwnProperty(functionName)) {
-                const contractFunction = contract[functionName];
-
-                if (contractFunction.isTransactional) {
-                    contractFunction.on('processed', (txReceipt, inputParams) => {
-                        const usedResources = extractResourcesCostsFromReceipt(txReceipt);
-                        if (!contractsResources[contract.name]) {
-                            contractsResources[contract.name] = {
-                                functions: {}
-                            }
-                        }
-
-                        if (!contractsResources[contract.name].functions[functionName]) {
-                            contractsResources[contract.name].functions[functionName] = {
-                                calls: 0,
-                                ram: [],
-                                cpu: [],
-                                net: []
-                            }
-                        }
-
-                        const functionResources = contractsResources[contract.name].functions[functionName];
-                        functionResources.ram = getMinMaxPair(functionResources.ram[0], functionResources.ram[1], usedResources.ramCost);
-                        functionResources.cpu = getMinMaxPair(functionResources.cpu[0], functionResources.cpu[1], usedResources.cpuCost);
-                        functionResources.net = getMinMaxPair(functionResources.net[0], functionResources.net[1], usedResources.netCost);
-                        functionResources.calls += 1;
-                    });
+        for (const functionName in contract.actions) {
+            const contractFunction = contract.actions[functionName];
+            contractFunction.on('processed', (txReceipt, inputParams) => {
+                const usedResources = extractResourcesCostsFromReceipt(txReceipt);
+                if (!contractsResources[contract.name]) {
+                    contractsResources[contract.name] = {
+                        functions: {}
+                    }
                 }
-            }
+
+                if (!contractsResources[contract.name].functions[functionName]) {
+                    contractsResources[contract.name].functions[functionName] = {
+                        calls: 0,
+                        ram: [],
+                        cpu: [],
+                        net: []
+                    }
+                }
+
+                const functionResources = contractsResources[contract.name].functions[functionName];
+                functionResources.ram = getMinMaxPair(functionResources.ram[0], functionResources.ram[1], usedResources.ramCost);
+                functionResources.cpu = getMinMaxPair(functionResources.cpu[0], functionResources.cpu[1], usedResources.cpuCost);
+                functionResources.net = getMinMaxPair(functionResources.net[0], functionResources.net[1], usedResources.netCost);
+                functionResources.calls += 1;
+            });
         }
     });
 }

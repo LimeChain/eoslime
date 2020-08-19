@@ -173,7 +173,7 @@ describe('Test Command', function () {
 
                         assert(table[1][1] == contractAccount.name);
                         assert(table[3][1] == contractAccount.name);
-                        assert(table[4][2] == 'withdraw');
+                        assert(table[4][2] == 'test');
 
                         return resolve(true);
                     });
@@ -181,7 +181,7 @@ describe('Test Command', function () {
                     ResourceReportOption.process(true, { eoslime, testFramework });
 
                     const contract = await eoslime.Contract.deployOnAccount(FAUCET_WASM_PATH, FAUCET_ABI_PATH, contractAccount);
-                    await contract.withdraw('testtesttest');
+                    await contract.actions.test();
 
                     testFramework.eventsHooks[0].callback();
                 });

@@ -192,7 +192,7 @@ describe('Deploy Command', function () {
                 assert(deployer.constructor.name == 'Account');
                 assert(deployer.name == 'name');
                 assert(deployer.privateKey == '5KieRy975NgHk5XQfn8r6o3pcqJDF2vpeV9bDiuB5uF4xKCTwRF');
-                assert(deployer.executiveAuthority.permission == 'active');
+                assert(deployer.authority.permission == 'active');
             });
         });
     });

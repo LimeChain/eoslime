@@ -14,7 +14,6 @@ class ContractFunction extends EventClass {
         this.contract = contract;
         this.functionName = functionName;
         this.functionFields = functionFields;
-        this.isTransactional = true;
     }
 
     async broadcast (params, options) {

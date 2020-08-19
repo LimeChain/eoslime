@@ -82,7 +82,6 @@ describe('Miscellaneous', function () {
             it('Should visualize the table', async () => {
                 testLogger.hide(sinon);
                 testLogger.on('log', (table) => {
-                    console.log(table)
                     assert(table.includes('sectionName'));
                     assert(table.includes('row'));
                 });

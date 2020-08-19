@@ -30,6 +30,90 @@ Thanks these wonderful people for helping improve EOSLime
 
 # Change log
 
+## Version 2.0.0 change log 
+## [Typescript support && Codebase code coverage]
+### Breaking changes
+* Rename **Account.addAuthorityKey** to **Account.addOnBehalfKey**
+* Rename **Account.executiveAuth** to **Account.authority**
+* New way to access contract actions and tables
+    **Actions**
+    ```
+    const tokenContract = await eoslime.Contract.at('contract name');
+    // Before
+    tokenContract.issue(params, options)
+    // Now
+    tokenContract.actions.issue([params], options)
+    ```
+    **Tables**
+    ```
+    const tokenContract = await eoslime.Contract.at('contract name');
+    // Before
+    tokenContract.balances()
+    // Now
+    tokenContract.tables.balances()
+    ```
+* Contract.on('deploy')
+    ```
+    // Before
+    Contract.on('deploy', (tx, contract) => {}))
+    // Now
+    Contract.on('deploy', (contract, tx) => {}))
+    ```
+* Remove AuthorityAccount
+* Deprecate **Account.createSubAuthority** 
+    ```
+    const account = await eoslime.Account.createRandom();
+    
+    // ------------ [ Before ] ------------
+    
+    // Add subAuthority and return an instance of AuthorityAccount
+    const subAuthorityAccount = await account.createSubAuthority('subauthority');
+    
+    // Add what actions the new authority could access
+    await subAuthorityAccount.setAuthorityAbilities([
+        { action: 'produce', contract: faucetContract.name }
+    ]);
+    
+    // ------------ [ Now ] ------------
+    
+    // Add subAuthority and return tx receipt
+    const tx = await account.addAuthority('subauthority');
+    
+    // Add what actions the new authority could access
+    await account.setAuthorityAbilities('subauthority', [
+        { action: 'produce', contract: faucetContract.name }
+    ]);
+    
+    const subAuthorityAccount = eoslime.Account.load('name', 'key', 'subauthority');
+    ```
+ 
+### News
+* Typescript support
+* Refactor CLI commands
+* Fix nodeos pre-loaded accounts to have different keys
+* Unit tests for all CLI commands
+* Return transaction receipts on every chain iteraction
+* Use logger instead console.log
+* Remove the check requiring an executor to be provided on contract instantiation. Without executor, one could fetch only the data from the contract tables
+* contract.action.sign(params)
+    ```
+    // Before
+    contract.action.sign(params)
+    
+    // Now
+    // Options are the same like the ones for contract.action(params, options)
+    contract.actions.action.sign([params], options)
+    ```
+* contract.action.getRawTransaction(params)
+    ```
+    // Before
+    contract.action.getRawTransaction(params)
+    
+    // Now
+    // Options are the same like the ones for contract.action(params, options)
+    contract.actions.action.getRawTransaction([params], options)
+    ```
+
 ## Version 1.0.4 change log
 
 * **eoslime nodeos**      

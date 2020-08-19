@@ -3,27 +3,27 @@ const BaseAccount = require('../base-account');
 
 class MultiSignatureAccount extends BaseAccount {
 
-    constructor(name, privateKey, provider, authority) {
+    constructor (name, privateKey, provider, authority) {
         super(name, privateKey, provider, authority)
 
         this.accounts = [];
         this.proposals = {};
     }
 
-    loadKeys(privateKeys) {
+    loadKeys (privateKeys) {
         for (let i = 0; i < privateKeys.length; i++) {
             this.accounts.push(new BaseAccount(this.name, privateKeys[i], this.provider, this.authority.permission));
         }
     }
 
-    loadAccounts(accounts) {
+    loadAccounts (accounts) {
         for (let i = 0; i < accounts.length; i++) {
             is(accounts[i]).instanceOf('BaseAccount');
             this.accounts.push(accounts[i]);
         }
     }
 
-    async propose(contractAction, actionData) {
+    async propose (contractAction, actionData) {
         is(contractAction).instanceOf('ContractFunction');
 
         const actionTx = await contractAction.sign(actionData, { from: this });
@@ -33,7 +33,7 @@ class MultiSignatureAccount extends BaseAccount {
         return proposalId;
     }
 
-    async approve(publicKey, proposalId) {
+    async approve (publicKey, proposalId) {
         const approver = this.accounts.find((account) => { return account.publicKey == publicKey });
         requireExistingApprover(approver);
         requireExistingProposal(this.proposals, proposalId);
@@ -47,7 +47,7 @@ class MultiSignatureAccount extends BaseAccount {
         proposalTx.signatures.push(approverSignedTx.transaction.signatures[0]);
     }
 
-    async processProposal(proposalId) {
+    async processProposal (proposalId) {
         requireExistingProposal(this.proposals, proposalId);
         await requireEnoughApprovals(this, this.proposals[proposalId]);
 

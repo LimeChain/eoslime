@@ -3,11 +3,11 @@
     "version": "2.0.0",
     "description": "eoslime is an EOS development and deployment framework based on eosjs.js",
     "main": "index.js",
+    "types": "index.d.ts",
     "scripts": {
         "build": "tsc",
-        "test": "bash ./tests/testing-contracts/compile.sh && nyc --check-coverage  mocha './tests/**/*.js'",
-        "test-dev": "bash ./tests/testing-contracts/compile.sh && mocha './tests/*.js'",
-        "test-types": "bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/*.ts",
+        "test": "tsc&& bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/*.ts && nyc --check-coverage mocha './tests/**/*.js'",
+        "test-dev": "tsc && bash ./tests/testing-contracts/compile.sh && mocha './tests/**/*.js' && mocha -r ts-node/register tests/**/*.ts",
         "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },
     "author": "Lyubomir Kiprov (Limechain)",
