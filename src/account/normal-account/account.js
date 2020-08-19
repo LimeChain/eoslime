@@ -142,7 +142,7 @@ class Account extends BaseAccount {
 }
 
 const updateAuthority = async function (authorityName, parent, auth) {
-    const txReceipt = await this.provider.eos.transaction(tr => {
+    await this.provider.eos.transaction(tr => {
         tr.updateauth({
             account: this.name,
             permission: authorityName,
@@ -152,7 +152,6 @@ const updateAuthority = async function (authorityName, parent, auth) {
 
     }, { broadcast: true, sign: true, keyProvider: this.privateKey });
 
-    return txReceipt;
 }
 
 module.exports = Account;
