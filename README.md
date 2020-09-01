@@ -1,5 +1,6 @@
 [![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) 
 [![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
+[![support typescript](https://badgen.net/badge/Support/TypeScript/cyan)](https://badgen.net/badge/Support/TypeScript/cyan)
 
 eoslime.js
 ============
