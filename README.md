@@ -1,4 +1,4 @@
-[![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) 
+[![npm version](https://img.shields.io/npm/v/eoslime?color=green&label=npm%20version&logo=npm)](https://img.shields.io/npm/v/eoslime?color=green&label=npm%20version&logo=npm) 
 [![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
 [![support typescript](https://badgen.net/badge/Support/TypeScript/cyan)](https://badgen.net/badge/Support/TypeScript/cyan)
 
