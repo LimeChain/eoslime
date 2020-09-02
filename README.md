@@ -24,6 +24,9 @@ Thanks these wonderful people for helping improve EOSLime
     <td align="center"><a href="https://github.com/Avm07"><img src="https://avatars1.githubusercontent.com/u/24969602?s=400&u=c2ab916dba523284faa1310b363fed7ef27634f2&v=4" width="100px;" alt=""/><br/><sub><b>Artem</b></sub></a><br/>
     <a href="https://github.com/LimeChain/eoslime/issues/53" title="Ideas">💡</a>
     </td>
+    <td align="center"><a href="https://github.com/prcolaco"><img src="https://avatars2.githubusercontent.com/u/3846701?s=460&v=4" width="100px;" alt=""/><br/><sub><b>Pedro Reis Colaço</b></sub></a><br/>
+    <a href="https://github.com/LimeChain/eoslime/pulls/prcolaco" title="Code">💻</a>
+    </td>
 </tr>
 </table>
 
@@ -95,6 +98,8 @@ Thanks these wonderful people for helping improve EOSLime
 * Unit tests for all CLI commands
 * Return transaction receipts on every chain iteraction
 * Use logger instead console.log
+* Update Kylin network endpoint
+* Add Jungle3 support
 * Remove the check requiring an executor to be provided on contract instantiation. Without executor, one could fetch only the data from the contract tables
 * contract.action.sign(params)
     ```
