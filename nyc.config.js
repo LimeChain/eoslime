@@ -3,6 +3,7 @@ module.exports = {
     "**/*.js"
   ],
   "exclude": [
-    "tests/**/*.js"
+    "tests/**/*.js",
+    "cli-commands/commands/test/specific/test-frameworks/mocha/index.js"
   ]
 }
