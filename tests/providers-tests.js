@@ -27,6 +27,11 @@ const Networks = {
         url: 'https://jungle2.cryptolions.io',
         chainId: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'
     },
+    jungle3: {
+        name: 'jungle3',
+        url: 'https://jungle3.cryptolions.io',
+        chainId: '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840'
+    },
     main: {
         name: 'main',
         url: 'https://eos.greymass.com',
@@ -66,6 +71,10 @@ describe('Providers', function () {
             const jungleProvider = eoslime.init('jungle').Provider;
             assert(JSON.stringify(jungleProvider.network) == JSON.stringify(Networks.jungle));
 
+            // Jungle3
+            const jungle3Provider = eoslime.init('jungle3').Provider;
+            assert(JSON.stringify(jungle3Provider.network) == JSON.stringify(Networks.jungle3));
+
             // Worbli
             const worbliProvider = eoslime.init('worbli').Provider;
             assert(JSON.stringify(worbliProvider.network) == JSON.stringify(Networks.worbli));
@@ -100,6 +109,12 @@ describe('Providers', function () {
             assert(JSON.stringify(jungleProvider.network.name) == JSON.stringify(Networks.jungle.name));
             assert(JSON.stringify(jungleProvider.network.url) == JSON.stringify(Networks.jungle.url));
             assert(jungleProvider.network.chainId == Networks.custom.chainId);
+
+            // Jungle3
+            const jungle3Provider = eoslime.init('jungle3', { chainId: Networks.custom.chainId }).Provider;
+            assert(JSON.stringify(jungle3Provider.network.name) == JSON.stringify(Networks.jungle3.name));
+            assert(JSON.stringify(jungle3Provider.network.url) == JSON.stringify(Networks.jungle3.url));
+            assert(jungle3Provider.network.chainId == Networks.custom.chainId);
 
             // Worbli
             const worbliProvider = eoslime.init('worbli', { url: Networks.custom.url }).Provider;
@@ -147,6 +162,10 @@ describe('Providers', function () {
             const jungleProvider = new eoslimeInstance.Provider('jungle');
             assert(JSON.stringify(jungleProvider.network) == JSON.stringify(Networks.jungle));
 
+            // Jungle3
+            const jungle3Provider = new eoslimeInstance.Provider('jungle3');
+            assert(JSON.stringify(jungle3Provider.network) == JSON.stringify(Networks.jungle3));
+
             // Worbli
             const worbliProvider = new eoslimeInstance.Provider('worbli');
             assert(JSON.stringify(worbliProvider.network) == JSON.stringify(Networks.worbli));
@@ -182,6 +201,12 @@ describe('Providers', function () {
             assert(JSON.stringify(jungleProvider.network.name) == JSON.stringify(Networks.jungle.name));
             assert(JSON.stringify(jungleProvider.network.url) == JSON.stringify(Networks.jungle.url));
             assert(jungleProvider.network.chainId == Networks.custom.chainId);
+
+            // Jungle3
+            const jungle3Provider = new eoslimeInstance.Provider('jungle3', { chainId: Networks.custom.chainId });
+            assert(JSON.stringify(jungle3Provider.network.name) == JSON.stringify(Networks.jungle3.name));
+            assert(JSON.stringify(jungle3Provider.network.url) == JSON.stringify(Networks.jungle3.url));
+            assert(jungle3Provider.network.chainId == Networks.custom.chainId);
 
             // Worbli
             const worbliProvider = new eoslimeInstance.Provider('worbli', { url: Networks.custom.url });
