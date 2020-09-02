@@ -37,7 +37,7 @@ const Networks = {
     },
     kylin: {
         name: 'kylin',
-        url: 'https://kylin.eoscanada.com',
+        url: 'https://api.kylin.alohaeos.com',
         chainId: '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191'
     },
     custom: {
@@ -72,8 +72,8 @@ describe('Account', function () {
         try {
             const tokenAccount = await Account.createFromName('eosio.token');
             const tokenContract = await eoslimeTool.Contract.deployOnAccount(TOKEN_WASM_PATH, TOKEN_ABI_PATH, tokenAccount);
-            await tokenContract.create(tokenAccount.name, TOTAL_SUPPLY);
-            await tokenContract.issue(ACCOUNT_NAME, TOTAL_SUPPLY, 'memo');
+            await tokenContract.actions.create([tokenAccount.name, TOTAL_SUPPLY]);
+            await tokenContract.actions.issue([ACCOUNT_NAME, TOTAL_SUPPLY, 'memo']);
         } catch (error) {
         }
     }
@@ -86,8 +86,8 @@ describe('Account', function () {
         assert(account.name == ACCOUNT_NAME, 'Incorrect name');
         assert(account.privateKey == ACCOUNT_PRIVATE_KEY, 'Incorrect private key');
         assert(account.publicKey == ACCOUNT_PUBLIC_KEY, 'Incorrect public key');
-        assert(account.executiveAuthority.actor == EXECUTIVE_AUTHORITY.actor, 'Incorrect executive authority actor');
-        assert(account.executiveAuthority.permission == EXECUTIVE_AUTHORITY.permission, 'Incorrect executive authority permission');
+        assert(account.authority.actor == EXECUTIVE_AUTHORITY.actor, 'Incorrect executive authority actor');
+        assert(account.authority.permission == EXECUTIVE_AUTHORITY.permission, 'Incorrect executive authority permission');
 
         const network = account.provider.network;
         assert(JSON.stringify(account.provider.network) == JSON.stringify(Networks[network.name]))
@@ -237,20 +237,22 @@ describe('Account', function () {
             });
         });
 
-        describe('Create authority', function () {
+        describe('Add authority', function () {
             const AUTHORITY = 'contracts';
             const PARENT_AUTHORITY = 'active';
 
-            it('Should create authority', async () => {
+            it('Should add authority', async () => {
                 let account = await Account.createRandom();
                 let authority = await getAuthorityForAccount(AUTHORITY, account.name);
 
                 assert(authority == undefined);
 
-                const newAuthorityAccount = await account.createSubAuthority(AUTHORITY);
+                await account.addAuthority(AUTHORITY);
+
+                const newAuthorityAccount = Account.load(account.name, account.privateKey, AUTHORITY);
                 assert(newAuthorityAccount.name == account.name);
-                assert(newAuthorityAccount.executiveAuthority.actor == newAuthorityAccount.name);
-                assert(newAuthorityAccount.executiveAuthority.permission == AUTHORITY);
+                assert(newAuthorityAccount.authority.actor == newAuthorityAccount.name);
+                assert(newAuthorityAccount.authority.permission == AUTHORITY);
 
                 authority = await getAuthorityForAccount(AUTHORITY, newAuthorityAccount.name);
                 assert(authority.parent == PARENT_AUTHORITY);
@@ -288,7 +290,7 @@ describe('Account', function () {
             it('Should throw if one try to create a permission for non-existing authority', async () => {
                 try {
                     let account = await Account.createRandom();
-                    account.executiveAuthority.permission = 'FAKE';
+                    account.authority.permission = 'FAKE';
 
                     await account.addPermission(PERMISSION);
 
@@ -321,7 +323,7 @@ describe('Account', function () {
                 assert(authorityInfo.required_auth.keys.length == 1);
 
                 const keysPair = await eoslime.utils.generateKeys();
-                await account.addAuthorityKey(keysPair.publicKey);
+                await account.addOnBehalfKey(keysPair.publicKey);
 
                 authorityInfo = await account.getAuthorityInfo();
                 assert(authorityInfo.required_auth.keys.find((keyData) => { return keyData.key == keysPair.publicKey }));
@@ -336,7 +338,7 @@ describe('Account', function () {
                 assert(authorityInfo.required_auth.keys[0].weight == 1);
 
                 const keysPair = await eoslime.utils.generateKeys();
-                await account.addAuthorityKey(keysPair.publicKey, WEIGHT);
+                await account.addOnBehalfKey(keysPair.publicKey, WEIGHT);
 
                 authorityInfo = await account.getAuthorityInfo();
                 assert(authorityInfo.required_auth.keys.find((key) => { return key.weight == WEIGHT }));
@@ -349,8 +351,8 @@ describe('Account', function () {
                 assert(authorityInfo.required_auth.keys.length == 1);
 
                 const keysPair = await eoslime.utils.generateKeys();
-                await account.addAuthorityKey(keysPair.publicKey);
-                await account.addAuthorityKey(keysPair.publicKey);
+                await account.addOnBehalfKey(keysPair.publicKey);
+                await account.addOnBehalfKey(keysPair.publicKey);
 
                 authorityInfo = await account.getAuthorityInfo();
 
@@ -361,7 +363,7 @@ describe('Account', function () {
             it('Should throw if one provide an invalid public key', async () => {
                 try {
                     const account = await Account.createRandom();
-                    await account.addAuthorityKey('Invalid public key');
+                    await account.addOnBehalfKey('Invalid public key');
 
                     assert(false);
                 } catch (error) {
@@ -428,7 +430,7 @@ describe('Account', function () {
                 assert(authorityInfo.required_auth.threshold == 1);
 
                 const keysPair = await eoslime.utils.generateKeys();
-                await account.addAuthorityKey(keysPair.publicKey);
+                await account.addOnBehalfKey(keysPair.publicKey);
                 await account.increaseThreshold(THRESHOLD);
 
                 authorityInfo = await account.getAuthorityInfo();
@@ -481,34 +483,60 @@ describe('Account', function () {
                 const faucetContract = await eoslimeTool.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
                 const account = await eoslimeTool.Account.createRandom();
-                const accountRandomAuth = await account.createSubAuthority('random');
+                await account.addAuthority('random');
+                const accountRandomAuth = eoslimeTool.Account.load(account.name, account.privateKey, 'random');
 
                 try {
-                    await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
+                    await faucetContract.actions.produce(
+                        [account.name, "100.0000 TKNS", account.name, "memo"],
+                        { from: accountRandomAuth }
+                    );
                 } catch (error) {
                     assert(error.includes('action declares irrelevant authority'));
                 }
 
-                await accountRandomAuth.setAuthorityAbilities([
+                await account.setAuthorityAbilities('random', [
                     {
                         action: 'produce',
                         contract: faucetContract.name
                     }
                 ]);
 
-                await faucetContract.produce(account.name, "100.0000 TKNS", account.name, "memo", { from: accountRandomAuth });
+                await faucetContract.actions.produce(
+                    [account.name, "100.0000 TKNS", account.name, "memo"],
+                    { from: accountRandomAuth }
+                );
             });
 
             it('Should throw if one does not provide array as abilities', async () => {
                 try {
                     const account = await eoslimeTool.Account.createRandom();
-                    const authorityAccount = await account.createSubAuthority('random');
-
-                    await authorityAccount.setAuthorityAbilities('Fake ability');
+                    await account.addAuthority('random');
+                    await account.setAuthorityAbilities('random', 'Fake ability');
 
                     assert(false);
                 } catch (error) {
                     assert(error.message.includes('Provided String is not an instance of Array'));
+                }
+            });
+
+            it('Should throw if one does not provide existing authority', async () => {
+                try {
+                    const account = await eoslimeTool.Account.createRandom();
+
+                    // Random does not exists
+                    await account.setAuthorityAbilities('random', [
+                        {
+                            action: 'test',
+                            contract: 'eosio'
+                        }
+                    ]);
+
+                    assert(false);
+                } catch (error) {
+                    assert(error.message.includes('Account does not have authority with name: [random].'));
+                    assert(error.message.includes('You could add it by using [addAuthority] function.'));
+                    assert(error.message.includes('For details check [Set authority abilities] suite in account-tests.js'));
                 }
             });
         });
@@ -715,8 +743,8 @@ describe('Account', function () {
             assert(decryptedJSONAccount.name, 'Incorrect name');
             assert(decryptedJSONAccount.privateKey, 'Incorrect private key');
             assert(decryptedJSONAccount.publicKey, 'Incorrect public key');
-            assert(decryptedJSONAccount.executiveAuthority.actor == decryptedJSONAccount.name, 'Incorrect authority actor');
-            assert(decryptedJSONAccount.executiveAuthority.permission == 'active', 'Incorrect authority permission');
+            assert(decryptedJSONAccount.authority.actor == decryptedJSONAccount.name, 'Incorrect authority actor');
+            assert(decryptedJSONAccount.authority.permission == 'active', 'Incorrect authority permission');
             assert(JSON.stringify(decryptedJSONAccount.provider.network) == JSON.stringify(Networks['local']), 'Incorrect network');
         });
 

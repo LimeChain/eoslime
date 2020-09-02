@@ -1,10 +1,11 @@
 const fileSystemUtil = require('../../../helpers/file-system-util');
+const path = require('path');
 
 const Option = require('../../option');
 
 class PathOption extends Option {
 
-    constructor() {
+    constructor () {
         super(
             'path',
             {
@@ -28,7 +29,7 @@ class PathOption extends Option {
             });
         }
 
-        return optionValue.endsWith('.cpp') ? [`${__dirname}/${optionValue}`] : [];
+        return optionValue.endsWith('.cpp') ? [{ fullPath: optionValue, fileName: path.basename(optionValue, '.cpp') }] : [];
     }
 }
 

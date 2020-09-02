@@ -1,8 +1,10 @@
 const chalk = require('chalk').default;
 const CLITable = require('cli-table');
 
+const logger = require('./logger');
+
 class Table {
-    constructor(tableHead) {
+    constructor (tableHead) {
         this.table = new CLITable(tableHead);
     }
 
@@ -25,7 +27,7 @@ class Table {
     }
 
     draw () {
-        console.log(this.table.toString());
+        logger.log(this.table.toString());
     }
 }
 

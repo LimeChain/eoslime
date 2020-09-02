@@ -1,15 +1,13 @@
-const chalk = require('chalk');
+const logger = require('../../common/logger');
 
 module.exports = {
-    'StartCompilation': () => { console.log(chalk.magentaBright('===== Compilation has started... =====')); },
-    'UnsuccessfulCompilation': (error) => {
-        console.log(chalk.redBright(`===== Unsuccessful compilation =====`));
-        console.log(error);
+    'CONTRACT': {
+        'Compiled': (contract) => { logger.success(`===== ${contract} has been successfully compiled  =====`); },
+        'NotCompiled': (error, file) => { logger.error(`===== Unsuccessful compilation of ${file} =====`, error); },
+        'NotFound': () => { logger.info(`===== There is not a contract to compile =====`); }
     },
-    'SuccessfulCompilationOfContract': (contract) => { console.log(chalk.greenBright(`===== Successfully compilation of ${contract} =====`)); },
-    'UnsuccessfulCompilationOfContract': (error, file) => {
-        console.log(chalk.redBright(`===== Unsuccessful compilation of ${file} =====`));
-        console.log(error);
-    },
-    'ContractNotExisting': () => { console.log(chalk.redBright(`===== There is not a contract to compile =====`)); }
+    'COMMAND': {
+        'Start': () => { logger.info('===== Compilation has started... ====='); },
+        'Error': (error) => { logger.error(`===== Unsuccessful compilation =====`, error); },
+    }
 }

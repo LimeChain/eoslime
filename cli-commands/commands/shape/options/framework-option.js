@@ -2,7 +2,7 @@ const Option = require('../../option');
 const repositories = require('../specific/repositories.json');
 
 class FrameworkOption extends Option {
-    constructor() {
+    constructor () {
         super(
             'framework',
             {
@@ -14,6 +14,10 @@ class FrameworkOption extends Option {
     }
 
     process (optionValue) {
+        if (!repositories[optionValue]) {
+            throw new Error('Invalid Shape framework');
+        }
+
         return repositories[optionValue];
     }
 }

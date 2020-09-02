@@ -1,9 +1,10 @@
 const Option = require('../../../../option');
 
+const fileSystemUtils = require('../../../../../helpers/file-system-util');
 const nodeosDataManager = require('../../../specific/nodeos-data/data-manager');
 
 class PathOption extends Option {
-    constructor() {
+    constructor () {
         super(
             'path',
             {
@@ -15,7 +16,9 @@ class PathOption extends Option {
     }
 
     async process (optionValue) {
-        return optionValue;
+        if (fileSystemUtils.isDir(optionValue)) {
+            return optionValue;
+        }
     }
 }
 

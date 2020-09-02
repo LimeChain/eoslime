@@ -27,6 +27,11 @@ const Networks = {
         url: 'https://jungle2.cryptolions.io',
         chainId: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'
     },
+    jungle3: {
+        name: 'jungle3',
+        url: 'https://jungle3.cryptolions.io',
+        chainId: '2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840'
+    },
     main: {
         name: 'main',
         url: 'https://eos.greymass.com',
@@ -34,7 +39,7 @@ const Networks = {
     },
     kylin: {
         name: 'kylin',
-        url: 'https://kylin.eoscanada.com',
+        url: 'https://api.kylin.alohaeos.com',
         chainId: '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191'
     },
     custom: {
@@ -65,6 +70,10 @@ describe('Providers', function () {
             // Jungle
             const jungleProvider = eoslime.init('jungle').Provider;
             assert(JSON.stringify(jungleProvider.network) == JSON.stringify(Networks.jungle));
+
+            // Jungle3
+            const jungle3Provider = eoslime.init('jungle3').Provider;
+            assert(JSON.stringify(jungle3Provider.network) == JSON.stringify(Networks.jungle3));
 
             // Worbli
             const worbliProvider = eoslime.init('worbli').Provider;
@@ -100,6 +109,12 @@ describe('Providers', function () {
             assert(JSON.stringify(jungleProvider.network.name) == JSON.stringify(Networks.jungle.name));
             assert(JSON.stringify(jungleProvider.network.url) == JSON.stringify(Networks.jungle.url));
             assert(jungleProvider.network.chainId == Networks.custom.chainId);
+
+            // Jungle3
+            const jungle3Provider = eoslime.init('jungle3', { chainId: Networks.custom.chainId }).Provider;
+            assert(JSON.stringify(jungle3Provider.network.name) == JSON.stringify(Networks.jungle3.name));
+            assert(JSON.stringify(jungle3Provider.network.url) == JSON.stringify(Networks.jungle3.url));
+            assert(jungle3Provider.network.chainId == Networks.custom.chainId);
 
             // Worbli
             const worbliProvider = eoslime.init('worbli', { url: Networks.custom.url }).Provider;
@@ -147,6 +162,10 @@ describe('Providers', function () {
             const jungleProvider = new eoslimeInstance.Provider('jungle');
             assert(JSON.stringify(jungleProvider.network) == JSON.stringify(Networks.jungle));
 
+            // Jungle3
+            const jungle3Provider = new eoslimeInstance.Provider('jungle3');
+            assert(JSON.stringify(jungle3Provider.network) == JSON.stringify(Networks.jungle3));
+
             // Worbli
             const worbliProvider = new eoslimeInstance.Provider('worbli');
             assert(JSON.stringify(worbliProvider.network) == JSON.stringify(Networks.worbli));
@@ -182,6 +201,12 @@ describe('Providers', function () {
             assert(JSON.stringify(jungleProvider.network.name) == JSON.stringify(Networks.jungle.name));
             assert(JSON.stringify(jungleProvider.network.url) == JSON.stringify(Networks.jungle.url));
             assert(jungleProvider.network.chainId == Networks.custom.chainId);
+
+            // Jungle3
+            const jungle3Provider = new eoslimeInstance.Provider('jungle3', { chainId: Networks.custom.chainId });
+            assert(JSON.stringify(jungle3Provider.network.name) == JSON.stringify(Networks.jungle3.name));
+            assert(JSON.stringify(jungle3Provider.network.url) == JSON.stringify(Networks.jungle3.url));
+            assert(jungle3Provider.network.chainId == Networks.custom.chainId);
 
             // Worbli
             const worbliProvider = new eoslimeInstance.Provider('worbli', { url: Networks.custom.url });
@@ -240,9 +265,9 @@ describe('Providers', function () {
             const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
             const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-            await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+            await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
             const tokensHolder = await eoslimeInstance.Account.createRandom();
-            await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+            await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
             // With equal criteria
             const equalResult = await Provider.select('withdrawers').from(faucetContract.name).equal(tokensHolder.name).find();
@@ -281,9 +306,9 @@ describe('Providers', function () {
                 const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
                 const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
                 const tokensHolder = await eoslimeInstance.Account.createRandom();
-                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+                await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
                 await Provider.select().find();
             } catch (error) {
@@ -299,9 +324,9 @@ describe('Providers', function () {
                 const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
                 const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
                 const tokensHolder = await eoslimeInstance.Account.createRandom();
-                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+                await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
                 await Provider.select('withdrawers').from().find();
             } catch (error) {
@@ -317,9 +342,9 @@ describe('Providers', function () {
                 const tokenContract = await eoslimeInstance.Contract.deploy(TOKEN_WASM_PATH, TOKEN_ABI_PATH);
                 const faucetContract = await eoslimeInstance.Contract.deploy(FAUCET_WASM_PATH, FAUCET_ABI_PATH);
 
-                await tokenContract.create(faucetContract.name, TOTAL_SUPPLY);
+                await tokenContract.actions.create([faucetContract.name, TOTAL_SUPPLY]);
                 const tokensHolder = await eoslimeInstance.Account.createRandom();
-                await faucetContract.produce(tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo");
+                await faucetContract.actions.produce([tokensHolder.name, PRODUCED_TOKENS_AMOUNT, tokenContract.name, "memo"]);
 
                 await Provider.select('withdrawers').from(faucetContract.name).scope().find();
             } catch (error) {

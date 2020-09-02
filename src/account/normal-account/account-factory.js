@@ -7,7 +7,7 @@ const utils = require('../../utils');
 const DEFAULT_AUTHORITY = 'active';
 
 class AccountFactory {
-    constructor(provider) {
+    constructor (provider) {
         this.provider = provider;
     }
 
@@ -66,7 +66,7 @@ class AccountFactory {
             const dataToBeEncrypted = {
                 name: newAccount.name,
                 network: newAccount.provider.network,
-                authority: newAccount.executiveAuthority
+                authority: newAccount.authority
             };
 
             const dataHash = crypto.hash(JSON.stringify({ ...dataToBeEncrypted, privateKey: newAccount.privateKey }));

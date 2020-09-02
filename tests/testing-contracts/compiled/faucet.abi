@@ -26,6 +26,11 @@
             ]
         },
         {
+            "name": "test",
+            "base": "",
+            "fields": []
+        },
+        {
             "name": "withdraw",
             "base": "",
             "fields": [
@@ -62,6 +67,11 @@
         {
             "name": "produce",
             "type": "produce",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "test",
+            "type": "test",
             "ricardian_contract": ""
         },
         {

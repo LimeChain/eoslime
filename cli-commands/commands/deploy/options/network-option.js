@@ -2,7 +2,7 @@ const Option = require('../../option');
 const eoslime = require('../../../../index');
 
 class NetworkOption extends Option {
-    constructor() {
+    constructor () {
         super(
             'network',
             {
@@ -15,9 +15,7 @@ class NetworkOption extends Option {
     }
 
     process (optionValue) {
-        if (optionValue) {
-            return eoslime.init(optionValue);
-        }
+        return eoslime.init(optionValue);
     }
 }
 

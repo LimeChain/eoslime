@@ -1,5 +1,6 @@
 [![npm version](https://badge.fury.io/js/eoslime.svg)](https://badge.fury.io/js/eoslime.svg) 
 [![codecov](https://codecov.io/gh/LimeChain/eoslime/branch/master/graph/badge.svg)](https://codecov.io/gh/LimeChain/eoslime)
+[![support typescript](https://badgen.net/badge/Support/TypeScript/cyan)](https://badgen.net/badge/Support/TypeScript/cyan)
 
 eoslime.js
 ============
@@ -23,12 +24,102 @@ Thanks these wonderful people for helping improve EOSLime
     <td align="center"><a href="https://github.com/Avm07"><img src="https://avatars1.githubusercontent.com/u/24969602?s=400&u=c2ab916dba523284faa1310b363fed7ef27634f2&v=4" width="100px;" alt=""/><br/><sub><b>Artem</b></sub></a><br/>
     <a href="https://github.com/LimeChain/eoslime/issues/53" title="Ideas">💡</a>
     </td>
+    <td align="center"><a href="https://github.com/prcolaco"><img src="https://avatars2.githubusercontent.com/u/3846701?s=460&v=4" width="100px;" alt=""/><br/><sub><b>Pedro Reis Colaço</b></sub></a><br/>
+    <a href="https://github.com/LimeChain/eoslime/pulls/prcolaco" title="Code">💻</a>
+    </td>
 </tr>
 </table>
 
 
 
 # Change log
+
+## Version 2.0.0 change log 
+## [Typescript support && Codebase code coverage]
+### Breaking changes
+* Rename **Account.addAuthorityKey** to **Account.addOnBehalfKey**
+* Rename **Account.executiveAuth** to **Account.authority**
+* New way to access contract actions and tables    
+    **Actions**
+    ```
+    const tokenContract = await eoslime.Contract.at('contract name');
+    // Before
+    tokenContract.issue(params, options)
+    // Now
+    tokenContract.actions.issue([params], options)
+    ```
+    **Tables**
+    ```
+    const tokenContract = await eoslime.Contract.at('contract name');
+    // Before
+    tokenContract.balances()
+    // Now
+    tokenContract.tables.balances()
+    ```
+* Contract.on('deploy')
+    ```
+    // Before
+    Contract.on('deploy', (tx, contract) => {}))
+    // Now
+    Contract.on('deploy', (contract, tx) => {}))
+    ```
+* Remove AuthorityAccount
+* Deprecate **Account.createSubAuthority** 
+* Replace **createSubAuthority** with **addAuthority**
+    ```
+    const account = await eoslime.Account.createRandom();
+    
+    // ------------ [ Before ] ------------
+    
+    // Add subAuthority and return an instance of AuthorityAccount
+    const subAuthorityAccount = await account.createSubAuthority('subauthority');
+    
+    // Add what actions the new authority could access
+    await subAuthorityAccount.setAuthorityAbilities([
+        { action: 'produce', contract: faucetContract.name }
+    ]);
+    
+    // ------------ [ Now ] ------------
+    
+    // Add subAuthority and return tx receipt
+    const tx = await account.addAuthority('subauthority');
+    
+    // Add what actions the new authority could access
+    await account.setAuthorityAbilities('subauthority', [
+        { action: 'produce', contract: faucetContract.name }
+    ]);
+    
+    const subAuthorityAccount = eoslime.Account.load('name', 'key', 'subauthority');
+    ```
+ 
+### News
+* Typescript support
+* Refactor CLI commands
+* Fix nodeos pre-loaded accounts to have different keys
+* Unit tests for all CLI commands
+* Return transaction receipts on every chain iteraction
+* Use logger instead console.log
+* Update Kylin network endpoint
+* Add Jungle3 support
+* Remove the check requiring an executor to be provided on contract instantiation. Without executor, one could fetch only the data from the contract tables
+* contract.action.sign(params)
+    ```
+    // Before
+    contract.action.sign(params)
+    
+    // Now
+    // Options are the same like the ones for contract.action(params, options)
+    contract.actions.action.sign([params], options)
+    ```
+* contract.action.getRawTransaction(params)
+    ```
+    // Before
+    contract.action.getRawTransaction(params)
+    
+    // Now
+    // Options are the same like the ones for contract.action(params, options)
+    contract.actions.action.getRawTransaction([params], options)
+    ```
 
 ## Version 1.0.4 change log
 
@@ -91,7 +182,7 @@ EOSLIME was able to be initialized only with pre-configured providers connection
     const eoslime = require('eoslime').init('bos', { url: 'Your url', chainId: 'Your chainId' });
     // ... any other supported netwok ...
     ```
-* **Allow read-only contracts** - You are able now to instantiate a contract withouth a signer/executor and read the contract's tables
+* **Allow read-only contracts** - You are able now to instantiate a contract without a signer/executor and read the contract's tables
 * **Add Tutorial section in the documentation**
 * **Describe how examples in the documentation could be run**
 * **Increase the code coverage from 46% to 90+ %**

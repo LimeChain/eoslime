@@ -4,7 +4,7 @@ const Option = require('../../option');
 const fileSystemUtil = require('../../../helpers/file-system-util');
 
 class PathOption extends Option {
-    constructor() {
+    constructor () {
         super(
             'path',
             {
@@ -16,8 +16,8 @@ class PathOption extends Option {
     }
 
     async process (optionValue) {
-        let deploymentFilesFunctions = [];
         if (fileSystemUtil.isDir(optionValue)) {
+            const deploymentFilesFunctions = [];
             const dirFiles = await fileSystemUtil.recursivelyReadDir(optionValue);
 
             for (let i = 0; i < dirFiles.length; i++) {
@@ -27,16 +27,16 @@ class PathOption extends Option {
                     deploy: require(path.resolve('./', dirFile.fullPath))
                 });
             }
+
+            return deploymentFilesFunctions;
         }
 
         if (fileSystemUtil.isFile(optionValue)) {
-            deploymentFilesFunctions.push({
+            return [{
                 fileName: optionValue,
                 deploy: require(path.resolve('./', optionValue))
-            });
+            }];
         }
-
-        return deploymentFilesFunctions;
     }
 }
 

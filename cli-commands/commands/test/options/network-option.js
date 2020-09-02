@@ -1,7 +1,7 @@
 const Option = require('../../option');
 
 class NetworkOption extends Option {
-    constructor() {
+    constructor () {
         super(
             'network',
             {

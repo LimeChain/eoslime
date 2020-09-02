@@ -75,9 +75,6 @@ const fileSystemUtils = {
             });
         });
     },
-    exists: (path) => {
-        return fs.existsSync(path);
-    },
     readFile: (filePath) => {
         return fs.readFileSync(filePath);
     },

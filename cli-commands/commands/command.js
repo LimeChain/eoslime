@@ -1,9 +1,11 @@
 class Command {
-    constructor(commandDefinition) {
+    constructor (commandDefinition) {
         this.subcommands = [];
         this.options = commandDefinition.options || [];
         this.template = commandDefinition.template || '';
         this.description = commandDefinition.description || '';
+
+        this.hasBeenExecuted = true;
     }
 
     async processOptions (args) {
@@ -21,8 +23,7 @@ class Command {
         return optionResults;
     }
 
-    execute (args) { }
-
+    async execute (args) { }
 }
 
 module.exports = Command;

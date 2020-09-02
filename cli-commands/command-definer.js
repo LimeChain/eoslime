@@ -1,5 +1,5 @@
 class CommandDefiner {
-    constructor(yargs) {
+    constructor (yargs) {
         this.yargs = yargs;
     }
 
@@ -28,8 +28,8 @@ class CommandDefiner {
 
     handle (command) {
         return async (args) => {
-            const result = await command.execute(args);
-            if (!result) {
+            await command.execute(args);
+            if (!command.hasBeenExecuted) {
                 this.yargs.showHelp();
             }
         }

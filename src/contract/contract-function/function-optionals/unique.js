@@ -3,7 +3,7 @@ const uniqueOptional = function (optionals, rawTransaction) {
         rawTransaction.actions.push({
             account: "eosio.null",
             name: "nonce",
-            authorization: [rawTransaction.defaultExecutor.executiveAuthority],
+            authorization: [rawTransaction.defaultExecutor.authority],
             data: {
                 value: `${Date.now()}`
             }
