@@ -39,7 +39,7 @@ Thanks these wonderful people for helping improve EOSLime
 ### Breaking changes
 * Rename **Account.addAuthorityKey** to **Account.addOnBehalfKey**
 * Rename **Account.executiveAuth** to **Account.authority**
-* New way to access contract actions and tables
+* New way to access contract actions and tables    
     **Actions**
     ```
     const tokenContract = await eoslime.Contract.at('contract name');
@@ -65,6 +65,7 @@ Thanks these wonderful people for helping improve EOSLime
     ```
 * Remove AuthorityAccount
 * Deprecate **Account.createSubAuthority** 
+* Replace **createSubAuthority** with **addAuthority**
     ```
     const account = await eoslime.Account.createRandom();
     
