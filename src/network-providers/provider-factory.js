@@ -5,6 +5,7 @@ const MainProvider = require('./main-provider');
 const KylinProvider = require('./kylin-provider');
 const LocalProvider = require('./local-provider');
 const JungleProvider = require('./jungle-provider');
+const Jungle3Provider = require('./jungle3-provider');
 const WorbliProvider = require('./worbli-provider');
 const CustomProvider = require('./custom-provider');
 
@@ -14,6 +15,7 @@ const PROVIDERS = {
     kylin: (networkConfig) => { return new KylinProvider(networkConfig) },
     local: (networkConfig) => { return new LocalProvider(networkConfig) },
     jungle: (networkConfig) => { return new JungleProvider(networkConfig) },
+    jungle3: (networkConfig) => { return new Jungle3Provider(networkConfig) },
     worbli: (networkConfig) => { return new WorbliProvider(networkConfig) },
     custom: (networkConfig) => { return new CustomProvider(networkConfig) }
 }
