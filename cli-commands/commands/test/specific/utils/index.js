@@ -1,8 +1,8 @@
 const assert = require('assert');
 
 module.exports = {
-    expectAssert: async function (promise) {
-        return expectEOSError(promise, 'eosio_assert_message_exception', 'assert');
+    expectAssert: async function (promise, message) {
+        return expectEOSError(promise, 'eosio_assert_message_exception', 'assert', message);
     },
     expectMissingAuthority: async function (promise) {
         return expectEOSError(promise, 'missing_auth_exception', 'missing authority');
@@ -20,13 +20,17 @@ module.exports = {
     // }
 }
 
-const expectEOSError = async function (promise, errorType, errorInfo) {
+const expectEOSError = async function (promise, errorType, errorInfo, errorMessage) {
     try {
         await promise;
     } catch (error) {
         const message = error.message || error;
         const expectedError = message.search(errorType) >= 0;
         assert(expectedError, `Expected ${errorInfo}, got '${message}' instead`);
+        if (errorMessage) {
+            const expectedMessage = message.search(errorMessage) >= 0;
+            assert(expectedMessage, `Expected ${errorInfo} with '${errorMessage}' message, got '${message}' instead`);
+        }
         return;
     }
     assert.fail(`Expected ${errorInfo} not received`);
