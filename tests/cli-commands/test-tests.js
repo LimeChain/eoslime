@@ -195,7 +195,7 @@ describe('Test Command', function () {
 
         describe('Test utils', function () {
 
-            async function expect (promise, expectCb) {
+            async function expect (promise, expectCb, message) {
                 const testCommand = new TestCommand(class TestFramework {
                     setDescribeArgs () { }
                     runTests () { }
@@ -206,7 +206,8 @@ describe('Test Command', function () {
                     logger.on('success', async () => {
                         try {
                             await args.eoslime.tests[expectCb](
-                                promise
+                                promise,
+                                message
                             )
                             resolve(true);
                         } catch (error) {
@@ -231,6 +232,16 @@ describe('Test Command', function () {
                     );
                 });
 
+                it('Should expectAssert with message', async () => {
+                    await expect(
+                        new Promise((reject, resolve) => {
+                            throw new Error('eosio_assert_message_exception because: this happened');
+                        }),
+                        'expectAssert',
+                        'this happened'
+                    );
+                });
+
                 it('Should throw in case unexpected error happens', async () => {
                     try {
                         await expect(
@@ -242,6 +253,21 @@ describe('Test Command', function () {
                         assert(false);
                     } catch (error) {
                         assert(error.message.includes('Expected assert, got \'Another error\' instead'));
+                    }
+                });
+
+                it('Should throw in case of assert with unexpected message happens', async () => {
+                    try {
+                        await expect(
+                            new Promise((resolve, reject) => {
+                                throw new Error('eosio_assert_message_exception because: other thing happened');
+                            }),
+                            'expectAssert',
+                            'this happened'
+                        );
+                        assert(false);
+                    } catch (error) {
+                        assert(error.message.includes('Expected assert with \'this happened\' message, got \'eosio_assert_message_exception because: other thing happened\' instead'));
                     }
                 });
 
