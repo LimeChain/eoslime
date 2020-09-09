@@ -7,6 +7,7 @@
     "scripts": {
         "build": "tsc",
         "test": "nyc --check-coverage mocha './tests/**/*.js' && tsc&& bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/*.ts",
+        "test-js": "mocha './tests/**/*.js'",
         "test-dev": "mocha './tests/**/*.js'&& tsc && bash ./tests/testing-contracts/compile.sh && mocha -r ts-node/register tests/**/*.ts",
         "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
     },

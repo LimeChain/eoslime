@@ -21,6 +21,7 @@ const accountsDefinition = require('../../cli-commands/commands/nodeos/subcomman
 
 // Options
 const PathOption = require('../../cli-commands/commands/nodeos/subcommands/start/options/path-option');
+const VNodeOption = require('../../cli-commands/commands/nodeos/subcommands/start/options/v-node-option');
 const LinesOption = require('../../cli-commands/commands/nodeos/subcommands/logs/options/lines-option');
 
 // Common & Specifics
@@ -173,6 +174,56 @@ describe('Nodeos Command', function () {
                         } catch (error) {
                             assert(error.message.includes('no such file or directory, lstat \'./custom\''));
                         }
+                    });
+                });
+
+                describe('v-node', function () {
+                    it('Should return the default template', async () => {
+                        const buildTemplate = VNodeOption.process('');
+                        const template = buildTemplate('./path');
+
+                        assert(template.replace(/\s|\n/g, '') == `nodeos -e -p eosio 
+                        --plugin eosio::producer_plugin 
+                        --plugin eosio::producer_api_plugin 
+                        --plugin eosio::chain_api_plugin 
+                        --plugin eosio::http_plugin 
+                        --plugin eosio::history_plugin 
+                        --plugin eosio::history_api_plugin 
+                        -d ./path/data 
+                        --config-dir ./path/config 
+                        --access-control-allow-origin="*" 
+                        --p2p-listen-endpoint="0.0.0.0:3001" 
+                        --contracts-console 
+                        --verbose-http-errors 
+                        --http-validate-host=false 
+                        --filter-on="*" 
+                        >> ./path/nodeos.log 2>&1 & echo $! 
+                        > ./path/eosd.pid && sleep 2s`.replace(/\s|\n/g, ''));
+                    });
+
+                    it('Should return the template for the provided version', async () => {
+                        const buildTemplate = VNodeOption.process('2.0.7');
+                        const template = buildTemplate('./path');
+
+                        assert(template.replace(/\s|\n/g, '') == `nodeos -e -p eosio 
+                        --plugin eosio::chain_plugin 
+                        --plugin eosio::chain_api_plugin 
+                        --plugin eosio::producer_plugin 
+                        --plugin eosio::producer_api_plugin 
+                        --plugin eosio::http_plugin 
+                        --plugin eosio::state_history_plugin 
+                        --state-history-dir ./path/state-history 
+                        -d ./path/data 
+                        --config-dir ./path/config 
+                        --access-control-allow-origin="*" 
+                        --p2p-listen-endpoint="0.0.0.0:3001" 
+                        --contracts-console 
+                        --verbose-http-errors 
+                        --http-validate-host=false 
+                        --trace-history 
+                        --chain-state-history 
+                        >> ./path/nodeos.log 2>&1 & echo $! 
+                        > ./path/eosd.pid && sleep 2s`.replace(/\s|\n/g, ''));
                     });
                 });
             });

@@ -5,12 +5,10 @@ const MESSAGE_COMMAND = require('./messages').COMMAND;
 const MESSAGE_NODEOS = require('./messages').NODEOS;
 const startCommandDefinition = require('./definition');
 
-const template = require('./specific/template');
-
 const predefinedAccounts = require('../common/accounts');
 const nodeosDataManager = require('../../specific/nodeos-data/data-manager');
 
-// eoslime nodeos start --path
+// eoslime nodeos start --path --v-node
 
 class StartCommand extends Command {
     constructor () {
@@ -29,7 +27,7 @@ class StartCommand extends Command {
             const optionsResults = await super.processOptions(args);
             nodeosDataManager.setNodeosPath(optionsResults.path);
 
-            const asyncSoftExec = new AsyncSoftExec(template.build(optionsResults.path));
+            const asyncSoftExec = new AsyncSoftExec(optionsResults['v-node'](optionsResults.path));
             await asyncSoftExec.exec();
 
             nodeosDataManager.requireRunningNodeos(optionsResults.path);
