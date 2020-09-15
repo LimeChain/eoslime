@@ -9,6 +9,7 @@ const nodeosDataManager = {
     setNodeosPath: (path) => {
         const newPath = JSON.stringify({ nodeosPath: path });
         fileSystemUtil.writeFile(`${__dirname}/nodeos.json`, newPath);
+        nodeosJSON.nodeosPath = newPath;
     },
     nodeosIsRunning: function (path) {
         try {

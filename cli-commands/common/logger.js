@@ -1,8 +1,8 @@
 const chalk = require('chalk');
 
 const logger = {
-    log: (message) => {
-        console.log(message);
+    log: (message, isObject) => {
+        isObject ? console.dir(message) : console.log(message);
     },
     success: (message) => {
         console.log(chalk.greenBright(message));

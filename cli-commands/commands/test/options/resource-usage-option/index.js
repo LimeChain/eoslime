@@ -4,8 +4,9 @@ const ReportTable = require('./report-table');
 class ResourceReportOption extends Option {
     constructor () {
         super(
-            'resource-usage',
+            'resource-report',
             {
+                "alias": "report",
                 "describe": "Provides you RAM and Bandwidth report for your tests",
                 "type": "string",
                 "default": "false"

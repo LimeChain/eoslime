@@ -1,5 +1,5 @@
-const AsyncSoftExec = require('../../helpers/async-soft-exec');
 const Command = require('../command');
+const AsyncSoftExec = require('../../helpers/async-soft-exec');
 
 const MESSAGE_COMMAND = require('./messages').COMMAND;
 const MESSAGE_CONTRACT = require('./messages').CONTRACT;

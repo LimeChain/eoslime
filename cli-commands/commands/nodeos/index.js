@@ -1,5 +1,6 @@
 const GroupCommand = require('../group-command');
 
+const InfoCommand = require('./subcommands/info');
 const StartCommand = require('./subcommands/start');
 const StopCommand = require('./subcommands/stop');
 const LogsCommand = require('./subcommands/logs');
@@ -7,12 +8,13 @@ const AccountsCommand = require('./subcommands/accounts');
 
 const nodeosCommandDefinition = require('./definition');
 
-// eoslime nodeos <start|stop|logs|accounts>
+// eoslime nodeos <start|stop|logs|accounts|info>
 
 class NodeosCommand extends GroupCommand {
-    constructor() {
+    constructor () {
         super(nodeosCommandDefinition);
 
+        this.subcommands.push(new InfoCommand());
         this.subcommands.push(new StartCommand());
         this.subcommands.push(new StopCommand());
         this.subcommands.push(new LogsCommand());

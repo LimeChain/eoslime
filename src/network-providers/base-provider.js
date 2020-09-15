@@ -5,7 +5,7 @@ const is = require('./../helpers/is');
 
 class BaseProvider {
 
-    constructor(networkConfig) {
+    constructor (networkConfig) {
         this.network = networkConfig
         this.eos = EOS({
             httpEndpoint: networkConfig.url,
