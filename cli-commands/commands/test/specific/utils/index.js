@@ -13,6 +13,10 @@ module.exports = {
         const result = await expectEOSError(promise, 'missing_auth_exception', 'missing authority');
         assert(result.error, result.text);
     },
+    expectIrrelevantAuthority: async function (promise) {
+        const result = await expectEOSError(promise, 'irrelevant_auth_exception', 'irrelevant authority');
+        assert(result.error, result.text);
+    },
     // Todo: Uncomment it once test cli command is ready
     // createTestingAccounts: async function () {
     //     let accounts = await Account.createRandoms(10);

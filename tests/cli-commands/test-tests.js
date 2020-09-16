@@ -324,6 +324,45 @@ describe('Test Command', function () {
                     }
                 });
             });
+
+            describe('expectIrrelevantAuthority', function () {
+                it('Should expectIrrelevantAuthority', async () => {
+                    await expect(
+                        new Promise((reject, resolve) => {
+                            throw new Error('irrelevant_auth_exception');
+                        }),
+                        'expectIrrelevantAuthority'
+                    );
+                });
+
+                it('Should throw in case unexpected error happens', async () => {
+                    try {
+                        await expect(
+                            new Promise((resolve, reject) => {
+                                throw new Error('Another error');
+                            }),
+                            'expectIrrelevantAuthority'
+                        );
+                        assert(false);
+                    } catch (error) {
+                        assert(error.message.includes('Expected irrelevant authority, got \'Another error\' instead'));
+                    }
+                });
+
+                it('Should throw in case irrelevant authority error has not been received', async () => {
+                    try {
+                        await expect(
+                            new Promise((resolve, reject) => {
+                                resolve(true);
+                            }),
+                            'expectIrrelevantAuthority'
+                        );
+                        assert(false);
+                    } catch (error) {
+                        assert(error.message.includes('Expected irrelevant authority not received'));
+                    }
+                });
+            });
         });
     });
 });
