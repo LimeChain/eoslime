@@ -27,8 +27,8 @@ class CompileCommand extends Command {
                 fileSysUtils.createDir(compiledDirectories.COMPILED);
 
                 for (let i = 0; i < optionsResults.path.length; i++) {
-                    const contractPath = optionsResults.path[i];
-                    await processCompilation(contractPath)
+                    const contract = optionsResults.path[i];
+                    await processCompilation(contract)
                 }
             } else {
                 MESSAGE_CONTRACT.NotFound();
@@ -41,12 +41,13 @@ class CompileCommand extends Command {
 
 const processCompilation = async function (contract) {
     try {
-        const asyncSoftExec = new AsyncSoftExec(`eosio-cpp -I . -o ./compiled/${contract.fileName}.wasm ${contract.fullPath} --abigen`);
+        const sources = contract.files.join(' ');
+        const asyncSoftExec = new AsyncSoftExec(`eosio-cpp -I . -o ./compiled/${contract.name}.wasm ${sources} --abigen`);
         await asyncSoftExec.exec();
 
-        MESSAGE_CONTRACT.Compiled(contract.fileName);
+        MESSAGE_CONTRACT.Compiled(contract.name);
     } catch (error) {
-        MESSAGE_CONTRACT.NotCompiled(error, contract.fileName);
+        MESSAGE_CONTRACT.NotCompiled(error, contract.name);
     }
 }
 

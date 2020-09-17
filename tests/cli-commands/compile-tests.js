@@ -59,7 +59,7 @@ describe('Compile Command', function () {
                 '../../cli-commands/commands/compile/index',
                 {
                     ...stubBaseCommand(() => {
-                        return { path: [{ fileName: 'test', fullPath: './test.cpp' }] }
+                        return { path: [{ name: 'test', files: ['./test.cpp'] }] }
                     }),
                     ...stubAsyncSoftExec(checkPoints),
                     '../../helpers/file-system-util': {
@@ -146,7 +146,7 @@ describe('Compile Command', function () {
     describe('Options', function () {
         describe('Path', function () {
 
-            function stubFileSystemUtils (isFolder) {
+            function stubFileSystemUtils (isFolder, subFolder = false) {
                 const Option = proxyquire(
                     '../../cli-commands/commands/compile/options/path-option',
                     {
@@ -155,7 +155,15 @@ describe('Compile Command', function () {
                                 return isFolder;
                             },
                             recursivelyReadDir: () => {
-                                return [
+                                return subFolder ? [
+                                    {
+                                        fileName: 'test1.cpp',
+                                        fullPath: `./custom/test/test1.cpp`
+                                    }, {
+                                        fileName: 'test2.cpp',
+                                        fullPath: `./custom/test/test2.cpp`
+                                    }
+                                ] : [
                                     {
                                         fileName: 'test1.cpp',
                                         fullPath: `./custom/test1.cpp`
@@ -163,7 +171,7 @@ describe('Compile Command', function () {
                                         fileName: 'test2.cpp',
                                         fullPath: `./custom/test2.cpp`
                                     }
-                                ]
+                                ];
                             }
                         }
                     }
@@ -177,19 +185,29 @@ describe('Compile Command', function () {
                 const result = await pathOption.process('./test.cpp');
 
                 assert(result.length == 1);
-                assert(result[0].fileName == 'test');
-                assert(result[0].fullPath == './test.cpp');
+                assert(result[0].name == 'test');
+                assert(result[0].files[0] == './test.cpp');
             });
 
             it('Should return contracts paths from a folder', async () => {
                 const pathOption = stubFileSystemUtils(true);
-                const result = await pathOption.process('./test.cpp');
+                const result = await pathOption.process('./custom');
 
                 assert(result.length == 2);
-                assert(result[0].fileName == 'test1');
-                assert(result[1].fileName == 'test2');
-                assert(result[0].fullPath == './custom/test1.cpp');
-                assert(result[1].fullPath == './custom/test2.cpp');
+                assert(result[0].name == 'test1');
+                assert(result[1].name == 'test2');
+                assert(result[0].files[0] == './custom/test1.cpp');
+                assert(result[1].files[0] == './custom/test2.cpp');
+            });
+
+            it('Should group contracts paths in a subfolder', async () => {
+                const pathOption = stubFileSystemUtils(true, true);
+                const result = await pathOption.process('./custom');
+
+                assert(result.length == 1);
+                assert(result[0].name == 'test');
+                assert(result[0].files[0] == './custom/test/test1.cpp');
+                assert(result[0].files[1] == './custom/test/test2.cpp');
             });
 
             it('Should return empty array if any contracts was found', async () => {
