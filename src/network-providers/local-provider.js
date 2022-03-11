@@ -4,7 +4,7 @@ const BaseProvider = require('./base-provider');
 const LocalNetworkConfig = {
     name: 'local',
     url: 'http://127.0.0.1:8888',
-    chainId: 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
+    chainId: '8a34ec7df1b8cd06ff4a8abbaa7cc50300823350cadc59ab296cb00d104d2b8f'
 }
 
 class LocalProvider extends BaseProvider {
