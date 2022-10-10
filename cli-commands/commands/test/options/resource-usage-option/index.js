@@ -111,8 +111,8 @@ const fillFunctionsResources = function (eoslime, contractsResources) {
 }
 
 const extractResourcesCostsFromReceipt = function (txReceipt) {
-    const netCost = txReceipt.processed.receipt.cpu_usage_us;
-    const cpuCost = txReceipt.processed.receipt.net_usage_words;
+    const netCost = txReceipt.processed.receipt.net_usage_words * 8;
+    const cpuCost = txReceipt.processed.receipt.cpu_usage_us;
     const ramCost = calculateRam(txReceipt.processed.action_traces[0].account_ram_deltas);
 
     return {
