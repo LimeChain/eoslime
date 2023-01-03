@@ -1,12 +1,12 @@
 const eosjs = require('eosjs');
-const eosECC = eosjs.modules.ecc;
-const decodeName = eosjs.modules.format.decodeName;
+const eosECC = require('eosjs-ecc');
+// const decodeName = eosjs.modules.format.decodeName;
 
 
 module.exports = {
-    toName: function (encodedName) {
-        return decodeName(encodedName, false);
-    },
+    // toName: function (encodedName) {
+    //     return decodeName(encodedName, false);
+    // },
     randomName: async function () {
         const privateKey = await eosECC.randomKey();
         const publicKey = eosECC.PrivateKey.fromString(privateKey).toPublic().toString();

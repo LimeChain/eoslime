@@ -1,5 +1,5 @@
 const is = require('../../helpers/is')
-const eosECC = require('eosjs').modules.ecc;
+const eosECC = require('eosjs-ecc');
 const BaseAccount = require('../base-account');
 
 class Account extends BaseAccount {
@@ -65,8 +65,8 @@ class Account extends BaseAccount {
 
         if (!hasAuthName) {
             throw new Error(`
-                Account does not have authority with name: [${authorityName}]. 
-                You could add it by using [addAuthority] function. 
+                Account does not have authority with name: [${authorityName}].
+                You could add it by using [addAuthority] function.
                 For details check [Set authority abilities] suite in account-tests.js
             `);
         }

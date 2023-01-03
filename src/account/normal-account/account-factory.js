@@ -107,21 +107,58 @@ class AccountFactory {
 }
 
 const createAccountOnBlockchain = async function (accountToBeCreated, accountCreator) {
-    await accountToBeCreated.provider.eos.transaction(tr => {
-        tr.newaccount({
-            creator: accountCreator.name,
-            name: accountToBeCreated.name,
-            owner: accountToBeCreated.publicKey,
-            active: accountToBeCreated.publicKey
-        });
+    const actions = [
+        {
+            account: 'eosio',
+            name: 'newaccount',
+            authorization: [accountCreator.authority],
+            data: {
+                creator: accountCreator.name,
+                name: accountToBeCreated.name,
+                owner: {
+                    accounts: [],
+                    keys: [
+                        {
+                            key: accountToBeCreated.publicKey,
+                            weight: 1
+                        }
+                    ],
+                    threshold: 1,
+                    waits: []
 
-        tr.buyrambytes({
-            payer: accountCreator.name,
-            receiver: accountToBeCreated.name,
-            bytes: 8192
-        });
+                },
+                active: {
+                    accounts: [],
+                    keys: [
+                        {
+                            key: accountToBeCreated.publicKey,
+                            weight: 1
+                        }
+                    ],
+                    threshold: 1,
+                    waits: []
+                }
+            }
+        }
+    ];
 
-    }, { keyProvider: accountCreator.privateKey });
+    await accountToBeCreated.provider.sendTransaction({ actions, privateKey: accountCreator.privateKey })
+
+    // await accountToBeCreated.provider.eos.transaction(tr => {
+    //     tr.newaccount({
+    //         creator: accountCreator.name,
+    //         name: accountToBeCreated.name,
+    //         owner: accountToBeCreated.publicKey,
+    //         active: accountToBeCreated.publicKey
+    //     });
+
+    //     tr.buyrambytes({
+    //         payer: accountCreator.name,
+    //         receiver: accountToBeCreated.name,
+    //         bytes: 8192
+    //     });
+
+    // }, { keyProvider: accountCreator.privateKey });
 }
 
 module.exports = AccountFactory;

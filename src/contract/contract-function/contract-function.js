@@ -59,12 +59,18 @@ async function executeFunction (params, fnOptions, txOptions) {
         fnOptions
     );
 
-    return this.contract.provider.eos.transaction(
-        {
-            actions: functionRawTxData.actions
-        },
-        { ...txOptions, keyProvider: functionRawTxData.defaultExecutor.privateKey }
-    );
+    return this.contract.provider.sendTransaction({
+        privateKey: functionRawTxData.defaultExecutor.privateKey,
+        actions: functionRawTxData.actions,
+        txOptions
+    })
+
+    // return this.contract.provider.eos.transaction(
+    //     {
+    //         actions: functionRawTxData.actions
+    //     },
+    //     { ...txOptions, keyProvider: functionRawTxData.defaultExecutor.privateKey }
+    // );
 };
 
 function buildFunctionRawTxData (authorizer, params, options) {

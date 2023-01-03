@@ -69,8 +69,8 @@ class ContractFactory extends ContractInitializator {
     async __processDeployment (wasm, abi, contractAccount, options = defaultDeployOptions) {
         is(contractAccount).instanceOf('BaseAccount');
 
-        const setCodeTxReceipt = await this.provider.eos.setcode(contractAccount.name, 0, 0, wasm, { keyProvider: contractAccount.privateKey });
-        const setAbiTxReceipt = await this.provider.eos.setabi(contractAccount.name, abi, { keyProvider: contractAccount.privateKey });
+        const setCodeTxReceipt = await this.provider.setCode({ contractAccount, wasm })
+        const setAbiTxReceipt = await this.provider.setAbi({ contractAccount, abi });
 
         const contract = this.fromFile(abi, contractAccount.name, contractAccount);
 

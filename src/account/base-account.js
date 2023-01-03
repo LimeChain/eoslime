@@ -1,4 +1,4 @@
-const eosECC = require('eosjs').modules.ecc;
+const eosECC = require('eosjs-ecc');
 
 class BaseAccount {
 
